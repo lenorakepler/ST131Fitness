@@ -1,3 +1,10 @@
+# Temp ignore
+transmission_sim/*
+data/analysis/3-interval_constrained-sampling/Figures/*
+
+# Mac things
+*.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
