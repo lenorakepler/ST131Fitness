@@ -9,6 +9,7 @@ import seaborn as sns
 from sklearn.model_selection import KFold, train_test_split
 from transmission_sim.analysis.optimizer import Optimizer
 from transmission_sim.analysis.param_model import Site, ComponentB0, ParamModel, ComponentSite
+from ecoli_analysis.param_intervals import constrain_sampling
 
 class ComponentB0Mod(ComponentB0):
 	"""

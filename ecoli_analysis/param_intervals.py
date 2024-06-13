@@ -3,39 +3,19 @@ import pandas as pd
 import numpy as np
 import re
 from numpy.lib import recfunctions as rfn
-from transmission_sim.utils.commonFuncs import ppp
-from transmission_sim.analysis.arrayer import PhyloArrayer
 from transmission_sim.analysis.phylo_obj import PhyloObj
-from transmission_sim.ecoli.prep_tree import plot_tree_intervals
-from transmission_sim.ecoli.general import get_data
 
-if Path("/home/lenora/Dropbox").exists():
-	dropbox_dir = Path("/home/lenora/Dropbox")
-
-else:
-	dropbox_dir = Path("/Users/lenorakepler/Dropbox")
-
-dir = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset/final"
-
-# Get all times, add root time if not there, sort,
-# make interval tree, return interval list
-def make_intervals(interval_dir, *start_time_lists):
-	if Path("/home/lenora/Dropbox").exists():
-		dropbox_dir = Path("/home/lenora/Dropbox")
-
-	else:
-		dropbox_dir = Path("/Users/lenorakepler/Dropbox")
-
-	dir = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset/final"
+def make_intervals(interval_dir, original_tree_file, features_file, *start_time_lists):
+	"""
+	Get all times, add root time if not there, sort,
+	make interval tree, return interval list
+	"""
 
 	# -----------------------------------------------------
 	# Load phylo obj, set dates
 	# -----------------------------------------------------
-	features_file = dir / "combined_ancestral_states_binary_grouped_diverse_uncorr.csv"
-	tree_file = dir / "named.tree_lsd.date.noref.pruned_unannotated.nwk"
-
 	phylo_obj = PhyloObj(
-		tree_file=tree_file,
+		tree_file=original_tree_file,
 		tree_schema="newick",
 		features_file=features_file,
 		params={}
@@ -65,18 +45,14 @@ def make_intervals(interval_dir, *start_time_lists):
 
 	np.savetxt(str(interval_dir / "interval_times.txt"), np.array(interval_times), delimiter=',')
 	
-	# -----------------------------------------------------
-	# Plot interval tree
-	# -----------------------------------------------------
-	plot_tree_intervals(interval_tree, phylo_obj.present_time, interval_times)
-
 	return interval_times, interval_tree
 
-# Given data object, set sampling times based on 
-# bioproject info
-def constrain_sampling(data, phylo_obj, s):
-	sample_times_df = pd.read_csv(dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset/final" / "bioproject_info.csv", index_col=0)
-
+def constrain_sampling(data, phylo_obj, s, bioproject_times):
+	"""
+	Given data object, set sampling upon removal rate for each
+	phylogeny segment based on its bioproject
+	"""
+	
 	bioprojs = [c for c in phylo_obj.features_df.columns if 'PRJNA' in c]
 	bioproj_features = phylo_obj.features_df[bioprojs]
 	sample_bioproj = bioproj_features.apply(lambda row: np.where(row==1)[0][0], axis=1).to_dict()
@@ -90,7 +66,7 @@ def constrain_sampling(data, phylo_obj, s):
 	interval_idx = {i: idx for idx, i in enumerate(interval_times)}
 	bp_loc = [i for i, n in enumerate(phylo_obj.feature_names) if 'PRJNA' in n]
 
-	sample_df = sample_times_df[["min_time", "max_time"]]
+	sample_df = bioproject_times[["min_time", "max_time"]]
 
 	name_re = re.compile(r"_interval\d*$")
 
@@ -114,29 +90,3 @@ def constrain_sampling(data, phylo_obj, s):
 		)
 
 	return data
-
-if __name__ == "__main__":
-	bioproject_info = pd.read_csv(dir / "bioproject_info.csv", index_col=0)
-
-	# # -----------------------------------------------------
-	# # Load and date tree, set time intervals
-	# # -----------------------------------------------------
-	# interval_times, interval_tree = make_intervals(
-	# 	dir / "interval_trees" / "2003-2013-bioprojsampling",
-	# 	bioproject_info['min_time'].to_list(), 
-	# 	bioproject_info['max_time'].to_list(),
-	# 	[2003, 2013],
-	# 	)
-
-	# # Set birth-death model parameters for data
-	# first_sample_time = min([t.age for t in phylo_obj.tree.leaf_node_iter()])
-	# 
-
-	# bd_array_params = dict(
-	# 	s=([s if t > (first_sample_time - 1) else 0 for t in interval_times], True),
-	# 	d=(1, False),
-	# 	gamma=(0, False),
-	# 	rho=([0 for t in interval_times], True),
-	# 	# b0=(1.2, False)
-	# )
-	# data.addArrayParams(**bd_array_params)

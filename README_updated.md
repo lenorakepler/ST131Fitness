@@ -4,90 +4,17 @@
 
 ## Running Analysis
 
-### param_intervals.py
 
-make_intervals(interval_dir, *start_time_lists)
 
-```
-# -----------------------------------------------------
-# Split tree into time intervals at beginning and end 
-# of each BioProject collection time (min and max of
-# existing samples for that BioProject), plus at 2003
-# and 2013.
-# -----------------------------------------------------
-bioproject_info = pd.read_csv(dir / "bioproject_times.csv", index_col=0)
+### 1. Estimate the fitness effects of genetic mutations, background features, and time
 
-interval_times, interval_tree = make_intervals(
-  dir / "interval_trees" / "2003-2013-bioprojsampling",
-  bioproject_info['min_time'].to_list(), 
-  bioproject_info['max_time'].to_list(),
-  [2003, 2013],
-  )
-```
+analysis.py
 
 
 
-### analyze.py
+### 2. Given time, genetic, and background effects, estimate the remaining (branch-specific) fitness not captured by the existing model
 
-transmission_sim.utils.file_locs as locs: *remove/integrate in*
-transmission_sim.utils.commonFuncs import ppp: *remove/integrate in*
-
-ecoli.results_obj: *remove ResultsObj, only using ResultsObj2*
-
-from transmission_sim.ecoli.general import get_data: *move this method to results_obj*
-
-
-
-```
-from transmission_sim.analysis.optimizer import Optimizer
-from transmission_sim.analysis.param_model import Site
-from transmission_sim.analysis.phylo_loss import PhyloLossIterative
-
-features_file = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/combined_ancestral_states_binary_grouped_diverse_uncorr.csv"
-interval_tree = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/interval_trees/2003-2013-bioprojsampling" / "phylo.nwk"
-
-# Specify birth-death rates/probabilities that are not being estimated
-bd_array_params = dict(
-  d=(1, False), # removal rate is 1
-  gamma=(0, False), # there is no migration
-  rho=(0, False), # there is no concerted sampling
-)
-
-# Specify whether variables will be estimated
-# and whether they are time varying
-bdm_params = dict(
-  b0=[True, True], # b0 is estimated and time-varying
-  site=[True, False], # site fitness is estimated but constant
-  gamma=[False], # migration is specified
-  d=[False], # removal rate is specified
-  s=[False, True], # sampling rate is specified and time-varying
-  rho=[False, True], # concerted sampling rate is specified and time varying
-)
-
-# Specify hyperparameters to test combinations of
-hyper_param_values = dict(
-  reg_type=['l1', 'l2'],
-  lamb=[0, 25, 50, 100],
-  offset=[1], # penalize values that are far from 1, since multiplicative
-)
-
-# Run the analysis
-cli_run_analysis(
-  name="3-interval_constrained-sampling",
-  tree_file=interval_tree,
-  features_file=features_file,
-  bd_array_params=bd_array_params,
-  constrained_sampling_rate=0.0001,
-  bdm_params=bdm_params,
-  hyper_param_values=hyper_param_values,
-  n_epochs=20000,
-  lr=0.00005,
-  )
-```
-
-
-
-### random_effects_ecoli.py
+random_effects.py
 
 ```
 from transmission_sim.analysis.PhyloRegressionTree import PhyloBoost
