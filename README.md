@@ -19,7 +19,7 @@ For convenience, two snakemake files have been created: one that runs through th
 Performs model fitting, residual model fitting, and fitness decomposition.
 
 ```
-snakemake -s analysis.smk --cores 4 --configfile config.yaml
+snakemake -s workflow/analysis.smk --cores 4 --configfile config.yaml
 ```
 
 
@@ -29,7 +29,7 @@ snakemake -s analysis.smk --cores 4 --configfile config.yaml
 Makes the figures included in the paper.
 
 ```
-snakemake -s make_figures.smk --cores 4 --configfile config.yaml
+snakemake -s workflow/make_figures.smk --cores 4 --configfile config.yaml
 ```
 
 
