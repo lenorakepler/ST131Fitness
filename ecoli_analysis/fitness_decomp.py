@@ -17,9 +17,54 @@ from matplotlib.lines import Line2D
 from ecoli_analysis.results_obj import load_data_and_RO_from_file
 from ecoli_analysis.utils import cat_display
 
-def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total=False, interval_length=5, interval_cutoff=None):
-	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_name)
-	out_folder = analysis_out_dir / random_name
+def calc_fitness_totals(analysis_dir):
+	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
+	residual_dir = analysis_dir / random_name
+
+	# -----------------------------------------------------
+	# Make / load dataframe of total (log) fitness for each edge
+	# in the tree for each category of fitness
+	# -----------------------------------------------------
+	# Make dataframe from array of edges,
+	all_edges = pd.DataFrame(all_data.getEventArray("edge"))
+	all_edges.set_index('name', inplace=True)
+
+	# Add (log) random fitness estimates to edge array
+	edge_random = pd.read_csv(residual_dir / "edge_random_effects_all.csv", index_col=0)
+	all_edges = pd.concat([all_edges, np.log(edge_random)], axis=1)
+
+	# Load feature estimates
+	feature_est = pd.read_csv(analysis_dir / "estimates.csv", index_col=0)
+	feature_est.set_index('feature', inplace=True)
+	log_feature_est = np.log(feature_est)
+
+	log_time_est = log_feature_est.loc[[i for i in log_feature_est.index if 'Interval' in i]]
+	log_site_est = log_feature_est.loc[[i for i in log_feature_est.index if 'Interval' not in i]]
+
+	# Get presence/absence of each site effect for each edge in array
+	feature_types = pd.DataFrame([np.fromiter(ft, int) for ft in all_edges['ft']], columns=log_site_est.index, index=all_edges.index)
+
+	# Get (log) fitness of each site effect (0 if edge doesn't have, log(site fitness) if it does)
+	edge_fitness_components = feature_types * log_site_est.values.reshape(1, -1)
+
+	# Get corresponding (log) birth rate for each edge
+	time_effs = log_time_est.values
+	all_edges['birth_interval'] = np.take(params['birth_rate_idx'], all_edges['param_interval'])
+	all_edges['time_fitness'] = np.take(time_effs, all_edges['birth_interval'])
+
+	# edge_fitness_components is a dataframe with a row for each edge, columns for each individual effect
+	# e.g. each genetic feature, time-varying beta, random effect, etc.
+	edge_fitness_components = pd.concat([edge_fitness_components, all_edges['time_fitness'], all_edges['random_fitness']], axis=1)
+
+	# add category totals
+	all_edges['category_']
+	edge_fitness_components.to_csv(residual_dir / "edge_log_fitness_components.csv")
+
+	breakpoint()
+
+def do_decomp(analysis_dir, random_name, decomp_name=None, edge_set=None, total=False, interval_length=5, interval_cutoff=None):
+	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
+	out_folder = analysis_dir / random_name
 
 	# -----------------------------------------------------
 	# Make / load dataframe of total (log) fitness for each edge
@@ -55,8 +100,6 @@ def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total
 	# edge_fitness_components is a dataframe with a row for each edge, columns for each individual effect
 	# e.g. each genetic feature, time-varying beta, random effect, etc.
 	edge_fitness_components = pd.concat([edge_fitness_components, all_edges['time_fitness'], all_edges['random_fitness']], axis=1)
-
-	all_edges.to_csv(out_folder / "all_edges.csv")
 	edge_fitness_components.to_csv(out_folder / "edge_fitness_components.csv")
 
 	# -----------------------------------------------------
@@ -180,7 +223,7 @@ def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total
 		var_df['FRAC_BGTIME'] = var_df[f'FRAC_TIME'] + var_df[f'FRAC_BACKGROUND']
 		var_df.T.to_csv(out_folder / f"variance_decomposition_total_intervallength-{interval_length}_cutoff-{interval_cutoff}_type-{ot}.csv")
 
-		var_df[[c for c in var_df if 'FRAC' in c]].T.to_csv(out_folder / f"total_decomp_fractions_intervallength-{interval_length}_cutoff-{interval_cutoff}_type-{ot}.csv")
+		var_df[[c for c in var_df if 'FRAC' in c]].T.to_csv(out_folder / f"total_decomp_fractions_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 	else:
 		var_df.to_csv(out_folder / f"variance_decomposition_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 
@@ -226,7 +269,7 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 
 	for_csv = add_fit.copy()
 	for_csv['total'] = total
-	for_csv.to_csv(out_folder / f"Time_Mean_Fitness_Decomp_intervallength-{interval_length}_cutoff-{interval_cutoff}.png")
+	for_csv.to_csv(out_folder / f"Time_Mean_Fitness_Decomp_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 
 	axs[0].stackplot(pos_fit.index, pos_fit.values.T, labels=[cat_display(c) for c in pos_fit.columns], colors=c_palette)
 	axs[0].stackplot(neg_fit.index, neg_fit.values.T, colors=c_palette)
@@ -247,7 +290,7 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 	else:
 		plt.tight_layout()
 
-	plt.savefig(out_folder / f"Time_Mean_Fitness_Decomp_Stacked-Line_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
+	plt.savefig(out_folder / f"Figure-3_Time_Mean_Fitness_Decomp_Stacked-Line_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
 	plt.close("all")
 
 	# -----------------------------------------------------
@@ -275,7 +318,7 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 		plt.tight_layout()
 		
 	plt.tight_layout()
-	plt.savefig(out_folder / f"Time_Variance_Decomp_Stacked_Abs-Prop_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
+	plt.savefig(out_folder / f"Figure-6_Time_Variance_Decomp_Stacked_Abs-Prop_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
 	plt.close("all")
 
 def do_stack_plot(component_df, axs, pos_features, neg_features, pos_colors, neg_colors):
@@ -441,8 +484,10 @@ if __name__ == "__main__":
 	analysis_name = "3-interval_constrained-sampling"
 	random_name = "Est-Random_Fixed-BetaSite"
 
-	do_decomp(analysis_name, random_name, total=True, interval_length=1, interval_cutoff=2021)
-	do_plots(analysis_name, random_name, out_folder=dropbox_dir / "NCSU/Lab/Writing/st131_git" / "all_figures", interval_length=1, interval_cutoff=2021)
+	calc_fitness_totals(Path() / "data" / "analysis" / analysis_name)
+
+	# do_decomp(analysis_name, random_name, total=True, interval_length=1, interval_cutoff=2021)
+	# do_plots(analysis_name, random_name, out_folder=dropbox_dir / "NCSU/Lab/Writing/st131_git" / "all_figures", interval_length=1, interval_cutoff=2021)
 	# analyze_by_clade(analysis_name, random_name, interval_length=interval_length, interval_cutoff=interval_cutoff)
 
 	# for interval_cutoff in [None, 2021]:

@@ -1,9 +1,4 @@
-from pathlib import Path
-import pandas as pd
-import numpy as np
-from ecoli_analysis.param_intervals import make_intervals
-from ecoli_analysis.results_obj import load_data_and_RO_from_file, load_data_and_RO
-from ecoli_analysis.likelihood_profile import make_profiles, get_CIs
+__use_yte__ = true
 
 data_dir: "./data"
 
@@ -93,4 +88,8 @@ interval_cutoff: 2021
 # -----------------------------------------------------
 # FIGURE OUTPUT PARAMETERS
 # -----------------------------------------------------
-figures_dir = ?this["data_dir"] + "/figures"
+figures_dir: ?this["data_dir"] + "/figures"
+
+fig5_categories:
+  - "AMR"
+  - "VIR"

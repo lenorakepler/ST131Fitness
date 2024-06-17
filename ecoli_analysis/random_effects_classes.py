@@ -4,15 +4,13 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from transmission_sim.analysis.param_model import ParamComponent, ParamModel, ComponentSite
-from transmission_sim.analysis.phylo_loss import PhyloLossIterative, conditional_decorator, use_graph_execution
+from transmission_sim.analysis.phylo_loss import PhyloLossIterative
 from transmission_sim.analysis.arrayer import PhyloArrayer, PhyloData
 from transmission_sim.analysis.phylo_obj import PhyloObj
 from transmission_sim.analysis.optimizer import Optimizer
-from transmission_sim.ecoli.plot_test_reg import get_true_effs
-from transmission_sim.ecoli.results_obj import ComponentB02
 import transmission_sim.analysis.phylo_loss
 
-transmission_sim.analysis.phylo_loss.use_graph_execution = True
+from ecoli_analysis.results_obj import ComponentB0Mod
 
 class ComponentRandomEffect(ParamComponent):
 	def init_random_effect(self):
@@ -50,7 +48,7 @@ class ComponentRandomEffect(ParamComponent):
 		self.birth_rand_eff = tf.gather(self.rand_eff, self.p.birth_type_int)
 		self.pE_rand_eff = tf.reshape(self.edge_rand_eff, (-1, 1))
 
-class RandomEffectSite(ParamModel, ComponentRandomEffect, ComponentB02, ComponentSite):
+class RandomEffectSite(ParamModel, ComponentRandomEffect, ComponentB0Mod, ComponentSite):
 	def __init__(self, n_types, birth_rate_idx, data, random_effect, site, b0, d, s, rho, gamma, **kwargs):
 
 		self.birth_rate_idx = tf.constant(birth_rate_idx)
@@ -100,7 +98,6 @@ class RandomEffectSite(ParamModel, ComponentRandomEffect, ComponentB02, Componen
 		return self.p
 
 class SigmaMixin():
-	@conditional_decorator(tf.function, lambda: transmission_sim.analysis.phylo_loss.use_graph_execution)
 	def Sigma(self, c, **kwargs):
 
 		sigma = self.sigma

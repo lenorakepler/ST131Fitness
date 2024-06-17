@@ -8,7 +8,7 @@ import seaborn as sns
 from transmission_sim.analysis.optimizer import Optimizer
 from ecoli_analysis.random_effects import find_parents, get_parent_type_info, split_intervals
 from ecoli_analysis.random_effects_classes import RandomEffectSite, PhyloLossRandomEffIterative
-from ecoli_analysis.results_obj import load_data_and_RO_from_file
+from ecoli_analysis.analyze import load_data_and_RO_from_file
 
 def phylo_plot_in_train_test(phylo_obj, train_data, folds, out_folder):
 	# Load tree
@@ -278,62 +278,62 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 	info = json.loads(random_info_file.read_text())
 	
 	# ----------------------------------------------------------------
-	# Find random effects on full dataset
+	# Find random effects on both full dataset and train-only dataset
 	# ----------------------------------------------------------------
-	data_obj = all_data
+	for name, data_obj in [["all", all_data]]:
 		
-	data_obj.addColumn('type_int', info[name]['type_int'], np.int64)
-	data_obj.addColumn('parent_type_int', info[name]['parent_type_int'], np.int64)
-	data_obj.addColumn('parent_time_delta', info[name]['parent_time_delta'], np.float64)
+		data_obj.addColumn('type_int', info[name]['type_int'], np.int64)
+		data_obj.addColumn('parent_type_int', info[name]['parent_type_int'], np.int64)
+		data_obj.addColumn('parent_time_delta', info[name]['parent_time_delta'], np.float64)
 
-	df = pd.DataFrame(data_obj.array)
-	df.sort_values(by="name", inplace=True)
+		df = pd.DataFrame(data_obj.array)
+		df.sort_values(by="name", inplace=True)
 
-	# -----------------------------------------------------
-	# Find random effects using best sigma
-	# -----------------------------------------------------
-	fit_model_estimates=dict(
-			random_effect=[True, False],
-			b0=[True, True],
-			d=[False],
-			s=[False],
-			rho=[False],
-			gamma=[False],
+		# -----------------------------------------------------
+		# Find random effects using best sigma
+		# -----------------------------------------------------
+		fit_model_estimates=dict(
+				random_effect=[True, False],
+				b0=[True, True],
+				d=[False],
+				s=[False],
+				rho=[False],
+				gamma=[False],
+			)
+
+		if est_site:
+			fit_model_estimates['site'] = [True, False]
+			fit_model_estimates['b0'] = [True, True]
+
+		opt = Optimizer(
+			fit_model=RandomEffectSite,
+			fit_model_kwargs={
+				**fit_model_estimates,
+				'loss_kwargs': {'reg_type': 'sigma', 'sigma': tf.constant(sigma, shape=[], dtype=tf.dtypes.float64)},
+				'data': data_obj.returnCopy(),
+				'n_types': info[name]['n_types'],
+				'birth_rate_idx': analysis_params['birth_rate_idx'],
+				},
+			n_epochs=50000, lr=0.00005,
 		)
 
-	if est_site:
-		fit_model_estimates['site'] = [True, False]
-		fit_model_estimates['b0'] = [True, True]
+		if isinstance(est_site, dict):		
+			opt.fit_model.b0 = tf.constant(est_site['b0'], shape=opt.fit_model.n_betas, dtype=tf.dtypes.float64)
+			opt.fit_model.site = tf.constant(est_site['site'], shape=[1, opt.fit_model.edge_ft.shape[1]], dtype=tf.dtypes.float64)
 
-	opt = Optimizer(
-		fit_model=RandomEffectSite,
-		fit_model_kwargs={
-			**fit_model_estimates,
-			'loss_kwargs': {'reg_type': 'sigma', 'sigma': tf.constant(sigma, shape=[], dtype=tf.dtypes.float64)},
-			'data': data_obj.returnCopy(),
-			'n_types': info[name]['n_types'],
-			'birth_rate_idx': analysis_params['birth_rate_idx'],
-			},
-		n_epochs=50000, lr=0.00005,
-	)
+		opt.debug = True
+		opt.fit_model.phylo_loss.i = tf.constant(0, shape=[], dtype=tf.dtypes.int32)
 
-	if isinstance(est_site, dict):		
-		opt.fit_model.b0 = tf.constant(est_site['b0'], shape=opt.fit_model.n_betas, dtype=tf.dtypes.float64)
-		opt.fit_model.site = tf.constant(est_site['site'], shape=[1, opt.fit_model.edge_ft.shape[1]], dtype=tf.dtypes.float64)
+		train_vals, train_loss = opt.doOpt()
 
-	opt.debug = True
-	opt.fit_model.phylo_loss.i = tf.constant(0, shape=[], dtype=tf.dtypes.int32)
+		random_effects = train_vals['rand_eff']
+		np.savetxt(out_folder / f"type_random_effects_{name}.txt", random_effects, delimiter=',')
 
-	train_vals, train_loss = opt.doOpt()
+		df = pd.DataFrame(data_obj.getEventArray("edge"))
+		df['random_fitness'] = np.take(random_effects, df['type_int'])
+		df[['name', 'random_fitness']].to_csv(out_folder / f"edge_random_effects_{name}.csv", index=False)
 
-	random_effects = train_vals['rand_eff']
-	np.savetxt(out_folder / f"type_random_effects.txt", random_effects, delimiter=',')
-
-	df = pd.DataFrame(data_obj.getEventArray("edge"))
-	df['random_fitness'] = np.take(random_effects, df['type_int'])
-	df[['name', 'random_fitness']].to_csv(out_folder / f"edge_random_effects.csv", index=False)
-
-	(out_folder / f"loss.txt").write_text(f"{train_loss}")
+		(out_folder / f"{name}_loss.txt").write_text(f"{train_loss}")
 
 def plot_random_branch_fitness(analysis_dir, random_name, est_site=False):
 	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_dir)

@@ -445,7 +445,7 @@ def get_data(tree_file, features_file):
 	return data, phylo_obj
 
 def load_data_and_RO_from_file(analysis_dir):
-	out_dir = analysis_dir
+	out_dir = Path(analysis_dir)
 	params = json.loads((out_dir / "params.json").read_text())
 
 	# -----------------------------------------------------
@@ -475,12 +475,10 @@ def load_data_and_RO_from_file(analysis_dir):
 	if not index_success:
 		RO.get_folds()
 
-	print("Did load_data_and_RO_from_file")
+	return data, phylo_obj, RO, params
 
-	return data, phylo_obj, RO, params, out_dir
-
-def load_data_and_RO(analysis_dir, name, tree_file, features_file, bd_array_params, bioproject_times, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
-	out_dir = analysis_dir / name
+def load_data_and_RO(analysis_root_dir, name, tree_file, features_file, bd_array_params, bioproject_times, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
+	out_dir = Path(analysis_root_dir) / name
 	out_dir.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------

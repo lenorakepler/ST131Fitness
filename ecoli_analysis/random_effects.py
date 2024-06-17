@@ -1,24 +1,7 @@
 import json
-from pathlib import Path
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-from transmission_sim.analysis.param_model import ParamComponent, ParamModel, ComponentSite
-from transmission_sim.analysis.phylo_loss import PhyloLossIterative, conditional_decorator, use_graph_execution
-from transmission_sim.analysis.arrayer import PhyloArrayer, PhyloData
-from transmission_sim.analysis.phylo_obj import PhyloObj
-from transmission_sim.analysis.optimizer import Optimizer
-from transmission_sim.ecoli.plot_test_reg import get_true_effs
-from transmission_sim.ecoli.results_obj import ComponentB02
-from transmission_sim.ecoli.random_effects_classes import *
-
-import transmission_sim.analysis.phylo_loss
-
-if Path("/home/lenora/Dropbox").exists():
-	dropbox_dir = Path("/home/lenora/Dropbox")
-
-else:
-	dropbox_dir = Path("/Users/lenorakepler/Dropbox")
+from ecoli_analysis.random_effects_classes import *
 
 def next_parent(parent_idx, parent_name, train_indices):
 	"""
@@ -117,7 +100,7 @@ def get_parent_type_info(fold_train_data, fold_test_data, data):
 		)
 	return type_info_dict
 
-def define_fold_intervals(n_folds, root_time, present_time):
+def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion):
 	# -----------------------------------------------------
 	# Create interval breakpoints and put into dictionary
 	# -----------------------------------------------------
@@ -169,7 +152,7 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 	# Read in un-segmented tree file
 	
 	# Create interval breakpoints and put into dictionary
-	folds = define_fold_intervals(n_folds, root_time, present_time)
+	folds = define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion)
 
 	# -----------------------------------------------------
 	# Get indexes of phylogeny pieces in the train/test
@@ -180,7 +163,8 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 	# -----------------------------------------------------
 
 	# Convert things to dataframes so they are much easier to work with...
-	unseg_arr = pd.DataFrame(all_unsegmented_data.array)
+
+	unseg_arr = pd.DataFrame(all_data.array)
 	train_arr = pd.DataFrame(train_data.array)
 
 	# Add "branch name" column to segmented array
@@ -200,16 +184,13 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 		unseg_arr[f"{i}_test"] = (unseg_arr['birth_time'] > folds_dict['test']['start_time']) & (unseg_arr['birth_time'] < folds_dict['test']['end_time'])
 		
 		# Get subsets of unsegmented data corresponding to train, test
-		unseg_train_idx = np.nonzero(unseg_arr[f"{i}_train"])
-		unseg_test_idx = np.nonzero(unseg_arr[f"{i}_test"])
-		unseg_fold_train = all_unsegmented_data.getSubArraySpecific(train_idx)
-		unseg_fold_test = all_unsegmented_data.getSubArraySpecific(test_idx)
+		unseg_train_idx = np.nonzero(unseg_arr[f"{i}_train"].values)
+		unseg_test_idx = np.nonzero(unseg_arr[f"{i}_test"].values)
+		unseg_fold_train = all_data.getSubArraySpecific(unseg_train_idx)
+		unseg_fold_test = all_data.getSubArraySpecific(unseg_test_idx)
 
 		# Get self and parent type info of the unsegmented data
-		type_info_dict = get_parent_type_info(unseg_fold_train, unseg_fold_test, all_unsegmented_data)
-
-		breakpoint()
-
+		type_info_dict = get_parent_type_info(unseg_fold_train, unseg_fold_test, all_data)
 
 
 		folds_dict['train']['data_idx'] = [int(i) for i in train_idx]
