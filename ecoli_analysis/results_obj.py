@@ -6,9 +6,13 @@ import json
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
+from numpy.lib import recfunctions as rfn
+
 from sklearn.model_selection import KFold, train_test_split
 from transmission_sim.analysis.optimizer import Optimizer
 from transmission_sim.analysis.param_model import Site, ComponentB0, ParamModel, ComponentSite
+from transmission_sim.analysis.phylo_obj import PhyloObj
+from transmission_sim.analysis.arrayer import PhyloArrayer
 from ecoli_analysis.param_intervals import constrain_sampling
 
 class ComponentB0Mod(ComponentB0):
@@ -197,18 +201,18 @@ class ResultsObj():
 		phylo_loss = model.phylo_loss(**model.loss_kwargs)
 
 		if bdm_params['b0'][0]:
-			model.b0 = tf.Variable(estimates[0], dtype=tf.dtypes.float64)
+			model.b0 = tf.Variable(estimates['b0'], dtype=tf.dtypes.float64)
 
 			if bdm_params['site'][0]:
-				model.site = tf.Variable(estimates[1], dtype=tf.dtypes.float64)
+				model.site = tf.Variable(estimates['site'], dtype=tf.dtypes.float64)
 
 		else:
 			if bdm_params['site'][0]:
-				model.site = tf.Variable(estimates[0], dtype=tf.dtypes.float64)
+				model.site = tf.Variable(estimates['site'], dtype=tf.dtypes.float64)
 
 		c = model.call()
 		test_loss = phylo_loss.call(c.__dict__).numpy()
-		return test_loss	
+		return test_loss
 
 	def do_validation(self, result_key, save_dir, feature_names):
 		# Run on full dataset
@@ -243,7 +247,7 @@ class ResultsObj():
 			)
 
 		results[f"train_loss"] = float(validation_train_loss)
-		results[f"estimates"] = {n: e.tolist() for n, e in zip(opt.names, validation_estimates)}
+		results[f"estimates"] = {v: e.tolist() for v, e in validation_estimates.items()}
 		results["train_n_epochs"] = len(opt.losses)
 
 		# Test
@@ -307,7 +311,7 @@ class ResultsObj():
 					# Train
 					estimates, train_loss = self.do_train(h_combo, n_epochs, lr, cv_train, bdm_params, **kwargs)
 					combo_results[f"fold_{i}_train_loss"] = float(train_loss)
-					combo_results[f"fold_{i}_estimates"] = [e.tolist() for e in estimates]
+					combo_results[f"fold_{i}_estimates"] = {variable: e.tolist() for variable, e in estimates.items()}
 
 					# Test
 					test_loss = self.do_test(estimates, cv_test, bdm_params)
@@ -397,16 +401,51 @@ class ResultsObj():
 		try:
 			pd.DataFrame([est[0] for est in opt.values]).to_csv(save_dir / "time_var_ests.csv")
 			pd.DataFrame([est[1][0] for est in opt.values], columns=feature_names).to_csv(save_dir / "site_var_ests.csv")
-
-			breakpoint()
-
 			np.savetxt(save_dir / "losses.csv", np.array(losses), delimiter=",")
 
 		except Exception as e:
 			pass
 
-def load_data_and_RO_from_file(name):
-	out_dir = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / name
+def get_data(tree_file, features_file):
+	# -----------------------------------------------------
+	# Read in time intervals
+	# -----------------------------------------------------
+	interval_times = [float(t) for t in (tree_file.parent / "interval_times.txt").read_text().splitlines()]
+
+	# -----------------------------------------------------
+	# Load and date tree
+	# -----------------------------------------------------
+	phylo_obj = PhyloObj(
+		tree_file=tree_file,
+		tree_schema="newick",
+		features_file=features_file,
+		params={}
+	)
+	# Date the tree
+	last_sample_date = 2023
+	
+	for n in phylo_obj.tree.nodes():
+		n.age = n.age + (last_sample_date - phylo_obj.present_time)
+
+	phylo_obj.root = phylo_obj.tree.seed_node
+	phylo_obj.root_time = phylo_obj.root.age - (phylo_obj.root.edge_length if phylo_obj.root.edge_length else 0)
+	phylo_obj.present_time = last_sample_date
+
+	# -----------------------------------------------------
+	# Convert input data to array, set array params
+	# -----------------------------------------------------
+	# Load data as PhyloData array
+	arrayer = PhyloArrayer(
+		phylo_obj=phylo_obj,
+		param_interval_times=interval_times,
+	)
+	data = arrayer.toData()
+	data.iterative_pE = True
+
+	return data, phylo_obj
+
+def load_data_and_RO_from_file(analysis_dir):
+	out_dir = analysis_dir
 	params = json.loads((out_dir / "params.json").read_text())
 
 	# -----------------------------------------------------
@@ -414,8 +453,17 @@ def load_data_and_RO_from_file(name):
 	# -----------------------------------------------------
 	data, phylo_obj = get_data(Path(params["tree_file"]), Path(params["features_file"]))
 
-	if params["constrained_sampling_rate"]:
-		data = constrain_sampling(data, phylo_obj, params["constrained_sampling_rate"])
+	if 'constrained_sampling_rates' in params:
+		print("Loading pre-calculated constrained sampling rates")
+		data.array = rfn.append_fields(
+			data.array, 
+			params['constrained_sampling_rates']['names'],
+			params['constrained_sampling_rates']['values'], 
+			dtypes=[float for _ in params['constrained_sampling_rates']['values']],
+			usemask=False
+		)
+	else:
+		print("No pre-calculated constrained sampling rates")
 
 	data.addArrayParams(**params["bd_array_params"])
 
@@ -427,10 +475,12 @@ def load_data_and_RO_from_file(name):
 	if not index_success:
 		RO.get_folds()
 
+	print("Did load_data_and_RO_from_file")
+
 	return data, phylo_obj, RO, params, out_dir
 
-def load_data_and_RO(name, tree_file, features_file, bd_array_params, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
-	out_dir = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / name
+def load_data_and_RO(analysis_dir, name, tree_file, features_file, bd_array_params, bioproject_times, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
+	out_dir = analysis_dir / name
 	out_dir.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
@@ -439,7 +489,7 @@ def load_data_and_RO(name, tree_file, features_file, bd_array_params, constraine
 	data, phylo_obj = get_data(tree_file, features_file)
 
 	if constrained_sampling_rate:
-		data = constrain_sampling(data, phylo_obj, constrained_sampling_rate)
+		 data, constrained_sampling_rates = constrain_sampling(data, phylo_obj, constrained_sampling_rate, bioproject_times)
 
 	data.addArrayParams(**bd_array_params)
 
@@ -449,6 +499,10 @@ def load_data_and_RO(name, tree_file, features_file, bd_array_params, constraine
 	# Get a list of what birth rate indices each time
 	# interval should use
 	# -----------------------------------------------------
+	# add root time to birth rate changepoints if not already there
+	if phylo_obj.root_time not in birth_rate_changepoints:
+		birth_rate_changepoints = [phylo_obj.root_time] + birth_rate_changepoints
+
 	birth_rate_idx = [np.where(time > birth_rate_changepoints)[0][-1] if time != birth_rate_changepoints[0] else 0 for time in data.param_interval_times]
 
 	# -----------------------------------------------------
@@ -464,6 +518,7 @@ def load_data_and_RO(name, tree_file, features_file, bd_array_params, constraine
 		birth_rate_idx=list(map(int, birth_rate_idx)),
 		bd_array_params=bd_array_params,
 		constrained_sampling_rate=constrained_sampling_rate,
+		constrained_sampling_rates=constrained_sampling_rates,
 		)
 	param_dict = json.dumps(params, indent=4)
 	(out_dir / "params.json").write_text(param_dict)

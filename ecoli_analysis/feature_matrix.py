@@ -7,26 +7,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import transmission_sim.utils.plot_phylo_standalone as pp
 import json
 import numpy as np
-import re
 import seaborn as sns
-from transmission_sim.ecoli.analyze import dropbox_dir
 import yaml
 
-out_folder = dropbox_dir / "NCSU/Lab/Writing/st131_git" / "figures"
-
-def cat_display(cat):
-	cds = {
-		'AMR': 'AMR',
-		'VIR': 'Virulence',
-		'STRESS': 'Stress',
-		'PLASMID': 'Plasmid Replicon',
-		'nan': 'Background',
-		'META': 'Meta',
-	}
-	if cat in cds:
-		return cds[str(cat)]
-	else:
-		return cat
+from ecoli_analysis.utils import cat_display
 
 def get_clade_changepoints(tt, data, clade_ancestral_file, out_file_changepoints):
 	# Read in file of ancestral clade states, apply to data df
@@ -120,18 +104,7 @@ def load_info(analysis_dir):
 	# -----------------------------------------------------
 	# Get feature est., CI info, calc. whether significant
 	# -----------------------------------------------------
-	def is_significant(c, est):
-		c_min = est.loc[c, 'lower_CI']
-		c_max = est.loc[c, 'upper_CI']
-		if (c_min > 1) and (c_max > 1):
-			return True
-		elif (c_min < 1) and (c_max < 1):
-			return True
-		else:
-			return False
-
 	est = pd.read_csv(analysis_dir / f"profile_CIs.csv", index_col=0)
-	est["significant"] = [is_significant(c, est) for c in est.index]
 
 	# -----------------------------------------------------
 	# Create tree object
@@ -194,9 +167,6 @@ def plot_phylo_matrix(tt, matrix, tree_c_func, m_cmap, m_vmin, m_vmax, changepoi
 		divider = make_axes_locatable(ax_matrix)
 		cax = divider.append_axes('right', size='5%', pad=0.1)
 		
-		# cb = plt.colorbar(mpl.cm.ScalarMappable(norm=m_norm, cmap=m_cmap), cax=cax)
-		# cb.ax.tick_params(labelsize=20)
-
 	# -----------------------------------------------------
 	# Plot the matrix
 	# -----------------------------------------------------
@@ -237,38 +207,19 @@ def plot_phylo_matrix(tt, matrix, tree_c_func, m_cmap, m_vmin, m_vmax, changepoi
 	ax_tree.grid(axis='x')
 
 	if save:
-		print(out_file)
 		plt.tight_layout()
 		plt.savefig(out_file, dpi=300)
 		plt.close("all")
-		print("Saving!")
 
 	else:
 		return plt, fig, ax_tree, ax_matrix
-
-def get_cmapper(values):
-	min_val = values.min()
-	max_val = values.max()
-
-	center = 1
-
-	# Adjust min and max so color center is value center
-	min_val, max_val = pp.get_center(center, min_val, max_val)
-
-	# Get normed cmap
-	cmap = sns.color_palette("coolwarm", as_cmap=True)
-	norm = mpl.colors.Normalize(min_val, max_val)
-
-	cmapper = lambda v: cmap(norm(v))
-
-	return cmapper, cmap, norm
 
 def feature_display(feature, feature_dict):
 	f = feature.split("_")[0]
 	finfo = feature_dict[f]
 	return f"{finfo['display_name']} ({cat_display(finfo['category'].upper())})"
 
-def significant_phylo_matrix(analysis_dir):
+def significant_phylo_matrix(data_dir, analysis_dir, clade_ancestral_file, figure_out_dir):
 	data, params, sample_features, est, tt = load_info(analysis_dir)
 
 	# -----------------------------------------------------
@@ -290,7 +241,7 @@ def significant_phylo_matrix(analysis_dir):
 		matrix.loc[:, feat] = matrix.loc[:, feat] * feat_fit
 
 	# Transform feature names to their display names
-	dnames = yaml.load((dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "features" / "group_short_name_to_display_manual.yml").read_text())
+	dnames = yaml.load((data_dir / "group_short_name_to_display_manual.yml").read_text())
 	matrix = matrix.rename(columns={f: feature_display(f, dnames) for f in matrix.columns})
 
 	# Extract branch fitness
@@ -321,46 +272,23 @@ def significant_phylo_matrix(analysis_dir):
 	# -----------------------------------------------------
 	# Get clades and clade changepoints
 	# ----------------------------------------------------- 
-	clade_data, changepoints = get_clade_changepoints(tt, data, analysis_dir.parent.parent / "ST131_Typer/combined_ancestral_states.csv", analysis_dir / "Clade_Changepoints.csv")
+	clade_data, changepoints = get_clade_changepoints(tt, data, clade_ancestral_file, analysis_dir / "Clade_Changepoints.csv")
 	
-	# Add clades to matrix
-	clades = pd.get_dummies(pd.Series({n: clade_data.loc[n, 'clade'] for n in matrix.index}, name="clade"))
+	# # Add clades to matrix
+	# clades = pd.get_dummies(pd.Series({n: clade_data.loc[n, 'clade'] for n in matrix.index}, name="clade"))
 
-	# Replace "1" (presence) with 100 to enable correct coloring in heatmap
-	clades = clades.replace(1, 100)
+	# # Replace "1" (presence) with 100 to enable correct coloring in heatmap
+	# clades = clades.replace(1, 100)
 
-	# Add to existing matrix
-	matrix = pd.concat([clades, matrix], axis=1)
+	# # Add to existing matrix
+	# matrix = pd.concat([clades, matrix], axis=1)
 
 	# -----------------------------------------------------
 	# Output the plot
 	# -----------------------------------------------------
 	genomic_only_matrix = matrix[[c for c in matrix.columns if 'Meta' not in c]]
-	print(genomic_only_matrix)
-	plot_phylo_matrix(tt, genomic_only_matrix, tree_c_func, cmap, min_val, max_val, changepoints, out_folder / "phylo_fitness_effect_matrix_no-bioproj.png")
+	plot_phylo_matrix(tt, genomic_only_matrix, tree_c_func, cmap, min_val, max_val, changepoints, figure_out_dir / "Figure-1_phylo_fitness_effect_matrix_no-bioproj.png")
 	plt.close("all")
-
-	# plot_phylo_matrix(tt, matrix[[c for c in matrix.columns if 'PRJNA' in c]], tree_c_func, matrix_c_func, m_cmap, m_norm, changepoints, out_folder / "phylo_fitness_effect_matrix_only-bioproj.png")
-	# plt.close("all")
-
-if __name__ == "__main__":
-	import numpy as np
-
-	if Path("/home/lenora/Dropbox").exists():
-		dropbox_dir = Path("/home/lenora/Dropbox")
-
-	else:
-		dropbox_dir = Path("/Users/lenorakepler/Dropbox")
-
-	ncbi = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset"
-	dir = ncbi / "final"
-	name = "3-interval_constrained-sampling"
-
-	analysis_dir = dir / "analysis" / name
-
-	significant_phylo_matrix(analysis_dir)
-
-	print("done!")
 
 	
 

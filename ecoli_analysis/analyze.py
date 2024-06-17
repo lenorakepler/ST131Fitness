@@ -2,14 +2,18 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from ecoli_analysis.param_intervals import make_intervals
+from ecoli_analysis.results_obj import load_data_and_RO_from_file, load_data_and_RO
+from ecoli_analysis.likelihood_profile import make_profiles, get_CIs
 
 # ==================================================================================
 # ~~~ Analysis-specific files and variables ~~~
 #
 
+data_dir = Path() / "data"
+
 # Specify analysis name
 # -----------------------------------------------------
-name = "3-interval_constrained-sampling"
+name = "3-interval_constrained-sampling_test"
 
 # Specify the feature set we are going to be using
 # -----------------------------------------------------
@@ -59,16 +63,25 @@ bdm_params = dict(
 
 # Specify hyperparameters to test combinations of
 # -----------------------------------------------------
+# hyper_param_values = dict(
+#   reg_type=['l1', 'l2'],
+#   lamb=[0, 25, 50, 100],
+#   offset=[1], # penalize values that are far from 1, since multiplicative
+# )
+
 hyper_param_values = dict(
-  reg_type=['l1', 'l2'],
-  lamb=[0, 25, 50, 100],
+  reg_type=['l1'],
+  lamb=[1],
   offset=[1], # penalize values that are far from 1, since multiplicative
 )
 
 # Specify learning rate and number of epochs that the 
 # optimizer will use
 # -----------------------------------------------------
-n_epochs = 20000
+# n_epochs = 20000
+# lr = 0.00005
+
+n_epochs = 5
 lr = 0.00005
 
 # ~~~ End analysis-specific files and variables ~~~
@@ -78,15 +91,16 @@ lr = 0.00005
 # Load or create interval tree
 # -----------------------------------------------------
 interval_tree = interval_tree = data_dir / "interval_trees" / interval_tree_name / "phylo.nwk"
+bioproject_times_file = data_dir / "bioproject_times.csv"
 
 if not interval_tree.exists():
 	original_tree_file = data_dir / "named.tree_lsd.date.noref.pruned_unannotated.nwk"
-	bioproject_times = pd.read_csv(data_dir / "bioproject_times.csv", index_col=0)
+	bioproject_times = pd.read_csv(bioproject_times_file, index_col=0)
 
 	interval_times, interval_tree = make_intervals(
-			interval_dir = data_dir / "interval_trees" / in,
-			original_tree_file = original_tree_file,
-			features_file = features_file,
+			data_dir / "interval_trees" / interval_tree_name,
+			original_tree_file,
+			features_file,
 			bioproject_times['min_time'].to_list(), 
 			bioproject_times['max_time'].to_list(),
 	  )
@@ -97,11 +111,9 @@ if not interval_tree.exists():
 out_dir = data_dir / "analysis" / name
 
 if (out_dir / "params.json").exists():
-	data, phylo_obj, RO, params, out_dir = load_data_and_RO_from_file(name)
-else:
-	data, phylo_obj, RO, params, out_dir = load_data_and_RO(name, tree_file, features_file, bd_array_params, constrained_sampling_rate, n_epochs)
-
-birth_rate_changepoints = phylo_obj.root_time + birth_rate_changepoints
+	data, phylo_obj, RO, params, out_dir = load_data_and_RO_from_file(out_dir)
+else:																											
+	data, phylo_obj, RO, params, out_dir = load_data_and_RO(data_dir / "analysis", name, interval_tree, features_file, bd_array_params, bioproject_times_file, constrained_sampling_rate, birth_rate_changepoints, n_epochs)
 
 # -----------------------------------------------------
 # Do the cross validation
@@ -119,7 +131,7 @@ site_names = phylo_obj.features_df.columns
 estimate_results = []
 
 if bdm_params['b0'][0]:
-	b0_estimates = results['estimates']['b0:0']
+	b0_estimates = results['estimates']['b0']
 
 	if isinstance(b0_estimates, np.ndarray) or isinstance(b0_estimates, list):
 		if constrained_sampling_rate:
@@ -138,7 +150,7 @@ if bdm_params['b0'][0]:
 		estimate_results += [[f"b0", b0_estimates]]
 
 if bdm_params['site'][0]:
-	site_estimates = results['estimates']['site:0'][0]
+	site_estimates = results['estimates']['site'][0]
 	for e, t in zip(site_names, site_estimates):
 		estimate_results += [[e, t]]
 
@@ -152,3 +164,15 @@ print("===================================================================")
 print("===================================================================")
 
 df.to_csv(out_dir / "estimates.csv")
+
+# -----------------------------------------------------
+# Create likelihood profiles to get 95% CIs
+# -----------------------------------------------------
+train = RO.loadDataByIdx(RO.train_idx)
+
+estimates = RO.results_dict[result_key]["full"]["estimates"]
+bdm_params = RO.results_dict[result_key]["bdm_params"]
+h_combo = RO.results_dict[result_key]["full"]["h_combo"]
+
+make_profiles(train, estimates, features_file, bdm_params, h_combo, params["birth_rate_idx"], analysis_dir, figures_dir, plot_effect_profiles=True)
+get_CIs(analysis_dir)

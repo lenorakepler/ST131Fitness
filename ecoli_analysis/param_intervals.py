@@ -52,6 +52,8 @@ def constrain_sampling(data, phylo_obj, s, bioproject_times):
 	Given data object, set sampling upon removal rate for each
 	phylogeny segment based on its bioproject
 	"""
+
+	bioproject_times = pd.read_csv(bioproject_times, index_col=0)
 	
 	bioprojs = [c for c in phylo_obj.features_df.columns if 'PRJNA' in c]
 	bioproj_features = phylo_obj.features_df[bioprojs]
@@ -81,6 +83,8 @@ def constrain_sampling(data, phylo_obj, s, bioproject_times):
 	names = ["s"] + [f"s_{i}" for i in range(s_arr.shape[1])]
 	values = [single_sample] + [list(row) for row in s_arr.T]
 
+	constrained_sampling_rates = {'names': names, 'values': values}
+
 	data.array = rfn.append_fields(
 		data.array, 
 		names,
@@ -89,4 +93,4 @@ def constrain_sampling(data, phylo_obj, s, bioproject_times):
 		usemask=False
 		)
 
-	return data
+	return data, constrained_sampling_rates

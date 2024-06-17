@@ -3,7 +3,7 @@ from pathlib import Path
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-from transmission_sim.ecoli.analyze import load_data_and_RO_from_file, dropbox_dir
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import combinations
@@ -14,7 +14,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 
-def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total=False, interval_length=5, interval_cutoff=None, ot=None):
+from ecoli_analysis.results_obj import load_data_and_RO_from_file
+from ecoli_analysis.utils import cat_display
+
+def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total=False, interval_length=5, interval_cutoff=None):
 	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_name)
 	out_folder = analysis_out_dir / random_name
 
@@ -53,8 +56,8 @@ def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total
 	# e.g. each genetic feature, time-varying beta, random effect, etc.
 	edge_fitness_components = pd.concat([edge_fitness_components, all_edges['time_fitness'], all_edges['random_fitness']], axis=1)
 
-	# all_edges.to_csv(out_folder / "all_edges.csv")
-	# edge_fitness_components.to_csv(out_folder / "edge_fitness_components.csv")
+	all_edges.to_csv(out_folder / "all_edges.csv")
+	edge_fitness_components.to_csv(out_folder / "edge_fitness_components.csv")
 
 	# -----------------------------------------------------
 	# If we are only doing this on a subset, 
@@ -106,23 +109,15 @@ def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total
 	var_df = pd.DataFrame(index=intervals, columns=var_columns)
 
 	# At each time interval...
-
 	if total:
-		if ot:
-			if ot == 'samples':
-				interval_df = edge_fitness_components[(edge_fitness_components.index.str.contains("SAMN") == True) & (edge_fitness_components.index.str.contains("interval") == False)]
-			elif ot == 'nodes':
-				interval_df = edge_fitness_components[edge_fitness_components.index.str.contains("interval") == False]
+		all_intervals = []
+		for time in np.linspace(start_time, end_time, n_intervals):
+			# Get all edges that were alive at this time
+			alive = all_edges[(all_edges['birth_time'] <= time) & (all_edges['event_time'] >= time)].index
+			interval_df = edge_fitness_components.loc[alive, :]
+			all_intervals.append(interval_df)
 
-		else:
-			all_intervals = []
-			for time in np.linspace(start_time, end_time, n_intervals):
-				# Get all edges that were alive at this time
-				alive = all_edges[(all_edges['birth_time'] <= time) & (all_edges['event_time'] >= time)].index
-				interval_df = edge_fitness_components.loc[alive, :]
-				all_intervals.append(interval_df)
-
-			interval_df = pd.concat(all_intervals, axis=0)
+		interval_df = pd.concat(all_intervals, axis=0)
 
 	for time in intervals:
 		if total:
@@ -188,19 +183,6 @@ def do_decomp(analysis_name, random_name, decomp_name=None, edge_set=None, total
 		var_df[[c for c in var_df if 'FRAC' in c]].T.to_csv(out_folder / f"total_decomp_fractions_intervallength-{interval_length}_cutoff-{interval_cutoff}_type-{ot}.csv")
 	else:
 		var_df.to_csv(out_folder / f"variance_decomposition_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
-
-def cat_display(cat):
-	cds = {
-		'AMR': 'AMR',
-		'VIR': 'Virulence',
-		'STRESS': 'Stress',
-		'PLASMID': 'Plasmid Replicon',
-		'nan': 'Background'
-	}
-	if cat in cds:
-		return cds[str(cat)]
-	else:
-		return cat
 
 def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_length=5, interval_cutoff=None):
 	in_folder = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / analysis_name / random_name
@@ -295,25 +277,6 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 	plt.tight_layout()
 	plt.savefig(out_folder / f"Time_Variance_Decomp_Stacked_Abs-Prop_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
 	plt.close("all")
-
-	# -----------------------------------------------------
-	# Plot variance decomposition proportions with
-	# Mean category fitness lines overlaid
-	# -----------------------------------------------------
-	# line_colors = [sns.dark_palette(c, reverse=True, as_cmap=False)[1] for c in sns.color_palette("Set2")]
-	# bg_colors = sns.color_palette("Set2")
-
-	# fig, ax1 = plt.subplots()
-	# ax2 = ax1.twinx()
-
-	# ax1.stackplot(var_decomp.index, var_decomp.values.T, labels=var_decomp.columns, colors=bg_colors)
-	# sns.lineplot(data=mult_fit, palette=line_colors, ax=ax2)
-
-	# ax1.set_ylabel("Proportion of Variance Explained by Feature Category")
-	# ax2.set_ylabel("Combined Fitness Effect of Feature Category")
-	# plt.tight_layout()
-	# plt.savefig(out_folder / "Frac_Variance_Stacked_With_Lines.png", dpi=300)
-	# plt.close("all")
 
 def do_stack_plot(component_df, axs, pos_features, neg_features, pos_colors, neg_colors):
 	dnames = yaml.load((dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "features" / "group_short_name_to_display_manual.yml").read_text())
@@ -466,101 +429,6 @@ def components_by_clade(analysis_name, random_name, categories, out_folder, inte
 	else:
 		return fig, axs, fname
 
-def failed_gridspec_lines_layout():
-	sns.set_style('whitegrid')
-
-	fig, axs = plt.subplots(n_rows + 1, n_cols, sharex=True, squeeze=True, gridspec_kw={'height_ratios': [.01] + [1] * n_rows}, figsize=(5 * n_cols, 5.75 * n_rows))
-
-	gs = axs[0, 0].get_gridspec()
-	for ax in axs[0, 1:]:
-		ax.remove()
-
-	label1 = fig.add_subplot(gs[0, 0])
-	label2 = fig.add_subplot(gs[0, 1:])
-
-	label1.set_xlabel("")
-	label2.set_xlabel("")
-
-	for ax in [label1, label2]:
-		ax.tick_params(size=0)
-		ax.set_xticklabels([])
-		ax.set_yticklabels([])
-		ax.set_facecolor("none")
-		for pos in ["right", "top", "left"]:
-			ax.spines[pos].set_visible(False)
-		ax.spines["bottom"].set_linewidth(3)
-		ax.spines["bottom"].set_color("crimson")
-
-	for row, cat in enumerate(categories):
-		for col, clade in enumerate(wanted_clades):
-			cdf = component_df.xs(clade, level="clade")
-			do_stack_plot(cdf[[c for c in component_df.columns if cat in c]], axs[row + 1, col], pos_fit, neg_fit, pos_colors, neg_colors)
-	
-	# Set column labels
-	[ax.set_title(f"Clade {clade}", fontsize=20, pad=18) for clade, ax in zip(wanted_clades, axs[1])]
-
-	# breakpoint()
-
-	# Put legend to right of plots
-	[row[-1].legend(title=cat_display(category), loc='upper left', bbox_to_anchor = (1.02, 1.02), fontsize=18, title_fontsize=18, frameon=False) for category, row in zip(categories, axs[1:])]
-
-	# axs[-1][2].set_xlabel("Year", fontsize=20, labelpad=18)
-	# [row[0].set_ylabel("Fitness Contribution", fontsize=18) for row in axs]
-	# [ax.xaxis.set_tick_params(labelsize=15) for ax in axs[-1]]
-
-def analyze_by_clade(analysis_name, random_name, out_folder, interval_length=5, interval_cutoff=None):
-	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_name)
-	
-	# Make dataframe from array of edges,
-	all_edges = pd.DataFrame(all_data.getEventArray("edge"))
-	all_edges.set_index('name', inplace=True)
-
-	# Get clade type of each edge
-	clades = pd.read_csv(analysis_out_dir.parent.parent / "ST131_Typer" / "combined_ancestral_states.csv", index_col=0).squeeze()
-	all_edges['clade'] = [clades[i.split("_")[0]] for i in all_edges.index]
-
-	for clade, clade_df in all_edges.groupby('clade'):
-		do_decomp(analysis_name, random_name, decomp_name=clade, edge_set=clade_df.index.to_list(), interval_length=interval_length, interval_cutoff=interval_cutoff)
-		do_decomp(analysis_name, random_name, decomp_name=clade, edge_set=clade_df.index.to_list(), total=True, interval_length=interval_length, interval_cutoff=interval_cutoff)
-		do_plots(analysis_name, random_name, out_folder, decomp_name=clade, interval_length=interval_length, interval_cutoff=interval_cutoff)
-
-
-def QRDR(analysis_name, random_name, out_folder):
-	in_folder = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / analysis_name / random_name
-	out_folder.mkdir(exist_ok=True, parents=True)
-
-	all_edges = pd.read_csv(in_folder / "all_edges.csv", index_col=0)
-	edge_fitness_components = pd.read_csv(in_folder / "edge_fitness_components.csv", index_col=0)
-	edge_fitness_components = edge_fitness_components.loc[:, edge_fitness_components.sum(axis=0) != 0]
-
-	# Get clade type of each edge
-	clades = pd.read_csv(in_folder.parent.parent.parent / "ST131_Typer" / "combined_ancestral_states.csv", index_col=0).squeeze()
-	all_edges['clade'] = [clades[i.split("_")[0]] for i in all_edges.index]
-	
-	# just look at single interval
-	ef = edge_fitness_components.loc[[e for e in edge_fitness_components.index if '_interval' not in e]]
-	qr = ef[[c for c in ef.columns if ('gyr' in c or 'par' in c)]]
-
-	qrdict = {
-		'both': len(qr[(qr['gyr_AMR'] > 0) & (qr['par_AMR'] < 0)]),
-		'gyr_only': len(qr[(qr['gyr_AMR'] > 0) & (qr['par_AMR'] == 0)]),
-		'par_only': len(qr[(qr['gyr_AMR'] == 0) & (qr['par_AMR'] < 0)]),
-		'neither': len(qr[(qr['gyr_AMR'] == 0) & (qr['par_AMR'] == 0)]),
-		}
-
-	qr = qr.loc[[e for e in qr.index if 'SAMN' in e]]
-	qrdict2 = {
-		'both': len(qr[(qr['gyr_AMR'] > 0) & (qr['par_AMR'] < 0)]),
-		'gyr_only': len(qr[(qr['gyr_AMR'] > 0) & (qr['par_AMR'] == 0)]),
-		'par_only': len(qr[(qr['gyr_AMR'] == 0) & (qr['par_AMR'] < 0)]),
-		'neither': len(qr[(qr['gyr_AMR'] == 0) & (qr['par_AMR'] == 0)]),
-		}
-
-	po = qr[(qr['gyr_AMR'] == 0) & (qr['par_AMR'] < 0)]
-
-	clades.loc[po.index]
-	breakpoint()
-
 if __name__ == "__main__":
 	from transmission_sim.analysis.PhyloRegressionTree import PhyloBoost
 	import matplotlib as mpl
@@ -573,8 +441,7 @@ if __name__ == "__main__":
 	analysis_name = "3-interval_constrained-sampling"
 	random_name = "Est-Random_Fixed-BetaSite"
 
-	# do_decomp(analysis_name, random_name, interval_length=interval_length, interval_cutoff=interval_cutoff)
-	# do_decomp(analysis_name, random_name, total=True, interval_length=1, interval_cutoff=2021)
+	do_decomp(analysis_name, random_name, total=True, interval_length=1, interval_cutoff=2021)
 	do_plots(analysis_name, random_name, out_folder=dropbox_dir / "NCSU/Lab/Writing/st131_git" / "all_figures", interval_length=1, interval_cutoff=2021)
 	# analyze_by_clade(analysis_name, random_name, interval_length=interval_length, interval_cutoff=interval_cutoff)
 

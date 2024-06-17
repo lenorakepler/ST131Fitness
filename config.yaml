@@ -1,0 +1,96 @@
+from pathlib import Path
+import pandas as pd
+import numpy as np
+from ecoli_analysis.param_intervals import make_intervals
+from ecoli_analysis.results_obj import load_data_and_RO_from_file, load_data_and_RO
+from ecoli_analysis.likelihood_profile import make_profiles, get_CIs
+
+data_dir: "./data"
+
+# -----------------------------------------------------
+# ANALYSIS NAME (directory automatically created)
+# -----------------------------------------------------
+analysis_name: "3-interval_constrained-sampling_test"
+
+# -----------------------------------------------------
+# FEATURES FILE AND ORIGINAL PHYLOGENY
+# -----------------------------------------------------
+# Binary features file for each sample + ancestral node
+features_file: ?this["data_dir"] + "/combined_ancestral_states_binary_grouped_diverse_uncorr.csv"
+
+# Original tree output of LSD, pruned of reference node, unannotated
+original_tree_file: ?this["data_dir"] + "/named.tree_lsd.date.noref.pruned_unannotated.nwk"
+
+# -----------------------------------------------------
+# TREE INTERVALS SETUP
+# -----------------------------------------------------
+interval_tree_name: "2003-2013-bioprojsampling"
+
+# We will divide the tree into four time intervals, with changepoints at 2003 and 2013, 
+# and estimate a separate background birth rate for each
+birth_rate_changepoints: [2003, 2013]
+
+# Additionally, we  constrains sampling on removal so that a sample has 0 sampling probability
+# outside of its BioProject sample collection window (estimated as the min and max of existing
+# samples for that BioProject). This is just a .csv file that specifies these dates as year
+# rounded to one decimal, ensuring the window starts just before the first sample and ends right
+# after the last.
+bioproject_times_file: ?this["data_dir"] + "/bioproject_times.csv"
+
+# -----------------------------------------------------
+# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# -----------------------------------------------------
+# Specify whether birth-death model variables will be estimated (first value)
+# and whether they are time varying (second value)
+bdm_params:
+  b0: [True, True]
+  site: [True, False]
+  gamma: [False, False]
+  d: [False, False]
+  s: [False, True]
+  rho: [False, True]
+
+# Probability of being sampled upon removal in collection window
+constrained_sampling_rate: 0.0001
+
+# Other birth-death rates/probabilities that are not being estimated
+# Second value specifies whether the parameter is time-varying
+bd_array_params:
+  d: [1, False]
+  gamma: [0, False]
+  rho: [0, False]
+
+# -----------------------------------------------------
+# ANALYSIS PARAMETERS AND HYPERPARAMETERS
+# -----------------------------------------------------
+# Learning rate
+lr: 0.00005
+
+# Number of epochs the optimizer will run
+n_epochs: 20000
+
+# Values of regularization type, lambda penalty types to test
+# Plus specify that the offest penalize values that are far from 1, since fitness is multiplicative
+hyper_param_values:
+  reg_type: ['l1']
+  lamb: [0, 25, 50, 100]
+  offset: [1]
+
+# -----------------------------------------------------
+# RESIDUAL FITNESS PARAMETERS AND HYPERPARAMETERS
+# -----------------------------------------------------
+residual_name: "Est-Random_Fixed-BetaSite"
+
+# -----------------------------------------------------
+# FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
+# -----------------------------------------------------
+# Length of time intervals used in decomposition 
+interval_length: 1
+
+# Can omit recent years since very few samples
+interval_cutoff: 2021
+
+# -----------------------------------------------------
+# FIGURE OUTPUT PARAMETERS
+# -----------------------------------------------------
+figures_dir = ?this["data_dir"] + "/figures"

@@ -1,21 +1,12 @@
-import copy
+import yaml
 import tensorflow as tf
-from pathlib import Path
-import itertools
-import copy
 import pandas as pd
 import numpy as np
-import yaml
-import json
-import tensorflow as tf
-from transmission_sim.analysis.optimizer import Optimizer
-from transmission_sim.analysis.param_model import Site, ComponentB0, ParamModel, ComponentSite
-from transmission_sim.ecoli.results_obj import Site2
-import transmission_sim.utils.plot_phylo_standalone as pp
-from sklearn.model_selection import KFold, train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib as mpl
+from ecoli_analysis.results_obj import SiteMod
+from ecoli_analysis.utils import cat_display
 
 def plot_effect_profile(site, profile_results, mle_eff, out_dir):
 	profile_mle = list(profile_results[site].keys())[np.argmin(list(profile_results[site].values()))]
@@ -32,15 +23,20 @@ def plot_effect_profile(site, profile_results, mle_eff, out_dir):
 	plt.savefig(out_dir / f'{site}.png')
 	plt.close("all")
 
-def make_profile(train, estimates, features_file, bdm_params, h_combo, birth_rate_idx, out_dir):
-	profile_dir = out_dir / "profiles"
+def make_profiles(train, estimates, features_file, bdm_params, h_combo, birth_rate_idx, analysis_dir, plot_dir=None, plot_effect_profiles=False):
+	if plot_effect_profiles:
+		if not plot_dir:
+			profile_dir = analysis_dir / "profiles"
+		else:
+			profile_dir = plot_dir / "profiles"
+
 	profile_dir.mkdir(exist_ok=True, parents=True)
 
 	features = pd.read_csv(features_file, index_col=0)
 
 	if isinstance(estimates, dict):
-		time_estimates = estimates.get('b0:0', [])
-		site_estimates = estimates.get('site:0', [])
+		time_estimates = estimates.get('b0', [])
+		site_estimates = estimates.get('site', [])
 
 	else:
 		if bdm_params['b0'][0]:
@@ -80,7 +76,7 @@ def make_profile(train, estimates, features_file, bdm_params, h_combo, birth_rat
 				iterative_pE=True,
 				loss_kwargs=h_combo,
 			)
-			fit_model = Site2(**fit_model_kwargs)
+			fit_model = SiteMod(**fit_model_kwargs)
 			phylo_loss = fit_model.phylo_loss(**fit_model.loss_kwargs)
 
 			fit_model.b0 = tf.Variable(effs, dtype=tf.dtypes.float64)
@@ -96,7 +92,8 @@ def make_profile(train, estimates, features_file, bdm_params, h_combo, birth_rat
 			profile_results[site][n] = loss
 			print(f"\t{n:.2f}: {loss:.2f}")
 
-		plot_effect_profile(site, profile_results, mle_eff, profile_dir)
+		if plot_effect_profiles:
+			plot_effect_profile(site, profile_results, mle_eff, profile_dir)
 
 	# -----------------------------------------------------
 	# For each site estimate
@@ -121,7 +118,7 @@ def make_profile(train, estimates, features_file, bdm_params, h_combo, birth_rat
 				iterative_pE=True,
 				loss_kwargs=h_combo,
 			)
-			fit_model = Site2(**fit_model_kwargs)
+			fit_model = SiteMod(**fit_model_kwargs)
 			phylo_loss = fit_model.phylo_loss(**fit_model.loss_kwargs)
 
 			fit_model.site = tf.Variable(effs, dtype=tf.dtypes.float64)
@@ -137,18 +134,27 @@ def make_profile(train, estimates, features_file, bdm_params, h_combo, birth_rat
 			profile_results[site][n] = loss
 			print(f"\t{n:.2f}: {loss:.2f}")
 
-		plot_effect_profile(site, profile_results, mle_eff, profile_dir)
+		if plot_effect_profiles:
+			plot_effect_profile(site, profile_results, mle_eff, profile_dir)
 
 	profile_df = pd.DataFrame.from_dict(profile_results)
-	profile_df.to_csv(out_dir / f"likelihood_profile.csv")
+	profile_df.to_csv(analysis_dir / f"likelihood_profile.csv")
 
-	# breakpoint()
-
-	# profile_mles = pd.Series(profile_mles, name="estimated").to_frame().T
-	# profile_mles = profile_mles[res.columns.to_list()]
-	# profile_mles.to_csv(out_dir / f"profile_mles.csv")
+def is_significant(row):
+	c_min = row['lower_CI']
+	c_max = row['upper_CI']
+	if (c_min > 1) and (c_max > 1):
+		return True
+	elif (c_min < 1) and (c_max < 1):
+		return True
+	else:
+		return False
 
 def get_CIs(analysis_dir):
+	"""
+	Given likelihood profiles, calculate confidence intervals
+	"""
+
 	estimates = pd.read_csv(analysis_dir / "estimates.csv", index_col=0)
 	estimates = estimates.set_index("feature").squeeze()
 	like_profile = pd.read_csv(analysis_dir / f"likelihood_profile.csv", index_col=0)
@@ -173,34 +179,6 @@ def get_CIs(analysis_dir):
 		lower_index = np.argmin(np.abs(deltaL[:mle_index] + 1.92))
 		upper_index = mle_index + np.argmin(np.abs(deltaL[mle_index:] + 1.92))
 
-		# breakpoint()
-
-		# plt.plot(feature_profile.index, L, color="black", label="raw")
-		# plt.plot(feature_profile.index, deltaL, color="blue", label="delta")
-		# plt.plot(feature_profile.index[:mle_index], np.abs(deltaL[:mle_index] + 1.92), label="lower")
-		# plt.plot(feature_profile.index[mle_index:], np.abs(deltaL[mle_index:] + 1.92), label="upper")
-		# plt.axvline(lower_CI, color="red", label="lower CI")
-		# plt.axvline(upper_CI, color="red", label="upper CI")
-		# plt.axvline(-1.92, color="green", label="1.92")
-		# plt.xlim(.9, 1.2)
-		# plt.ylim(-10, 10)
-		# plt.savefig(analysis_dir / "citest.png", dpi=300)
-		# plt.close("all")
-
-		# target_loss = feature_profile.values.min()
-		# get distance from target loss
-
-
-		plt.plot(feature_profile, color="blue")
-		plt.scatter(feature_profile.index, feature_profile.values, color="black")
-		plt.axhline(feature_profile.values.min() + 1.92, color="red")
-		plt.xlim(.9, 1.2)
-		plt.ylim(feature_profile.values.min() - 10, feature_profile.values.min() + 10)
-		plt.savefig(analysis_dir / "citest2.png", dpi=300)
-
-
-
-
 		lower_CI = feature_profile.index[lower_index]
 		upper_CI = feature_profile.index[upper_index]
 
@@ -217,43 +195,66 @@ def get_CIs(analysis_dir):
 		)
 
 	df = pd.DataFrame(ci_dict).T
+
+	df["included"] = df['mle'].between(.999, 1.001) == False
+	df["significant"] = df.apply(lambda row: is_significant(row), axis=1)
 	df.to_csv(analysis_dir / f"profile_CIs.csv")
 
-def cat_display(cat):
-	cds = {
-		'Amr': 'AMR',
-		'Vir': 'Virulence',
-		'Stress': 'Stress',
-		'Plasmid': 'Plasmid Replicon',
-		'Meta': 'Background',
-		'nan': 'Background'
-	}
-	return cds[str(cat)]
+def box_plot(df, category_palette, colors, order, out_fig):
+	sns.set_style("whitegrid")
+	fig, axs = plt.subplots(figsize=(12, 12, 1 + .5 * len(df.shape[1])))
+	sns.boxplot(
+		data=df,
+		palette={cat: color for cat, color in category_palette.items() if cat in df.columns},
+		order=[o for o in order if o in df.columns],
+		whis=0.0, showfliers=False,
+		orient="h",
+	)
+	axs.axvline(1, color='k', alpha=0.4)
+	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
+	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
+	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
+	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
+	axs.tick_params(axis='both', labelsize=14)
 
-def box_plot(analysis_dir, out_dir):
+	fig.tight_layout()
+	plt.savefig(out_fig, dpi=300)
+	plt.close("all")
+
+def do_box_plots(analysis_dir, out_dir, extra_plots=True):
+	"""
+	Output box plots of feature estimates with 95% CIs
+	"""
+	out_dir.mkdir(exist_ok=True, parents=True)
+
+	# -----------------------------------------------------
+	# Load confidence interval estimates
+	# -----------------------------------------------------
 	est_df = pd.read_csv(analysis_dir / f"profile_CIs.csv", index_col=0)
 	est_df.drop(columns=["initial_mle"], inplace=True)
 
 	df = est_df[['lower_CI', 'upper_CI', 'mle']]
 
-	# Doesn't matter what these values are, one just needs to be
-	# slightly smaller than the lower CI, the other slightly larger
-	# than the upper CI 
-	# so that with a list of N = 5 (a_lower, lower, mle, upper, a_upper),
-	# the index of the first quartile is h = (5 - 1) * 1/4 + 1 = 2 (1 with 0-based indexing)
-	# and the second element in the list is the lower bound
-	# https://en.wikipedia.org/wiki/Quantile -- numpy uses linear interpolation
+	# -----------------------------------------------------
+	# Re-set CI bounds so that plots correctly
+	# -----------------------------------------------------
+	# 	Doesn't matter what these values are, one just needs to be
+	# 	slightly smaller than the lower CI, the other slightly larger
+	# 	than the upper CI so that with a list of
+	# 	N = 5 (a_lower, lower, mle, upper, a_upper), the index of
+	# 	the first quartile is h = (5 - 1) * 1/4 + 1 = 2 (1 with 0-based indexing)
+	# 	and the second element in the list is the lower bound
+	# 	https://en.wikipedia.org/wiki/Quantile -- numpy uses linear interpolation
 	df['artificial_lower_CI'] = df['lower_CI'] - .01
 	df['artificial_upper_CI'] = df['upper_CI'] + .01
 
-	# df = df.T.reset_index()
-	# df.drop(columns=["index"], inplace=True)
 	df = df.T
 
-	# Change to display name
-	# ---------------------------
+	# -----------------------------------------------------
+	# Format feature names for display
+	# -----------------------------------------------------
 	# Load display names
-	dnames = yaml.load((analysis_dir.parent.parent / "features" / "group_short_name_to_display_manual.yml").read_text())
+	dnames = yaml.load((analysis_dir.parent.parent / "group_short_name_to_display_manual.yml").read_text())
 	for name, nd in dnames.items():
 		nd['csv_name'] = name + "_" + nd['category'].upper()
 
@@ -275,20 +276,9 @@ def box_plot(analysis_dir, out_dir):
 	# Then set display_df index to display name
 	display_df.set_index('Display Name', inplace=True)
 
-	non_1_df = df.loc[:, df.loc['mle', :].between(.999, 1.001) == False]
-
-	order = est_df.sort_values(by='mle', ascending=True).index.to_list()
-
-	def is_significant(c):
-		c_min = est_df.loc[c, 'lower_CI']
-		c_max = est_df.loc[c, 'upper_CI']
-		if (c_min > 1) and (c_max > 1):
-			return True
-		elif (c_min < 1) and (c_max < 1):
-			return True
-		else:
-			return False
-
+	# -----------------------------------------------------
+	# Set up colors
+	# -----------------------------------------------------
 	def get_color(c, display_df):
 		cat = display_df.loc[c, "Display Type"]
 		shades = sns.light_palette(colors[cat], n_colors=12, as_cmap=False)
@@ -297,160 +287,47 @@ def box_plot(analysis_dir, out_dir):
 		else:
 			return shades[2]
 
-	# BOX PLOT OF ALL EFFECTS
-	# -------------------------
-	# significance_palette = {c: "#4ea5ef" if is_significant(c) else "#ecf8fe" for c in df.columns}
 	color_list = sns.color_palette("Set2")
 	colors = {cat: color_list[i] for i, cat in enumerate(['AMR', 'Plasmid Replicon', 'Virulence', 'Stress', 'Background'])}
 	category_palette = {c: get_color(c, display_df) for c in df.columns}
+	order = est_df.sort_values(by='mle', ascending=True).index.to_list()
 
-	sns.set_style("whitegrid")
-	fig, axs = plt.subplots(figsize=(12, 20))
-	sns.boxplot(
-		data=df,
-		palette=category_palette,
-		order=order,
-		whis=0.0, showfliers=False,
-		orient="h",
-	)
-	axs.axvline(1, color='k', alpha=0.4)
-	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
-	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
-	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
-	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
-	axs.tick_params(axis='both', labelsize=14)
+	# -----------------------------------------------------
+	# Get non-dropped features, significant features
+	# -----------------------------------------------------
+	included_features = df[df['included'] == True].columns
+	sig_features = df[df['significant'] == True].columns
+	non_bg_features = display_df[display_df['Display Type'] != 'Background'].columns
 
-	fig.tight_layout()
-	plt.savefig(out_dir / f"profile_CIs_boxplot.png", dpi=300)
-	plt.show()
+	# -----------------------------------------------------
+	# Box plot of all significant, non-background effects
+	# -----------------------------------------------------
+	wanted_features = list(set(sig_features).intersection(non_bg_features))
+	box_plot(df[wanted_features], category_palette, colors, order, out_dir / f"Figure-4_profile_CIs_boxplot_non-background_sig.png")
 
-	category_palette = {c: get_color(c, display_df) for c in non_1_df.columns}
+	if extra_plots:
+		# -----------------------------------------------------
+		# Box plot of all effects
+		# -----------------------------------------------------
+		box_plot(df, category_palette, colors, order, out_dir / f"profile_CIs_boxplot.png")
 
-	sns.set_style("whitegrid")
-	fig, axs = plt.subplots(figsize=(12, 20))
-	sns.boxplot(
-		data=non_1_df,
-		palette=category_palette,
-		order=[o for o in order if o in non_1_df.columns],
-		whis=0.0, showfliers=False,
-		orient="h",
-	)
-	axs.axvline(1, color='k', alpha=0.4)
-	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
-	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
-	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
-	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
-	axs.tick_params(axis='both', labelsize=14)
+		# -----------------------------------------------------
+		# Box plot of all non-1 (not dropped out) effects
+		# -----------------------------------------------------
+		box_plot(df[included_features], category_palette, colors, order, out_dir / f"profile_CIs_boxplot_non1.png")
 
-	fig.tight_layout()
-	plt.savefig(out_dir / f"profile_CIs_boxplot_non1.png", dpi=300)
-	plt.show()
+		# -----------------------------------------------------
+		# Box plot of all significant effects
+		# -----------------------------------------------------
+		box_plot(df[sig_features], category_palette, colors, order, out_dir / f"profile_CIs_boxplot_all_sig.png")
+		
+		# -----------------------------------------------------
+		# Box plot of all non-background effects
+		# -----------------------------------------------------
+		box_plot(df[non_bg_features], category_palette, colors, order, out_dir / f"profile_CIs_boxplot_non-Background.png")
 
-	color_list = sns.color_palette("Set2")
-	colors = {cat: color_list[i] for i, cat in enumerate(['AMR', 'Plasmid Replicon', 'Virulence', 'Stress'])}
-
-	group_columns = [c for c in df.columns if display_df.loc[c, 'Display Type'] != 'Background']
-	category_palette = {c: get_color(c, display_df) for c in group_columns}
-
-	fig, axs = plt.subplots(figsize=(12, 1 + .5 * len(group_columns)))
-	sns.boxplot(
-		data=df[group_columns],
-		palette=category_palette,
-		order=[o for o in order if o in group_columns],
-		whis=0.0, showfliers=False,
-		orient="h",
-	)
-	axs.axvline(1, color='k', alpha=0.4)
-	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
-	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
-	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
-	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
-	axs.tick_params(axis='both', labelsize=14)
-
-	plt.tight_layout()
-	plt.savefig(out_dir / f"profile_CIs_boxplot_non-Background.png", dpi=300)
-	plt.close("all")
-
-	group_columns = [c for c in non_1_df.columns if display_df.loc[c, 'Display Type'] != 'Background']
-
-	fig, axs = plt.subplots(figsize=(12, 1 + .5 * len(group_columns)))
-	sns.boxplot(
-		data=non_1_df[group_columns],
-		palette=category_palette,
-		order=[o for o in order if o in group_columns],
-		whis=0.0, showfliers=False,
-		orient="h",
-	)
-	axs.axvline(1, color='k', alpha=0.4)
-	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
-	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
-	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
-	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
-	axs.tick_params(axis='both', labelsize=14)
-
-	plt.tight_layout()
-	plt.savefig(out_dir / f"profile_CIs_boxplot_non-background_non1.png", dpi=300)
-	plt.close("all")
-
-	# BOX PLOTS OF NON-META FEATURES
-	# only significant
-	# Colored by feature type
-	# -------------------------
-	group_columns = [c for c in non_1_df.columns if display_df.loc[c, 'Display Type'] != 'Background' and is_significant(c)]
-	fig, axs = plt.subplots(figsize=(12, 1 + .5 * len(group_columns)))
-	box = sns.boxplot(
-		data=non_1_df[group_columns],
-		palette=category_palette,
-		order=[o for o in order if o in group_columns],
-		whis=0.0, showfliers=False,
-		orient="h",
-	)
-	axs.axvline(1, color='k', alpha=0.4)
-	axs.set_xlabel('Transmission Fitness Effect', fontsize=16, labelpad=15)
-	axs.set_ylabel('Feature', fontsize=16, labelpad=25)
-	recs = [mpl.patches.Rectangle((0,0),1,1, fc=c) for c in colors.values()]
-	axs.legend(recs, colors.keys(), loc='upper right', fontsize=20)
-	axs.tick_params(axis='both', labelsize=14)
-
-	plt.tight_layout()
-	plt.savefig(out_dir / f"profile_CIs_boxplot_non-background_sig.png", dpi=300)
-	plt.close("all")
-
-if __name__ == "__main__":
-	from transmission_sim.ecoli.analyze import load_data_and_RO_from_file
-
-	name = "3-interval_constrained-sampling"
-	data, phylo_obj, RO, params, analysis_dir = load_data_and_RO_from_file(name)
-	train = RO.loadDataByIdx(RO.train_idx)
-	estimates = RO.results_dict['b0_TV+site']["full"]["estimates"]
-	bdm_params = RO.results_dict['b0_TV+site']["bdm_params"]
-	h_combo = RO.results_dict['b0_TV+site']["full"]["h_combo"]
-	features_file = params["features_file"]
-
-	# make_profile(train, estimates, features_file, bdm_params, h_combo, params["birth_rate_idx"], out_dir)
-	# get_CIs(out_dir)
-
-	box_plot(analysis_dir, analysis_dir)
-
-	# cis_to_latex(out_dir)
-
-	# color_list = sns.color_palette("Set2")
-	# colors = {cat: color_list[i] for i, cat in enumerate(['AMR', 'PLASMID', 'VIR', 'STRESS'])}
-
-	# def get_color(c, n_colors, i):
-	# 	cat = c.rsplit("_", 1)[-1]
-	# 	shades = sns.light_palette(colors[cat], n_colors=n_colors, as_cmap=False)
-	# 	return shades[i]
-
-	# def plot_shade_colors(n_colors, i, j):
-	# 	plot_colors = []
-	# 	for cat in colors.keys():
-	# 		plot_colors.append(get_color(cat, n_colors, i))
-	# 		plot_colors.append(get_color(cat, n_colors, j))
-
-	# 	pp.plotColorPalette(plot_colors, save=out_dir / f"category_palette_{n_colors}-colors_{i}-{j}.png")
-
-	# plot_shade_colors(6, -1, 2)
-	# plot_shade_colors(12, -1, 2)
-	# plot_shade_colors(12, -1, 1)
-
+		# -----------------------------------------------------
+		# Box plot of all non-1, non-background effects
+		# -----------------------------------------------------
+		wanted_features = list(set(included_features).intersection(non_bg_features))
+		box_plot(df[wanted_features], category_palette, colors, order, out_dir / f"profile_CIs_boxplot_non-background_non1.png")

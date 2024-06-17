@@ -1,6 +1,8 @@
 # Temp ignore
 transmission_sim/*
 data/analysis/3-interval_constrained-sampling/Figures/*
+data/figures/*
+data/analysis/3-interval_constrained-sampling_test/*
 
 # Mac things
 *.DS_Store
