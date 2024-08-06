@@ -1,13 +1,12 @@
 import json
-from pathlib import Path
 import tensorflow as tf
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from transmission_sim.analysis.optimizer import Optimizer
-from ecoli_analysis.random_effects import find_parents, get_parent_type_info, split_intervals
-from ecoli_analysis.random_effects_classes import RandomEffectSite, PhyloLossRandomEffIterative
+from analysis.optimizer import Optimizer
+from ecoli_analysis.random_effects import find_parents, split_intervals
+from ecoli_analysis.random_effects_classes import RandomEffectSite
 from ecoli_analysis.results_obj import load_data_and_RO_from_file
 
 def phylo_plot_in_train_test(phylo_obj, train_data, folds, out_folder):
@@ -53,22 +52,14 @@ def phylo_plot_in_train_test(phylo_obj, train_data, folds, out_folder):
 	plt.close("all")
 
 
-def load_data(analysis_dir, random_name, use_train_idx):
-	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_dir)
+def load_data(analysis_dir, random_name):
+	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
 	all_data.addArrayParams(b0=(1, False))
 
-	out_folder = analysis_out_dir / random_name
+	out_folder = analysis_dir / random_name
 	out_folder.mkdir(exist_ok=True, parents=True)
 
-	# -----------------------------------------------------
-	# Data we are getting train/test folds from should be
-	# only the data that is NOT in our validation set
-	# if use_train_idx=True
-	# -----------------------------------------------------
-	if use_train_idx:
-		data = all_data.getSubArraySpecific(RO.train_idx)
-	else:
-		data = all_data
+	data = all_data
 
 	# -----------------------------------------------------
 	# Load / make time folds info
@@ -115,19 +106,19 @@ def load_data(analysis_dir, random_name, use_train_idx):
 
 	return data, phylo_obj, fold_params, folds, out_folder, params
 
-def do_crossval(analysis_dir, random_name, est_site=False, use_train_idx=True):
+def do_crossval(analysis_dir, random_name, n_sigmas, sigma_start, sigma_stop, est_site=False, n_epochs=50000, lr=0.00005):
 	# -----------------------------------------------------
 	# Create and/or load fold-segmented tree file 
 	# as data object
 	# -----------------------------------------------------
-	data, phylo_obj, fold_params, folds, out_folder, analysis_params = load_data(analysis_dir, random_name, use_train_idx)
+	data, phylo_obj, fold_params, folds, out_folder, analysis_params = load_data(analysis_dir, random_name)
 
 	json_out = out_folder / "results.json"
 
 	# -----------------------------------------------------
 	# Do sigma hyperparameter optimization
 	# -----------------------------------------------------
-	sigmas =np.linspace(0, 5, 21)
+	sigmas = np.linspace(sigma_start, sigma_stop, n_sigmas)
 	results = {}
 	for sigma in sigmas:
 		results[sigma] = {'train': [], 'test': [], 'effs': []}
@@ -159,7 +150,7 @@ def do_crossval(analysis_dir, random_name, est_site=False, use_train_idx=True):
 					'n_types': fold_dict['n_types'],
 					'birth_rate_idx': analysis_params['birth_rate_idx'],
 					},
-				n_epochs=50000, lr=0.00005,
+				n_epochs=n_epochs, lr=lr,
 			)
 
 			if isinstance(est_site, dict):		
@@ -203,17 +194,17 @@ def do_crossval(analysis_dir, random_name, est_site=False, use_train_idx=True):
 
 			(out_folder / "results.json").write_text(json.dumps(results, indent=4))
 
-def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
+def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False, n_epochs=50000, lr=0.00005):
 	# -----------------------------------------------------
 	# Create and/or load fold-segmented tree file 
 	# as data object
 	# -----------------------------------------------------
-	all_data, phylo_obj, RO, analysis_params, analysis_out_dir = load_data_and_RO_from_file(analysis_dir)
+	all_data, phylo_obj, RO, analysis_params = load_data_and_RO_from_file(analysis_dir)
 	
 	if not est_b0:
 		all_data.addArrayParams(b0=(1, False))
 
-	out_folder = analysis_out_dir / random_name
+	out_folder = analysis_dir / random_name
 	out_folder.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
@@ -225,7 +216,7 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 	# -----------------------------------------------------
 	# Load results, plot, find best sigma
 	# -----------------------------------------------------
-	results = {float(sig): v for sig, v in json.loads((out_folder / "results_copy_839am.json").read_text()).items()}
+	results = {float(sig): v for sig, v in json.loads((out_folder / "results.json").read_text()).items()}
 
 	for sig, sig_dict in results.items():
 		sig_dict['test_mean'] = float(np.mean(sig_dict['test']))
@@ -251,7 +242,7 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 	plt.savefig(out_folder / "fig2.png", dpi=300)
 	plt.close("all")
 
-	(out_folder / "results_copy_839am.json").write_text(json.dumps(results, indent=4))
+	(out_folder / "results.json").write_text(json.dumps(results, indent=4))
 
 	# ----------------------------------------------------------------
 	# Calculate/load type int info for both full and train-only dataset
@@ -282,9 +273,9 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 	# ----------------------------------------------------------------
 	data_obj = all_data
 		
-	data_obj.addColumn('type_int', info[name]['type_int'], np.int64)
-	data_obj.addColumn('parent_type_int', info[name]['parent_type_int'], np.int64)
-	data_obj.addColumn('parent_time_delta', info[name]['parent_time_delta'], np.float64)
+	data_obj.addColumn('type_int', info["all"]['type_int'], np.int64)
+	data_obj.addColumn('parent_type_int', info["all"]['parent_type_int'], np.int64)
+	data_obj.addColumn('parent_time_delta', info["all"]['parent_time_delta'], np.float64)
 
 	df = pd.DataFrame(data_obj.array)
 	df.sort_values(by="name", inplace=True)
@@ -311,10 +302,10 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 			**fit_model_estimates,
 			'loss_kwargs': {'reg_type': 'sigma', 'sigma': tf.constant(sigma, shape=[], dtype=tf.dtypes.float64)},
 			'data': data_obj.returnCopy(),
-			'n_types': info[name]['n_types'],
+			'n_types': info["all"]['n_types'],
 			'birth_rate_idx': analysis_params['birth_rate_idx'],
 			},
-		n_epochs=50000, lr=0.00005,
+		n_epochs=n_epochs, lr=lr,
 	)
 
 	if isinstance(est_site, dict):		
@@ -336,9 +327,9 @@ def analyze_fit(analysis_dir, random_name, est_site=False, est_b0=False):
 	(out_folder / f"loss.txt").write_text(f"{train_loss}")
 
 def plot_random_branch_fitness(analysis_dir, random_name, est_site=False):
-	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_dir)
+	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
 
-	out_folder = analysis_out_dir / random_name
+	out_folder = analysis_dir / random_name
 	out_folder.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
@@ -350,7 +341,7 @@ def plot_random_branch_fitness(analysis_dir, random_name, est_site=False):
 		abs_time=phylo_obj.present_time
 	)
 
-	df = pd.read_csv(out_folder / "edge_random_effects_all.csv", index_col=0)
+	df = pd.read_csv(out_folder / "edge_random_effects.csv", index_col=0)
 
 	vmin = df.min().min()
 	vmax = df.max().max()
@@ -380,29 +371,11 @@ def plot_random_branch_fitness(analysis_dir, random_name, est_site=False):
 	plt.savefig(out_folder / f"Phylo_Random_Effects.png", dpi=300)
 	plt.close("all")
 
-	# # -----------------------------------------------------
-	# # Random effects through time
-	# # -----------------------------------------------------
-	# all['time'] = all_data.getEventArray("edge")['event_time']
-	# scatter = sns.scatterplot(data=all, x="time", y="random_fitness")
-	# plt.tight_layout()
-	# plt.savefig(out_folder / f"Random_Effs_Time.png", dpi=300)
-	# plt.close("all")
-
-	# # -----------------------------------------------------
-	# # Random effects by branch length
-	# # -----------------------------------------------------
-	# all['length'] = all_data.getEventArray("edge")['time_step']
-	# scatter = sns.scatterplot(data=all, x="length", y="random_fitness")
-	# plt.tight_layout()
-	# plt.savefig(out_folder / f"Random_Effs_Length.png", dpi=300)
-	# plt.close("all")
-
 def test(analysis_dir, random_name):
-	all_data, phylo_obj, RO, params, analysis_out_dir = load_data_and_RO_from_file(analysis_dir)
+	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
 	all_data.addArrayParams(b0=(1, False))
 
-	out_folder = analysis_out_dir / random_name
+	out_folder = analysis_dir / random_name
 	out_folder.mkdir(exist_ok=True, parents=True)
 	
 	data = all_data.getSubArraySpecific(RO.train_idx)

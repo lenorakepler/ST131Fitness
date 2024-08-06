@@ -7,13 +7,16 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
 from numpy.lib import recfunctions as rfn
-
 from sklearn.model_selection import KFold, train_test_split
-from transmission_sim.analysis.optimizer import Optimizer
-from transmission_sim.analysis.param_model import Site, ComponentB0, ParamModel, ComponentSite
-from transmission_sim.analysis.phylo_obj import PhyloObj
-from transmission_sim.analysis.arrayer import PhyloArrayer
+from analysis.optimizer import Optimizer
+from analysis.param_model import ComponentB0, ParamModel, ComponentSite
+from analysis.phylo_obj import PhyloObj
+from analysis.arrayer import PhyloArrayer
 from ecoli_analysis.param_intervals import constrain_sampling
+
+# https://stackoverflow.com/questions/69924881/userwarning-starting-a-matplotlib-gui-outside-of-the-main-thread-will-likely-fa
+import matplotlib
+matplotlib.use('agg')
 
 class ComponentB0Mod(ComponentB0):
 	"""
@@ -344,8 +347,10 @@ class ResultsObj():
 
 	def run_and_plot(self, opt, feature_names, save_dir):
 		losses = opt.losses
-
 		save_dir.mkdir(exist_ok=True, parents=True)
+
+		fig_dir = save_dir / "figures" / "epoch_plots"
+		fig_dir.mkdir(exist_ok=True, parents=True)
 
 		# ==========================================
 		# Plot loss over epochs
@@ -354,14 +359,14 @@ class ResultsObj():
 		y_limit = np.quantile(losses, .95)
 
 		for i, l in enumerate(losses):
-		    if l <= y_limit:
-		        x_limit = i
-		        break
+			if l <= y_limit:
+				x_limit = i
+				break
 
 		plt.plot(list(range(len(losses)))[x_limit:], losses[x_limit:])
 		plt.axvline(best_idx, color='red')
 		plt.tight_layout()
-		plt.savefig(save_dir / "epochs_95.png", dpi=300)
+		plt.savefig(fig_dir / "epochs_95.png", dpi=300)
 		plt.close("all")
 
 		# ==========================================
@@ -369,14 +374,14 @@ class ResultsObj():
 		# ==========================================
 		y_limit = np.quantile(losses, .5)
 		for i, l in enumerate(losses):
-		    if l <= y_limit:
-		        x_limit = i
-		        break
+			if l <= y_limit:
+				x_limit = i
+				break
 
 		plt.plot(list(range(len(losses)))[x_limit:], losses[x_limit:])
 		plt.axvline(best_idx, color='red')
 		plt.tight_layout()
-		plt.savefig(save_dir / "epochs_50.png", dpi=300)
+		plt.savefig(fig_dir / "epochs_50.png", dpi=300)
 		plt.close("all")
 
 		# ==========================================
@@ -384,7 +389,7 @@ class ResultsObj():
 		# ==========================================
 
 		# Time features
-		self.plot_variable_epochs(opt.values, lambda x: [est[0] for est in x], save_name=save_dir / "var_time.png", variable_names=[])
+		self.plot_variable_epochs(opt.values, lambda x: [est[0] for est in x], save_name=fig_dir / "var_time.png", variable_names=[])
 
 		# Site features
 		for feature_group in ["PLASMID", "AMR", "META", "VIR", "STRESS"]:
@@ -392,21 +397,25 @@ class ResultsObj():
 			names = [n for i, n in enumerate(feature_names) if feature_group in n]
 
 			if feature_group != "AMR":
-				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs] for est in x], save_name=save_dir / f"var_{feature_group}.png", variable_names=names)
+				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs] for est in x], save_name=fig_dir / f"var_{feature_group}.png", variable_names=names)
 
 			else:
-				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs[0:15]] for est in x], save_name=save_dir / f"var_{feature_group}_1.png", variable_names=names[0:15])
-				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs[15:]] for est in x], save_name=save_dir / f"var_{feature_group}_2.png", variable_names=names[15:])
+				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs[0:15]] for est in x], save_name=fig_dir / f"var_{feature_group}_1.png", variable_names=names[0:15])
+				self.plot_variable_epochs(opt.values, lambda x: [est[1][0][locs[15:]] for est in x], save_name=fig_dir / f"var_{feature_group}_2.png", variable_names=names[15:])
 
 		try:
-			pd.DataFrame([est[0] for est in opt.values]).to_csv(save_dir / "time_var_ests.csv")
-			pd.DataFrame([est[1][0] for est in opt.values], columns=feature_names).to_csv(save_dir / "site_var_ests.csv")
-			np.savetxt(save_dir / "losses.csv", np.array(losses), delimiter=",")
+			pd.DataFrame([est[0] for est in opt.values]).to_csv(save_dir / "time_var_by_epoch.csv")
+			pd.DataFrame([est[1][0] for est in opt.values], columns=feature_names).to_csv(save_dir / "site_vars_by_epoch.csv")
+			np.savetxt(save_dir / "losses_by_epoch.csv", np.array(losses), delimiter=",")
 
 		except Exception as e:
+			print("Could not create dataframes")
 			pass
 
-def get_data(tree_file, features_file):
+def get_data(tree_file, features_file, last_sample_date):
+	tree_file = Path(tree_file)
+	features_file = Path(features_file)
+
 	# -----------------------------------------------------
 	# Read in time intervals
 	# -----------------------------------------------------
@@ -422,8 +431,6 @@ def get_data(tree_file, features_file):
 		params={}
 	)
 	# Date the tree
-	last_sample_date = 2023
-	
 	for n in phylo_obj.tree.nodes():
 		n.age = n.age + (last_sample_date - phylo_obj.present_time)
 
@@ -451,7 +458,7 @@ def load_data_and_RO_from_file(analysis_dir):
 	# -----------------------------------------------------
 	# Get data object, add birth-death model params
 	# -----------------------------------------------------
-	data, phylo_obj = get_data(Path(params["tree_file"]), Path(params["features_file"]))
+	data, phylo_obj = get_data(Path(params["tree_file"]), Path(params["features_file"]), 	params['last_sample_date'])
 
 	if 'constrained_sampling_rates' in params:
 		print("Loading pre-calculated constrained sampling rates")
@@ -477,14 +484,14 @@ def load_data_and_RO_from_file(analysis_dir):
 
 	return data, phylo_obj, RO, params
 
-def load_data_and_RO(analysis_root_dir, name, tree_file, features_file, bd_array_params, bioproject_times, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
+def load_data_and_RO(analysis_root_dir, name, tree_file, features_file, bd_array_params, bioproject_times, last_sample_date, constrained_sampling_rate, birth_rate_changepoints, n_epochs):
 	out_dir = Path(analysis_root_dir) / name
 	out_dir.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
 	# Get data object, add birth-death model params
 	# -----------------------------------------------------
-	data, phylo_obj = get_data(tree_file, features_file)
+	data, phylo_obj = get_data(tree_file, features_file, last_sample_date)
 
 	if constrained_sampling_rate:
 		 data, constrained_sampling_rates = constrain_sampling(data, phylo_obj, constrained_sampling_rate, bioproject_times)
@@ -517,6 +524,7 @@ def load_data_and_RO(analysis_root_dir, name, tree_file, features_file, bd_array
 		bd_array_params=bd_array_params,
 		constrained_sampling_rate=constrained_sampling_rate,
 		constrained_sampling_rates=constrained_sampling_rates,
+		last_sample_date=last_sample_date,
 		)
 	param_dict = json.dumps(params, indent=4)
 	(out_dir / "params.json").write_text(param_dict)
@@ -533,6 +541,6 @@ def load_data_and_RO(analysis_root_dir, name, tree_file, features_file, bd_array
 	if not index_success:
 		RO.get_folds()
 
-	return data, phylo_obj, RO, params, out_dir
+	return data, phylo_obj, RO, params
 
 	

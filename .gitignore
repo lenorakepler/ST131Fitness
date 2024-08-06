@@ -3,6 +3,12 @@ transmission_sim/*
 data/analysis/3-interval_constrained-sampling/Figures/*
 data/figures/*
 data/analysis/3-interval_constrained-sampling_test/*
+.snakemake/*
+.coverage*
+coverage/*
+data/analysis/*
+data/analysis/3-interval_constrained-sampling/*
+old/*
 
 # Mac things
 *.DS_Store

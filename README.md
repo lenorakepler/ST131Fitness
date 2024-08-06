@@ -4,15 +4,18 @@ Data, code, and instructions for the analysis presented in "Quantifying the geno
 
 For questions or more information, contact lkepler at ncsu.edu!
 
+## Setting up the virtual environment
+From the base directory of the folder, run:
 
+```
+mamba env create -f environment.yml
+```
+Note: I *highly* recommend using `mamba`  rather than `conda` to resolve package dependencies as it is much quicker, but `conda` should also work.
 
 ## Using the Code
-
-**\*Note: An environment configuration file for setting up necessary packages will be added shortly, as will a brief documentation of the workflow, file structure, and snakemake pipeline\*** 
-
 For convenience, two snakemake files have been created: one that runs through the steps of the actual analysis (`analysis.smk`) and one that generates the figures (`make_figures.smk`). Both use a config file (`config.yaml`) that can be used as-is to use the same parameters as the paper, or can be modified for alternate analyses.
 
-
+To use, run one of the below commands from within the base directory of the folder.
 
 ### analysis.smk
 
@@ -21,8 +24,6 @@ Performs model fitting, residual model fitting, and fitness decomposition.
 ```
 snakemake -s workflow/analysis.smk --cores 4 --configfile config.yaml
 ```
-
-
 
 ### make_figures.smk
 

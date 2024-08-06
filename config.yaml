@@ -1,17 +1,18 @@
-__use_yte__ = true
-
-data_dir: "./data"
+data_dir: "data"
 
 # -----------------------------------------------------
 # ANALYSIS NAME (directory automatically created)
 # -----------------------------------------------------
-analysis_name: "3-interval_constrained-sampling_test"
+analysis_name: "3-interval_constrained-sampling"
 
 # -----------------------------------------------------
-# FEATURES FILE AND ORIGINAL PHYLOGENY
+# FEATURES FILES AND ORIGINAL PHYLOGENY
 # -----------------------------------------------------
 # Binary features file for each sample + ancestral node
 features_file: ?this["data_dir"] + "/combined_ancestral_states_binary_grouped_diverse_uncorr.csv"
+
+# Ancestral clade reconstruction for each branch
+clades_file: ?this["data_dir"] + "/clade_combined_ancestral_states.csv"
 
 # Original tree output of LSD, pruned of reference node, unannotated
 original_tree_file: ?this["data_dir"] + "/named.tree_lsd.date.noref.pruned_unannotated.nwk"
@@ -20,6 +21,9 @@ original_tree_file: ?this["data_dir"] + "/named.tree_lsd.date.noref.pruned_unann
 # TREE INTERVALS SETUP
 # -----------------------------------------------------
 interval_tree_name: "2003-2013-bioprojsampling"
+
+# To correctly date the tree
+last_sample_date: 2023
 
 # We will divide the tree into four time intervals, with changepoints at 2003 and 2013, 
 # and estimate a separate background birth rate for each
@@ -75,6 +79,9 @@ hyper_param_values:
 # RESIDUAL FITNESS PARAMETERS AND HYPERPARAMETERS
 # -----------------------------------------------------
 residual_name: "Est-Random_Fixed-BetaSite"
+n_sigmas: 21
+sigma_start: 0
+sigma_stop: 5
 
 # -----------------------------------------------------
 # FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
@@ -89,6 +96,8 @@ interval_cutoff: 2021
 # FIGURE OUTPUT PARAMETERS
 # -----------------------------------------------------
 figures_dir: ?this["data_dir"] + "/figures"
+
+category_info_file: ?this["data_dir"] + "/group_short_name_to_display_manual.yml"
 
 fig5_categories:
   - "AMR"

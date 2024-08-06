@@ -1,0 +1,866 @@
+Col:
+    category: Plasmid
+    display_name: 'Col'
+    members:
+    - Col(BS512)
+    - Col(KPHS6)
+    - Col(MP18)
+    - Col(pHAD28)
+    - Col156
+    - Col440II
+    - Col8282
+    - ColKP3
+    - ColRNAI
+    - ColpVC
+    type: ''
+IncB:
+    category: Plasmid
+    display_name: 'IncB/O/K/Z'
+    members:
+    - IncB/O/K/Z
+    type: ''
+IncC:
+    category: Plasmid
+    display_name: 'IncC'
+    members:
+    - IncC
+    type: ''
+IncFIA:
+    category: Plasmid
+    display_name: 'IncFIA'
+    members:
+    - FIA(pBK30683)
+    - IncFIA
+    - IncFIA(HI1)
+    type: ''
+IncFIB:
+    category: Plasmid
+    display_name: 'IncFIB'
+    members:
+    - IncFIB(AP001918)
+    - IncFIB(H89-PhagePlasmid)
+    - IncFIB(pB171)
+    - IncFIB(pLF82-PhagePlasmid)
+    - IncFIB(pNDM-Mar)
+    - IncFIB(pQil)
+    type: ''
+IncFII:
+    category: Plasmid
+    display_name: 'IncFII'
+    members:
+    - IncFII
+    - IncFII(29)
+    - IncFII(pCoo)
+    - IncFII(pHN7A8)
+    - IncFII(pRSB107)
+    - IncFII(pSE11)
+    type: ''
+IncH:
+    category: Plasmid
+    display_name: 'IncHI'
+    members:
+    - IncHI1B(pNDM-MAR)
+    - IncHI2
+    - IncHI2A
+    type: ''
+IncI:
+    category: Plasmid
+    display_name: 'IncI'
+    members:
+    - IncI(Gamma)
+    - IncI1-I(Alpha)
+    - IncI2
+    - IncI2(Delta)
+    type: ''
+IncN:
+    category: Plasmid
+    display_name: 'IncN'
+    members:
+    - IncN
+    - IncN2
+    type: ''
+IncP:
+    category: Plasmid
+    display_name: 'IncP6'
+    members:
+    - IncP6
+    type: ''
+IncQ:
+    category: Plasmid
+    display_name: 'IncQ1'
+    members:
+    - IncQ1
+    type: ''
+IncR:
+    category: Plasmid
+    display_name: 'IncR'
+    members:
+    - IncR
+    type: ''
+IncX:
+    category: Plasmid
+    display_name: 'IncX'
+    members:
+    - IncX1
+    - IncX3
+    - IncX4
+    type: ''
+IncY:
+    category: Plasmid
+    display_name: 'IncY'
+    members:
+    - IncY
+    type: ''
+aac:
+    category: Amr
+    display_name: aac(3)/(6')
+    members:
+    - aac(3)-IId
+    - aac(3)-IIe
+    - aac(3)-Ib
+    - aac(3)-VIa
+    - aac(6')-Ib
+    - aac(6')-Ib-cr
+    - aac(6')-Ib-cr5
+    - aac(6')-Ib3
+    - aac(6')-Il
+    type: 'Gene'
+aad-qac:
+    category: Amr
+    display_name: 'aadA + qacE/F/L'
+    members:
+    - aadA1
+    - aadA16
+    - aadA2
+    - aadA25
+    - aadA5
+    - qacE
+    - qacEdelta1
+    - qacF
+    - qacL
+    type: ''
+aap:
+    category: Vir
+    display_name: 'aap'
+    members:
+    - aap
+    type: ''
+acr:
+    category: Amr
+    display_name: 'acrB/F/R'
+    members:
+    - acrB_R620C
+    - acrB_R717L
+    - acrF
+    - acrR_R45C
+    type: ''
+afa-nfa:
+    category: Vir
+    display_name: 'afaC + nfaE'
+    members:
+    - afaC
+    - nfaE
+    type: ''
+agg-aar-aat:
+    category: Vir
+    display_name: 'aar + aatA + agg'
+    members:
+    - aar
+    - aatA
+    - agg3B
+    - agg3C
+    - agg3D
+    - agg5A
+    - aggR
+    type: ''
+amp:
+    category: Amr
+    display_name: 'ampC'
+    members:
+    - ampC_C-11T
+    - ampC_T-32A
+    type: 'Point mutation'
+ant:
+    category: Amr
+    display_name: "ant(2'')-Ia"
+    members:
+    - ant(2'')-Ia
+    type: ''
+aph:
+    category: Amr
+    display_name: aph(3')/(3'')/(6)
+    members:
+    - aph(3'')-Ib
+    - aph(3')-Ia
+    - aph(3')-VI
+    - aph(6)-Id
+    type: ''
+arr:
+    category: Amr
+    display_name: 'arr'
+    members:
+    - arr
+    - arr-2
+    - arr-3
+    type: ''
+ast:
+    category: Vir
+    display_name: 'astA'
+    members:
+    - astA
+    type: ''
+bas:
+    category: Amr
+    display_name: 'basR'
+    members:
+    - basR_G53S
+    type: 'Point mutation'
+blaCARB:
+    category: Amr
+    display_name: 'blaCARB-2'
+    members:
+    - blaCARB-2
+    type: ''
+blaCMY:
+    category: Amr
+    display_name: 'blaCMY'
+    members:
+    - blaCMY
+    - blaCMY-2
+    - blaCMY-6
+    type: 'Gene'
+blaCTX-M:
+    category: Amr
+    display_name: 'blaCTX-M'
+    members:
+    - blaCTX-M
+    type: 'Gene'
+blaCTX-M-1:
+    category: Amr
+    display_name: 'blaCTX-M-1'
+    members:
+    - blaCTX-M-1
+    type: 'Gene'
+blaCTX-M-14:
+    category: Amr
+    display_name: 'blaCTX-M-14'
+    members:
+    - blaCTX-M-14
+    type: 'Gene'
+blaCTX-M-15:
+    category: Amr
+    display_name: 'blaCTX-M-15'
+    members:
+    - blaCTX-M-15
+    type: 'Gene'
+blaCTX-M-195:
+    category: Amr
+    display_name: 'blaCTX-M-195'
+    members:
+    - blaCTX-M-195
+    type: 'Gene'
+blaCTX-M-24:
+    category: Amr
+    display_name: 'blaCTX-M-24'
+    members:
+    - blaCTX-M-24
+    type: 'Gene'
+blaCTX-M-27:
+    category: Amr
+    display_name: 'blaCTX-M-27'
+    members:
+    - blaCTX-M-27
+    type: 'Gene'
+blaCTX-M-55:
+    category: Amr
+    display_name: 'blaCTX-M-55'
+    members:
+    - blaCTX-M-55
+    type: 'Gene'
+blaDHA:
+    category: Amr
+    display_name: 'blaDHA'
+    members:
+    - blaDHA-1
+    type: 'Gene'
+blaEC:
+    category: Amr
+    display_name: 'blaEC'
+    members:
+    - blaEC
+    type: 'Gene'
+blaFOX:
+    category: Amr
+    display_name: 'blaFOX-5'
+    members:
+    - blaFOX-5
+    type: 'Gene'
+blaKPC:
+    category: Amr
+    display_name: 'BlaKPC'
+    members:
+    - blaKPC-2
+    - blaKPC-3
+    - blaKPC-4
+    type: 'Gene'
+blaLAP:
+    category: Amr
+    display_name: 'blaLAP'
+    members:
+    - blaLAP-1
+    type: 'Gene'
+blaNDM-ble:
+    category: Amr
+    display_name: 'blaNDM + ble'
+    members:
+    - blaNDM-1
+    - blaNDM-5
+    - blaNDM-7
+    - ble
+    type: 'Gene'
+blaOXA:
+    category: Amr
+    display_name: 'blaOXA'
+    members:
+    - blaOXA
+    - blaOXA-1
+    - blaOXA-10
+    - blaOXA-181
+    - blaOXA-244
+    - blaOXA-48
+    type: 'Gene'
+blaSHV:
+    category: Amr
+    display_name: 'blaSHV'
+    members:
+    - blaSHV-12
+    type: 'Gene'
+blaTEM:
+    category: Amr
+    display_name: 'blaTEM'
+    members:
+    - blaTEM
+    - blaTEM-1
+    - blaTEM-12
+    - blaTEM-156
+    - blaTEM-176
+    - blaTEM-19
+    - blaTEM-29
+    - blaTEM-30
+    - blaTEM-31
+    - blaTEM-34
+    - blaTEM-40
+    type: 'Gene'
+blaVIM:
+    category: Amr
+    display_name: 'blaVIM'
+    members:
+    - blaVIM-1
+    type: 'Gene'
+cap:
+    category: Vir
+    display_name: 'capU'
+    members:
+    - capU
+    type: 'Gene'
+cat:
+    category: Amr
+    display_name: 'catA/B'
+    members:
+    - catA1
+    - catA2
+    - catB11
+    - catB3
+    type: ''
+cdt:
+    category: Vir
+    display_name: 'cdtB'
+    members:
+    - cdtB
+    type: 'Gene'
+cml:
+    category: Amr
+    display_name: 'cmlA'
+    members:
+    - cmlA
+    - cmlA1
+    - cmlA5
+    - cmlA6
+    type: ''
+cnf-hly:
+    category: Vir
+    display_name: 'cnf1 + hlyA-alpha'
+    members:
+    - cnf1
+    - hlyA-alpha
+    type: 'Gene'
+cva:
+    category: Vir
+    display_name: 'cvaC'
+    members:
+    - cvaC
+    type: 'Gene'
+dfr:
+    category: Amr
+    display_name: 'dfrA/B'
+    members:
+    - dfrA1
+    - dfrA12
+    - dfrA14
+    - dfrA15
+    - dfrA17
+    - dfrA19
+    - dfrA25
+    - dfrA27
+    - dfrA5
+    - dfrA8
+    - dfrB4
+    type: ''
+emr:
+    category: Stress
+    display_name: 'emrE'
+    members:
+    - emrE
+    type: ''
+erm:
+    category: Amr
+    display_name: 'erm(B)'
+    members:
+    - erm(B)
+    type: 'Gene'
+esp:
+    category: Vir
+    display_name: 'espX'
+    members:
+    - espX1
+    type: ''
+fde:
+    category: Vir
+    display_name: 'fdeC'
+    members:
+    - fdeC
+    type: ''
+flo:
+    category: Amr
+    display_name: 'floR'
+    members:
+    - floR
+    type: ''
+foc:
+    category: Vir
+    display_name: 'focG'
+    members:
+    - focG
+    type: ''
+glp:
+    category: Amr
+    display_name: 'glpT'
+    members:
+    - glpT_E448K
+    type: 'Point mutation'
+gyr:
+    category: Amr
+    display_name: 'gyrA'
+    members:
+    - gyrA_D87N
+    - gyrA_S83L
+    type: 'Point mutation'
+ibe:
+    category: Vir
+    display_name: 'ibeA'
+    members:
+    - ibeA
+    type: ''
+iha:
+    category: Vir
+    display_name: 'iha'
+    members:
+    - iha
+    type: ''
+ire:
+    category: Vir
+    display_name: 'ireA'
+    members:
+    - ireA
+    type: ''
+iro:
+    category: Vir
+    display_name: 'iro'
+    members:
+    - iroB
+    - iroC
+    - iroD
+    - iroE
+    - iroN
+    type: 'Operon'
+iss:
+    category: Vir
+    display_name: 'iss'
+    members:
+    - iss
+    type: ''
+iuc:
+    category: Vir
+    display_name: 'iuc'
+    members:
+    - iucA
+    - iucB
+    - iucC
+    - iucD
+    type: 'Operon'
+iut:
+    category: Vir
+    display_name: 'iutA'
+    members:
+    - iutA
+    type: ''
+lnu:
+    category: Amr
+    display_name: 'lnu(F)'
+    members:
+    - lnu(F)
+    type: ''
+mar:
+    category: Amr
+    display_name: 'marR'
+    members:
+    - marR_R77C
+    - marR_R94H
+    type: 'Point mutation'
+mch:
+    category: Vir
+    display_name: 'mchB/F'
+    members:
+    - mchB
+    - mchF
+    type: 'Gene'
+mcr:
+    category: Amr
+    display_name: 'mcr'
+    members:
+    - mcr-9
+    type: ''
+mdt:
+    category: Amr
+    display_name: 'mdtM'
+    members:
+    - mdtM
+    type: ''
+mer:
+    category: Stress
+    display_name: 'mer'
+    members:
+    - merA
+    - merB
+    - merC
+    - merD
+    - merE
+    - merP
+    - merR
+    - merT
+    type: 'Operon*'
+mph:
+    category: Amr
+    display_name: 'mph(A)'
+    members:
+    - mph(A)
+    type: ''
+ncr:
+    category: Stress
+    display_name: 'ncr'
+    members:
+    - ncrA
+    - ncrB
+    - ncrC
+    - ncrY
+    type: 'Operon'
+nfs:
+    category: Amr
+    display_name: 'nfsA'
+    members:
+    - nfsA_R15C
+    - nfsA_R203C
+    type: 'Point mutation'
+p0111:
+    category: Plasmid
+    display_name: 'p0111'
+    members:
+    - p0111
+    type: 'repA gene'
+pKPC-CAV1193:
+    category: Plasmid
+    display_name: 'pKPC'
+    members:
+    - pKPC-CAV1193
+    type: 'repA gene'
+pap:
+    category: Vir
+    display_name: 'pap'
+    members:
+    - papA
+    - papC
+    - papE
+    - papF
+    - papG-II
+    - papG-III
+    - papH
+    type: 'Operon*'
+par:
+    category: Amr
+    display_name: 'parC/parE'
+    members:
+    - parC_A56T
+    - parC_E84V
+    - parC_S57T
+    - parC_S80I
+    - parC_S80R
+    - parE_E460D
+    - parE_I529L
+    - parE_L445H
+    type: 'Point mutation'
+pco:
+    category: Stress
+    display_name: 'pco'
+    members:
+    - pcoA
+    - pcoB
+    - pcoC
+    - pcoD
+    - pcoE
+    - pcoR
+    - pcoS
+    type: 'Operon'
+pmr:
+    category: Amr
+    display_name: 'pmrB'
+    members:
+    - pmrB_E123D
+    - pmrB_G206D
+    - pmrB_T156M
+    - pmrB_V161G
+    type: 'Point mutation'
+pts:
+    category: Amr
+    display_name: 'ptsI'
+    members:
+    - ptsI_V25I
+    type: 'Point mutation'
+qep:
+    category: Amr
+    display_name: 'qepA4'
+    members:
+    - qepA4
+    type: ''
+qnr:
+    category: Amr
+    display_name: 'qnrA/B/S'
+    members:
+    - qnrA1
+    - qnrB19
+    - qnrB2
+    - qnrB4
+    - qnrB6
+    - qnrS1
+    type: 'Gene'
+rep21:
+    category: Plasmid
+    display_name: 'rep21'
+    members:
+    - rep21
+    type: ''
+rmt:
+    category: Amr
+    display_name: 'rmtB1/C'
+    members:
+    - rmtB1
+    - rmtC
+    type: ''
+rpo:
+    category: Amr
+    display_name: 'rpoB'
+    members:
+    - rpoB_Q513L
+    type: 'Point mutation'
+sat:
+    category: Vir
+    display_name: 'sat'
+    members:
+    - sat
+    type: ''
+sat*:
+    category: Amr
+    display_name: 'sat2'
+    members:
+    - sat2
+    type: ''
+sen:
+    category: Vir
+    display_name: 'senB'
+    members:
+    - senB
+    type: ''
+sfa:
+    category: Vir
+    display_name: 'sfaF'
+    members:
+    - sfaF
+    type: ''
+sil:
+    category: Stress
+    display_name: 'sil'
+    members:
+    - silA
+    - silB
+    - silC
+    - silE
+    - silF
+    - silP
+    - silR
+    - silS
+    type: 'Operon'
+sox:
+    category: Amr
+    display_name: 'soxR'
+    members:
+    - soxR_G121D
+    type: 'Point mutation'
+ssl:
+    category: Vir
+    display_name: 'sslE'
+    members:
+    - sslE
+    type: ''
+sul:
+    category: Amr
+    display_name: 'sul'
+    members:
+    - sul1
+    - sul2
+    - sul3
+    type: ''
+ter:
+    category: Stress
+    display_name: 'ter'
+    members:
+    - terB
+    - terC
+    - terD
+    - terE
+    - terW
+    - terZ
+    type: 'Operon*'
+tet(A):
+    category: Amr
+    display_name: 'tet(A)'
+    members:
+    - tet(A)
+    type: ''
+tet(B):
+    category: Amr
+    display_name: 'tet(B)'
+    members:
+    - tet(B)
+    type: ''
+tet(D):
+    category: Amr
+    display_name: 'tet(D)'
+    members:
+    - tet(D)
+    type: ''
+trx-kef-psi:
+    category: Stress
+    display_name: 'kefB-GI + psi-GI + trxLHR'
+    members:
+    - kefB-GI
+    - psi-GI
+    - trxLHR
+    type: ''
+tsh:
+    category: Vir
+    display_name: 'tsh'
+    members:
+    - tsh
+    type: ''
+uhp:
+    category: Amr
+    display_name: 'uhpT'
+    members:
+    - uhpT_E350Q
+    type: ''
+ybt:
+    category: Vir
+    display_name: 'ybtP/Q'
+    members:
+    - ybtP
+    - ybtQ
+    type: ''
+ymg:
+    category: Stress
+    display_name: 'ymgB'
+    members:
+    - ymgB
+    type: ''
+
+blood:
+    category: Meta
+    display_name: 'Blood Specimen'
+
+PRJNA248737:
+    category: Meta
+    display_name: 'PRJNA248737'
+
+PRJNA278886:
+    category: Meta
+    display_name: 'PRJNA278886'
+    
+PRJNA288601:
+    category: Meta
+    display_name: 'PRJNA288601'
+    
+PRJNA381936:
+    category: Meta
+    display_name: 'PRJNA381936'
+    
+PRJNA448593:
+    category: Meta
+    display_name: 'PRJNA448593'
+    
+PRJNA475142:
+    category: Meta
+    display_name: 'PRJNA475142'
+    
+PRJNA475751:
+    category: Meta
+    display_name: 'PRJNA475751'
+    
+PRJNA530580:
+    category: Meta
+    display_name: 'PRJNA530580'
+    
+PRJNA530794:
+    category: Meta
+    display_name: 'PRJNA530794'
+    
+PRJNA578285:
+    category: Meta
+    display_name: 'PRJNA578285'
+    
+PRJNA592372:
+    category: Meta
+    display_name: 'PRJNA592372'
+    
+PRJNA658369:
+    category: Meta
+    display_name: 'PRJNA658369'
+    
+PRJNA809394:
+    category: Meta
+    display_name: 'PRJNA809394'
+    
+PRJNA824420:
+    category: Meta
+    display_name: 'PRJNA824420'
+    
+PRJNA836696:
+    category: Meta
+    display_name: 'PRJNA836696'

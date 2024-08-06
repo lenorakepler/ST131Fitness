@@ -4,7 +4,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import GridSpec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import transmission_sim.utils.plot_phylo_standalone as pp
+import analysis.plot_phylo_standalone as pp
+from yaml import CLoader as Loader, CDumper as Dumper
 import json
 import numpy as np
 import seaborn as sns
@@ -52,6 +53,8 @@ def get_clade_changepoints(tt, data, clade_ancestral_file, out_file_changepoints
 	return data, changepoints
 
 def load_info(analysis_dir):
+	analysis_dir = Path(analysis_dir)
+
 	# -----------------------------------------------------
 	# Load analysis parameters
 	# -----------------------------------------------------
@@ -220,6 +223,10 @@ def feature_display(feature, feature_dict):
 	return f"{finfo['display_name']} ({cat_display(finfo['category'].upper())})"
 
 def significant_phylo_matrix(data_dir, analysis_dir, clade_ancestral_file, figure_out_dir):
+	data_dir = Path(data_dir)
+	analysis_dir = Path(analysis_dir)
+	figure_out_dir = Path(figure_out_dir)
+
 	data, params, sample_features, est, tt = load_info(analysis_dir)
 
 	# -----------------------------------------------------
@@ -241,7 +248,7 @@ def significant_phylo_matrix(data_dir, analysis_dir, clade_ancestral_file, figur
 		matrix.loc[:, feat] = matrix.loc[:, feat] * feat_fit
 
 	# Transform feature names to their display names
-	dnames = yaml.load((data_dir / "group_short_name_to_display_manual.yml").read_text())
+	dnames = yaml.load((data_dir / "group_short_name_to_display_manual.yml").read_text(), Loader=Loader)
 	matrix = matrix.rename(columns={f: feature_display(f, dnames) for f in matrix.columns})
 
 	# Extract branch fitness

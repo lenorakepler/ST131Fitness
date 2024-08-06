@@ -1,3 +1,5 @@
+from pathlib import Path
+from multiprocessing import Pool
 import yaml
 import tensorflow as tf
 import pandas as pd
@@ -23,6 +25,42 @@ def plot_effect_profile(site, profile_results, mle_eff, out_dir):
 	plt.savefig(out_dir / f'{site}.png')
 	plt.close("all")
 
+def single_profile(profile_type, i, site, site_estimates, fit_model_kwargs, bdm_params, time_estimates):
+	n_sites = len(site_estimates[0]) + len(time_estimates)
+
+	mle_eff = site_estimates[0][i]
+	site_results = {}
+	
+	# -----------------------------------------------------
+	# Get loss at each value
+	# -----------------------------------------------------
+	for n in np.linspace(mle_eff - .75, mle_eff + .75, 200, endpoint=False):
+		fit_model = SiteMod(**fit_model_kwargs)
+		phylo_loss = fit_model.phylo_loss(**fit_model.loss_kwargs)
+
+		if profile_type == "site":
+			effs = np.array(site_estimates).copy()
+			effs[0, i] = n
+			fit_model.site = tf.Variable(effs, dtype=tf.dtypes.float64)
+			fit_model.b0 = tf.Variable(time_estimates, dtype=tf.dtypes.float64)
+		
+		elif profile_type == "time":
+			effs = np.array(time_estimates).copy()
+			mle_eff = effs[i].copy()
+			effs[i] = n
+			fit_model.b0 = tf.Variable(effs, dtype=tf.dtypes.float64)
+			fit_model.site = tf.Variable(site_estimates.copy(), dtype=tf.dtypes.float64)
+
+		c = fit_model.call()
+
+		weights = tf.concat([tf.reshape(v, [-1]) for v in fit_model.trainable_variables], axis=-1)
+		loss = phylo_loss.call(c.__dict__, weights=weights).numpy()
+
+		site_results[n] = loss
+
+	print(f"Completed profile of {site} ({i+1}/{n_sites})")
+	return {site: site_results}
+
 def make_profiles(train, estimates, features_file, bdm_params, h_combo, birth_rate_idx, analysis_dir, plot_dir=None, plot_effect_profiles=False):
 	if plot_effect_profiles:
 		if not plot_dir:
@@ -30,7 +68,7 @@ def make_profiles(train, estimates, features_file, bdm_params, h_combo, birth_ra
 		else:
 			profile_dir = plot_dir / "profiles"
 
-	profile_dir.mkdir(exist_ok=True, parents=True)
+		profile_dir.mkdir(exist_ok=True, parents=True)
 
 	features = pd.read_csv(features_file, index_col=0)
 
@@ -50,95 +88,33 @@ def make_profiles(train, estimates, features_file, bdm_params, h_combo, birth_ra
 	time_names = [c for c in features.columns if 'Interval' in c] if time_estimates else []
 	site_names = [c for c in features.columns if 'Interval' not in c] if site_estimates else []
 
-	profile_results = {}
+	def get_fit_model_kwargs():
+		return dict(
+		**bdm_params,
+		birth_rate_idx=birth_rate_idx,
+		data=train.returnCopy(),
+		iterative_pE=True,
+		loss_kwargs={**h_combo, "graph": False},
+		)
 
-	# -----------------------------------------------------
-	# For each time estimate
-	# -----------------------------------------------------
-	for i, site in enumerate(time_names):
-		print(f"\nTime feature {site} ({i})\n=========================================")
+	# ---------------------------------------------------------
+	# Get likelihood profile of each time and profile estimate
+	# ---------------------------------------------------------
+	all_sites = [["site", i, site] for i, site in enumerate(site_names)] + [("time", i, site) for i, site in enumerate(time_names)]
+	pool_args = [s + [site_estimates, get_fit_model_kwargs(), bdm_params, time_estimates] for s in all_sites]
 
-		profile_results[site] = {}
+	with Pool() as pool:
+		profile_results_list = pool.starmap(single_profile, pool_args)
 
-		# -----------------------------------------------------
-		# Get loss at each value
-		# -----------------------------------------------------
-		mle_eff = time_estimates[i]
-		for n in np.linspace(mle_eff - .75, mle_eff + .75, 200, endpoint=False):
-			effs = np.array(time_estimates).copy()
-			mle_eff = effs[i].copy()
-			effs[i] = n
+	profile_results = {site: site_profile for profile_dict in profile_results_list for site, site_profile in profile_dict.items()}
 
-			fit_model_kwargs = dict(
-				**bdm_params,
-				birth_rate_idx=birth_rate_idx,
-				data=train,
-				iterative_pE=True,
-				loss_kwargs=h_combo,
-			)
-			fit_model = SiteMod(**fit_model_kwargs)
-			phylo_loss = fit_model.phylo_loss(**fit_model.loss_kwargs)
-
-			fit_model.b0 = tf.Variable(effs, dtype=tf.dtypes.float64)
-
-			if bdm_params['site'][0]:
-				fit_model.site = tf.Variable(site_estimates.copy(), dtype=tf.dtypes.float64)
-
-			c = fit_model.call()
-
-			weights = tf.concat([tf.reshape(v, [-1]) for v in fit_model.trainable_variables], axis=-1)
-			loss = phylo_loss.call(c, weights=weights).numpy()
-
-			profile_results[site][n] = loss
-			print(f"\t{n:.2f}: {loss:.2f}")
-
-		if plot_effect_profiles:
+	if plot_effect_profiles:
+		for i, site in enumerate(site_names):
+			mle_eff = site_estimates[0][i]
 			plot_effect_profile(site, profile_results, mle_eff, profile_dir)
 
-	# -----------------------------------------------------
-	# For each site estimate
-	# -----------------------------------------------------
-	for i, site in enumerate(site_names):
-		print(f"\nFeature {site} ({i})\n=========================================")
-
-		profile_results[site] = {}
-
-		# -----------------------------------------------------
-		# Get loss at each value
-		# -----------------------------------------------------
-		mle_eff = site_estimates[0][i]
-		for n in np.linspace(mle_eff - .75, mle_eff + .75, 200, endpoint=False):
-			effs = np.array(site_estimates).copy()
-			effs[0, i] = n
-
-			fit_model_kwargs = dict(
-				**bdm_params,
-				birth_rate_idx=birth_rate_idx,
-				data=train,
-				iterative_pE=True,
-				loss_kwargs=h_combo,
-			)
-			fit_model = SiteMod(**fit_model_kwargs)
-			phylo_loss = fit_model.phylo_loss(**fit_model.loss_kwargs)
-
-			fit_model.site = tf.Variable(effs, dtype=tf.dtypes.float64)
-
-			if bdm_params['b0'][0]:
-				fit_model.b0 = tf.Variable(time_estimates, dtype=tf.dtypes.float64)
-				
-			c = fit_model.call()
-
-			weights = tf.concat([tf.reshape(v, [-1]) for v in fit_model.trainable_variables], axis=-1)
-			loss = phylo_loss.call(c.__dict__, weights=weights).numpy()
-
-			profile_results[site][n] = loss
-			print(f"\t{n:.2f}: {loss:.2f}")
-
-		if plot_effect_profiles:
-			plot_effect_profile(site, profile_results, mle_eff, profile_dir)
-
-	profile_df = pd.DataFrame.from_dict(profile_results)
-	profile_df.to_csv(analysis_dir / f"likelihood_profile.csv")
+	profile_df = pd.DataFrame.from_dict(profile_results).sort_index()
+	profile_df.to_csv(analysis_dir / f"likelihood_profile_test.csv")
 
 def is_significant(row):
 	c_min = row['lower_CI']
@@ -202,7 +178,7 @@ def get_CIs(analysis_dir):
 
 def box_plot(df, category_palette, colors, order, out_fig):
 	sns.set_style("whitegrid")
-	fig, axs = plt.subplots(figsize=(12, 12, 1 + .5 * len(df.shape[1])))
+	fig, axs = plt.subplots(figsize=(12, 1 + .5 * df.shape[1]))
 	sns.boxplot(
 		data=df,
 		palette={cat: color for cat, color in category_palette.items() if cat in df.columns},
@@ -221,10 +197,12 @@ def box_plot(df, category_palette, colors, order, out_fig):
 	plt.savefig(out_fig, dpi=300)
 	plt.close("all")
 
-def do_box_plots(analysis_dir, out_dir, extra_plots=True):
+def do_box_plots(analysis_dir, out_dir, category_info_file, extra_plots=True):
 	"""
 	Output box plots of feature estimates with 95% CIs
 	"""
+	analysis_dir = Path(analysis_dir)
+	out_dir = Path(out_dir)
 	out_dir.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
@@ -233,7 +211,7 @@ def do_box_plots(analysis_dir, out_dir, extra_plots=True):
 	est_df = pd.read_csv(analysis_dir / f"profile_CIs.csv", index_col=0)
 	est_df.drop(columns=["initial_mle"], inplace=True)
 
-	df = est_df[['lower_CI', 'upper_CI', 'mle']]
+	df = est_df.copy()
 
 	# -----------------------------------------------------
 	# Re-set CI bounds so that plots correctly
@@ -254,7 +232,7 @@ def do_box_plots(analysis_dir, out_dir, extra_plots=True):
 	# Format feature names for display
 	# -----------------------------------------------------
 	# Load display names
-	dnames = yaml.load((analysis_dir.parent.parent / "group_short_name_to_display_manual.yml").read_text())
+	dnames = yaml.load(Path(category_info_file).read_text(), Loader=yaml.CLoader)
 	for name, nd in dnames.items():
 		nd['csv_name'] = name + "_" + nd['category'].upper()
 
@@ -279,25 +257,27 @@ def do_box_plots(analysis_dir, out_dir, extra_plots=True):
 	# -----------------------------------------------------
 	# Set up colors
 	# -----------------------------------------------------
-	def get_color(c, display_df):
+	def get_color(c, df, display_df, colors):
 		cat = display_df.loc[c, "Display Type"]
 		shades = sns.light_palette(colors[cat], n_colors=12, as_cmap=False)
-		if is_significant(c):
+		if is_significant(df[c]):
 			return shades[-1]
 		else:
 			return shades[2]
 
 	color_list = sns.color_palette("Set2")
 	colors = {cat: color_list[i] for i, cat in enumerate(['AMR', 'Plasmid Replicon', 'Virulence', 'Stress', 'Background'])}
-	category_palette = {c: get_color(c, display_df) for c in df.columns}
+	category_palette = {c: get_color(c, df, display_df, colors) for c in df.columns}
 	order = est_df.sort_values(by='mle', ascending=True).index.to_list()
 
 	# -----------------------------------------------------
 	# Get non-dropped features, significant features
 	# -----------------------------------------------------
-	included_features = df[df['included'] == True].columns
-	sig_features = df[df['significant'] == True].columns
-	non_bg_features = display_df[display_df['Display Type'] != 'Background'].columns
+	included_features = df.loc[:, df.loc['included'] == True].columns.to_list()
+	sig_features = df.loc[:, df.loc['significant'] == True].columns.to_list()
+	non_bg_features = [n for n in display_df[display_df['Display Type'] != 'Background'].index if n in df.columns]
+
+	df = df.drop(index=['included', 'significant'])
 
 	# -----------------------------------------------------
 	# Box plot of all significant, non-background effects

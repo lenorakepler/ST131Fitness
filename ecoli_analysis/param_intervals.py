@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 from numpy.lib import recfunctions as rfn
-from transmission_sim.analysis.phylo_obj import PhyloObj
+from analysis.phylo_obj import PhyloObj
 
 def make_intervals(interval_dir, original_tree_file, features_file, *start_time_lists):
 	"""

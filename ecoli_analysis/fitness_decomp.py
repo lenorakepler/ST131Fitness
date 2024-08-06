@@ -1,25 +1,25 @@
 import json
 from pathlib import Path
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import combinations
 import yaml
+from yaml import CLoader as Loader, CDumper as Dumper
 from natsort import natsorted
 import json
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-
 from ecoli_analysis.results_obj import load_data_and_RO_from_file
 from ecoli_analysis.utils import cat_display
 
-def calc_fitness_totals(analysis_dir):
+def calc_fitness_totals(analysis_dir, residual_dir):
+	analysis_dir = Path(analysis_dir)
+	residual_dir = Path(residual_dir)
+
 	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
-	residual_dir = analysis_dir / random_name
 
 	# -----------------------------------------------------
 	# Make / load dataframe of total (log) fitness for each edge
@@ -30,7 +30,7 @@ def calc_fitness_totals(analysis_dir):
 	all_edges.set_index('name', inplace=True)
 
 	# Add (log) random fitness estimates to edge array
-	edge_random = pd.read_csv(residual_dir / "edge_random_effects_all.csv", index_col=0)
+	edge_random = pd.read_csv(residual_dir / "edge_random_effects.csv", index_col=0)
 	all_edges = pd.concat([all_edges, np.log(edge_random)], axis=1)
 
 	# Load feature estimates
@@ -52,15 +52,15 @@ def calc_fitness_totals(analysis_dir):
 	all_edges['birth_interval'] = np.take(params['birth_rate_idx'], all_edges['param_interval'])
 	all_edges['time_fitness'] = np.take(time_effs, all_edges['birth_interval'])
 
+	all_edges.to_csv(residual_dir / "all_edges.csv")
+
 	# edge_fitness_components is a dataframe with a row for each edge, columns for each individual effect
 	# e.g. each genetic feature, time-varying beta, random effect, etc.
 	edge_fitness_components = pd.concat([edge_fitness_components, all_edges['time_fitness'], all_edges['random_fitness']], axis=1)
 
 	# add category totals
-	all_edges['category_']
+	# all_edges['category_']
 	edge_fitness_components.to_csv(residual_dir / "edge_log_fitness_components.csv")
-
-	breakpoint()
 
 def do_decomp(analysis_dir, random_name, decomp_name=None, edge_set=None, total=False, interval_length=5, interval_cutoff=None):
 	all_data, phylo_obj, RO, params = load_data_and_RO_from_file(analysis_dir)
@@ -75,11 +75,11 @@ def do_decomp(analysis_dir, random_name, decomp_name=None, edge_set=None, total=
 	all_edges.set_index('name', inplace=True)
 
 	# Add (log) random fitness estimates to edge array
-	edge_random = pd.read_csv(out_folder / "edge_random_effects_all.csv", index_col=0)
+	edge_random = pd.read_csv(out_folder / "edge_random_effects.csv", index_col=0)
 	all_edges = pd.concat([all_edges, np.log(edge_random)], axis=1)
 
 	# Load feature estimates
-	feature_est = pd.read_csv(analysis_out_dir / "estimates.csv", index_col=0)
+	feature_est = pd.read_csv(analysis_dir / "estimates.csv", index_col=0)
 	feature_est.set_index('feature', inplace=True)
 	log_feature_est = np.log(feature_est)
 
@@ -221,14 +221,15 @@ def do_decomp(analysis_dir, random_name, decomp_name=None, edge_set=None, total=
 		var_df['FRAC_MODEL'] = np.sum([var_df[f'FRAC_{category.upper()}'] for category in categories if category != 'Random'])
 		var_df['FRAC_GENETIC'] = np.sum([var_df[f'FRAC_{category.upper()}'] for category in categories if category not in ['Random', 'Time', 'Background']])
 		var_df['FRAC_BGTIME'] = var_df[f'FRAC_TIME'] + var_df[f'FRAC_BACKGROUND']
-		var_df.T.to_csv(out_folder / f"variance_decomposition_total_intervallength-{interval_length}_cutoff-{interval_cutoff}_type-{ot}.csv")
+		var_df.T.to_csv(out_folder / f"variance_decomposition_total_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 
 		var_df[[c for c in var_df if 'FRAC' in c]].T.to_csv(out_folder / f"total_decomp_fractions_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 	else:
 		var_df.to_csv(out_folder / f"variance_decomposition_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 
-def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_length=5, interval_cutoff=None):
-	in_folder = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / analysis_name / random_name
+def do_plots(analysis_dir, random_name, out_folder, decomp_name="", interval_length=5, interval_cutoff=None):
+	in_folder = Path(analysis_dir) / random_name
+	out_folder = Path(out_folder)
 
 	if decomp_name:
 		in_folder = in_folder / decomp_name
@@ -271,7 +272,7 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 	for_csv['total'] = total
 	for_csv.to_csv(out_folder / f"Time_Mean_Fitness_Decomp_intervallength-{interval_length}_cutoff-{interval_cutoff}.csv")
 
-	axs[0].stackplot(pos_fit.index, pos_fit.values.T, labels=[cat_display(c) for c in pos_fit.columns], colors=c_palette)
+	axs[0].stackplot(pos_fit.index, pos_fit.values.T, labels=[c for c in pos_fit.columns], colors=c_palette)
 	axs[0].stackplot(neg_fit.index, neg_fit.values.T, colors=c_palette)
 	axs[0].plot(add_fit.index, total, color="black", label="Total")
 	axs[0].scatter(add_fit.index, total, color="black", s=4)
@@ -300,14 +301,14 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 	fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 	
 	var_decomp_abs = df[[c for c in df.columns if '_' not in c and c not in ['TOTAL', 'Time', 'n']]]
-	axs[0].stackplot(var_decomp_abs.index, var_decomp_abs.values.T, labels=[cat_display(c) for c in var_decomp_abs.columns], colors=c_palette)
+	axs[0].stackplot(var_decomp_abs.index, var_decomp_abs.values.T, labels=[c for c in var_decomp_abs.columns], colors=c_palette)
 	axs[0].legend(loc='upper left')
 	axs[0].set_xlabel("Year")
 	axs[0].set_ylabel("Total Fitness Variance")
 
 	var_decomp = df[[c for c in df.columns if 'FRAC' in c and 'TIME' not in c]]
 	var_decomp.columns = [c.split("_")[1].capitalize() for c in var_decomp.columns]
-	axs[1].stackplot(var_decomp.index, var_decomp.values.T, labels=[cat_display(c) for c in var_decomp.columns], colors=c_palette)
+	axs[1].stackplot(var_decomp.index, var_decomp.values.T, labels=[c for c in var_decomp.columns], colors=c_palette)
 	axs[1].set_xlabel("Year")
 	axs[1].set_ylabel("Proportion of Variance Explained")
 	
@@ -321,9 +322,7 @@ def do_plots(analysis_name, random_name, out_folder, decomp_name="", interval_le
 	plt.savefig(out_folder / f"Figure-6_Time_Variance_Decomp_Stacked_Abs-Prop_intervallength-{interval_length}_cutoff-{interval_cutoff}.png", dpi=300)
 	plt.close("all")
 
-def do_stack_plot(component_df, axs, pos_features, neg_features, pos_colors, neg_colors):
-	dnames = yaml.load((dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "features" / "group_short_name_to_display_manual.yml").read_text())
-
+def do_stack_plot(component_df, dnames, axs, pos_features, neg_features, pos_colors, neg_colors):
 	# Separate positive and negative values to accurately plot
 	# https://stackoverflow.com/questions/65859200/how-to-display-negative-values-in-matplotlibs-stackplot
 	pos_fit = component_df[[c for c in pos_features if c in component_df.columns.to_list()]].fillna(0)
@@ -347,19 +346,18 @@ def do_stack_plot(component_df, axs, pos_features, neg_features, pos_colors, neg
 	log_vals = axs.get_yticks().tolist()
 	axs.set_yticklabels([np.round(np.exp(l), 2) for l in log_vals])
 	
-def components_by_clade(analysis_name, random_name, categories, out_folder, interval_length=5, interval_cutoff=None, kind=None, json_out=False, return_fig=False):
-	in_folder = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset" / "final" / "analysis" / analysis_name / random_name
+def components_by_clade(random_dir, clades_file, category_info_file, categories, out_folder, interval_length=5, interval_cutoff=None, kind=None, json_out=False, return_fig=False):
+	random_dir = Path(random_dir)
+	out_folder = Path(out_folder)
 
-	out_folder.mkdir(exist_ok=True, parents=True)
-
-	all_edges = pd.read_csv(in_folder / "all_edges.csv", index_col=0)
-	# edge_fitness_components = pd.read_csv(in_folder / "edge_fitness_components.csv", index_col=0)
-	intervals = np.load(in_folder / f"interval_times_intervallength-{interval_length}_cutoff-{interval_cutoff}.npy", allow_pickle=True)
+	all_edges = pd.read_csv(random_dir / "all_edges.csv", index_col=0)
+	edge_fitness_components = pd.read_csv(random_dir / "edge_fitness_components.csv", index_col=0)
+	intervals = np.load(random_dir / f"interval_times_intervallength-{interval_length}_cutoff-{interval_cutoff}.npy", allow_pickle=True)
 
 	edge_fitness_components = edge_fitness_components.loc[:, edge_fitness_components.sum(axis=0) != 0]
 
 	# Get clade type of each edge
-	clades = pd.read_csv(in_folder.parent.parent.parent / "ST131_Typer" / "combined_ancestral_states.csv", index_col=0).squeeze()
+	clades = pd.read_csv(clades_file, index_col=0).squeeze()
 	
 	if kind == "alt":
 		clades = clades.replace('C1-M27', 'C1')
@@ -419,10 +417,9 @@ def components_by_clade(analysis_name, random_name, categories, out_folder, inte
 	pos_colors = sns.color_palette("Spectral", n_colors=max([len([f for f in pos_fit if category in f]) for category in categories]))
 	neg_colors = sns.color_palette("blend:#7AB,#EDA", n_colors=max([len([f for f in neg_fit if category in f]) for category in categories]))
 
-
 	# ------- ACTUAL PLOTTING -------
 	sns.set_style('whitegrid')
-	fig, axs = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5.75 * n_rows), sharex=True, sharey=True, )
+	fig, axs = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5.75 * n_rows), sharex=True, sharey=True)
 
 	if n_cols == 1:
 		axs = axs.reshape(-1, 1)
@@ -430,10 +427,12 @@ def components_by_clade(analysis_name, random_name, categories, out_folder, inte
 	elif n_rows == 1:
 		axs = axs.reshape(1, -1)
 
+	dnames = yaml.load(Path(category_info_file).read_text(), Loader=Loader)
+	
 	for row, cat in enumerate(categories):
 		for col, clade in enumerate(wanted_clades):
 			cdf = component_df.xs(clade, level="clade")
-			do_stack_plot(cdf[[c for c in component_df.columns if cat in c]], axs[row][col], pos_fit, neg_fit, pos_colors, neg_colors)
+			do_stack_plot(cdf[[c for c in component_df.columns if cat in c]], dnames, axs[row][col], pos_fit, neg_fit, pos_colors, neg_colors)
 			
 	# Set column labels
 	[ax.set_title(f"Clade {clade}", fontsize=20, pad=18) for clade, ax in zip(wanted_clades, axs[0])]
@@ -463,110 +462,12 @@ def components_by_clade(analysis_name, random_name, categories, out_folder, inte
 				"negative": [f for f in neg_fit if category in f],
 			}
 
-		(out_folder / fname.replace("png", "json")).write_text(json.dumps(json_dict, indent=4))
+		(random_dir / fname.replace("png", "json")).write_text(json.dumps(json_dict, indent=4))
 
 	if not return_fig:
+		fname = "Figure-5_" + fname
 		plt.savefig(out_folder / fname, dpi=300)
 		plt.close("all")
 
 	else:
 		return fig, axs, fname
-
-if __name__ == "__main__":
-	from transmission_sim.analysis.PhyloRegressionTree import PhyloBoost
-	import matplotlib as mpl
-	from mpl_toolkits.axes_grid1 import make_axes_locatable
-	import matplotlib.pyplot as plt
-	import seaborn as sns
-	from sklearn.model_selection import TimeSeriesSplit
-	import transmission_sim.utils.plot_phylo_standalone as pp
-
-	analysis_name = "3-interval_constrained-sampling"
-	random_name = "Est-Random_Fixed-BetaSite"
-
-	calc_fitness_totals(Path() / "data" / "analysis" / analysis_name)
-
-	# do_decomp(analysis_name, random_name, total=True, interval_length=1, interval_cutoff=2021)
-	# do_plots(analysis_name, random_name, out_folder=dropbox_dir / "NCSU/Lab/Writing/st131_git" / "all_figures", interval_length=1, interval_cutoff=2021)
-	# analyze_by_clade(analysis_name, random_name, interval_length=interval_length, interval_cutoff=interval_cutoff)
-
-	# for interval_cutoff in [None, 2021]:
-	# 	for interval_length in [5]:
-	# 		do_decomp(analysis_name, random_name, total=True, interval_length=interval_length, interval_cutoff=interval_cutoff, ot='samples')
-	# 		do_decomp(analysis_name, random_name, total=True, interval_length=interval_length, interval_cutoff=interval_cutoff, ot='nodes')
-
-	# # 		for kind in ["combined-alt", "alt"]:
-	# 			for catgories in [	
-	# 				['AMR', 'VIR'], 
-	# 				['AMR', 'PLASMID', 'VIR', 'STRESS'], 
-	# 				['AMR', 'PLASMID', 'VIR', 'STRESS', 'fitness']
-	# 			]:
-	# 				components_by_clade(
-	# 					analysis_name, 
-	# 					random_name, 
-	# 					out_folder=dropbox_dir / "NCSU/Lab/Writing/st131_git" / "all_figures",
-	# 					categories=catgories,
-	# 					interval_length=interval_length, 
-	# 					interval_cutoff=interval_cutoff, 
-	# 					kind=kind
-	# 				)
-
-	# # # ==================
-	# # # For pub
-	# # # ==================
-	# interval_length = 1
-	# interval_cutoff = 2021
-
-	# out_folder = dropbox_dir / "NCSU/Lab/Writing/st131_git" / "figures"
-	# do_plots(analysis_name, random_name, out_folder, interval_length=interval_length, interval_cutoff=interval_cutoff)
-
-	# kind = "combined-alt"
-	# categories = ['AMR', 'VIR']
-	# fig, axs, fname = components_by_clade(
-	# 				analysis_name, 
-	# 				random_name, 
-	# 				categories=categories,
-	# 				out_folder=out_folder,
-	# 				interval_length=interval_length, 
-	# 				interval_cutoff=interval_cutoff, 
-	# 				kind=kind,
-	# 				return_fig=True,
-	# 			)
-
-	# plt.subplots_adjust(hspace=0.05)
-
-	# for row in [0]:
-	# 	box = axs[row][0].get_position()
-	# 	box.x0 = box.x0 - 0.05
-	# 	box.x1 = box.x1 - 0.05
-	# 	axs[row][0].set_position(box)
-
-	# plt.tight_layout()
-
-	# w, h = fig.get_size_inches()
-	# fig.set_size_inches(w + .05, h)
-
-	# for row in range(axs.shape[0]):
-	# 	box = axs[row][0].get_position()
-	# 	box.x0 = box.x0 - 0.01
-	# 	box.x1 = box.x1 - 0.01
-	# 	axs[row][0].set_position(box)
-
-	# axs[0][0].set_title("All Clades", fontsize=20, pad=18)
-
-	# sp = axs[0][0].get_position()
-
-	# y = sp.y1 + 0.01
-	# xd = 0.0
-
-	# X, Y = np.array([[sp.x0 - xd, sp.x1 + xd], [y, y]])
-	# line = Line2D(X, Y, lw=1.5, color='black', alpha=1)
-	# fig.add_artist(line)
-
-	# X, Y = np.array([[axs[0][1].get_position().x0 - xd, axs[0][-1].get_position().x1 + xd], [y, y]])
-	# line = Line2D(X, Y, lw=1.5, color='black', alpha=1)
-	# fig.add_artist(line)
-
-	# plt.savefig(out_folder / fname, dpi=300)
-
-	# QRDR(analysis_name, random_name, dropbox_dir / "NCSU/Lab/Writing/st131_git" / "figures")

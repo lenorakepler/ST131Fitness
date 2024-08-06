@@ -10,5 +10,6 @@ def cat_display(cat):
 		'VIR': 'Virulence',
 		'STRESS': 'Stress',
 		'PLASMID': 'Plasmid Replicon',
+		'META': 'Background',
 	}
 	return cds[str(cat)]

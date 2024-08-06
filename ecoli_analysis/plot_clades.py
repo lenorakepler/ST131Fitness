@@ -7,12 +7,14 @@ import numpy as np
 import re
 import seaborn as sns
 import matplotlib as mpl
-from transmission_sim.ecoli.branch_fitness import color_tree_components, site_effects_to_fitness_tsim, effects_to_fitness_tsim, dir
-from transmission_sim.ecoli.feature_matrix import plot_phylo_matrix, get_clade_changepoints
-from transmission_sim.ecoli.analyze import writeup_dir, ncbi_dir
+from ecoli_analysis.branch_fitness import color_tree_components, site_effects_to_fitness_tsim, effects_to_fitness_tsim, dir
+from ecoli_analysis.feature_matrix import plot_phylo_matrix, get_clade_changepoints
 from natsort import natsorted, natsort_keygen
 
-def plot_clade_sampling_over_time(clade_ancestral_file, analysis_dir):
+def plot_clade_sampling_over_time(clade_ancestral_file, analysis_dir, out_dir):
+	analysis_dir = Path(analysis_dir)
+	out_dir = Path(out_dir)
+
 	params = json.loads((analysis_dir / "params.json").read_text())
 
 	tt = pp.loadTree(
@@ -54,7 +56,7 @@ def plot_clade_sampling_over_time(clade_ancestral_file, analysis_dir):
 
 	ax.legend(loc='upper left')
 	plt.tight_layout()
-	plt.savefig(out_dir/ "clade_count_time_stacked.png", dpi=300)
+	plt.savefig(out_dir/ "Figure-2_clade_count_time_stacked.png", dpi=300)
 	plt.close('all')
 
 def get_clade_fitness(data, clade_ancestral_file, analysis_dir):

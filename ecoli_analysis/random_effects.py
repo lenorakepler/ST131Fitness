@@ -144,7 +144,7 @@ def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_pr
 	
 	folds[i]['test']['end_time'] = present_time
 
-	return folds
+	return folds, interval_times
 
 def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_folds, test_proportion, root_time, present_time, folds_start=None):
 	# This is stupid, there is no way it should be done like this,
@@ -152,7 +152,7 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 	# Read in un-segmented tree file
 	
 	# Create interval breakpoints and put into dictionary
-	folds = define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion)
+	folds, interval_times = define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion)
 
 	# -----------------------------------------------------
 	# Get indexes of phylogeny pieces in the train/test
@@ -184,22 +184,18 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 		unseg_arr[f"{i}_test"] = (unseg_arr['birth_time'] > folds_dict['test']['start_time']) & (unseg_arr['birth_time'] < folds_dict['test']['end_time'])
 		
 		# Get subsets of unsegmented data corresponding to train, test
-		unseg_train_idx = np.nonzero(unseg_arr[f"{i}_train"].values)
-		unseg_test_idx = np.nonzero(unseg_arr[f"{i}_test"].values)
+		unseg_train_idx = np.nonzero(unseg_arr[f"{i}_train"].values)[0]
+		unseg_test_idx = np.nonzero(unseg_arr[f"{i}_test"].values)[0]
 		unseg_fold_train = all_data.getSubArraySpecific(unseg_train_idx)
 		unseg_fold_test = all_data.getSubArraySpecific(unseg_test_idx)
 
 		# Get self and parent type info of the unsegmented data
 		type_info_dict = get_parent_type_info(unseg_fold_train, unseg_fold_test, all_data)
 
-
-		folds_dict['train']['data_idx'] = [int(i) for i in train_idx]
-		folds_dict['test']['data_idx'] = [int(i) for i in test_idx]
+		folds_dict['train']['data_idx'] = [int(i) for i in unseg_train_idx]
+		folds_dict['test']['data_idx'] = [int(i) for i in unseg_test_idx]
 
 		# Get fitness indices and time deltas
-
-		
-
 		folds_dict['train'] = {**folds[i]['train'], **type_info_dict['train']}
 		folds_dict['test'] = {**folds[i]['test'], **type_info_dict['test']}
 		folds_dict['n_types'] = type_info_dict['n_types']

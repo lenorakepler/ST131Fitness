@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import transmission_sim.utils.plot_phylo_standalone as pp
+import analysis.plot_phylo_standalone as pp
 import json
 import numpy as np
 import re
