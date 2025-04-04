@@ -1,104 +1,8 @@
 import json
 import numpy as np
 import pandas as pd
-from ecoli_analysis.random_effects_classes import *
-
-def next_parent(parent_idx, parent_name, train_indices):
-	"""
-	Go to the next parent if:
-		- interval in parent name
-		- parent not in training set
-		- not at root
-	"""
-	if 'interval' in parent_name:
-		do_next = True
-	else:
-		if parent_idx in train_indices:
-			do_next = False
-		else:
-			do_next = True
-
-	# if not do_next:
-	# 	dn = do_next
-	# 	pn = parent_name
-	# 	breakpoint()
-
-	return do_next
-
-def find_parents(train_indices, fold_data, data):
-	full_array = data.array
-
-	parent_idxs = []
-	parent_deltas = []
-	for i, row in enumerate(fold_data.array):
-		next_parent_idx = row['parent_idx']
-
-		# print(f"\n===== {i}/{len(fold_data.array) + 1}: name: {row['name']} =====")
-		# print(f"next_parent idx: ({next_parent_idx})")
-
-		# If the parent index is not in the fold data set,
-		# keep iterating through ancestors until we find the most
-		# recent ancestor that is
-		while next_parent_idx != -1:
-			parent_idx = next_parent_idx
-			parent_row = full_array[full_array['idx'] == parent_idx][0]
-			parent_name = parent_row['name']
-
-			if next_parent(parent_idx, parent_name, train_indices):
-				# print(f"parent: {parent_name} ({parent_idx}), next parent: {next_parent_idx}")
-				next_parent_idx = parent_row['parent_idx']
-			else:
-				# print(f"parent: {parent_name} ({parent_idx}), next parent: NONE - breaking")
-				break
-
-		# Once we've found the parent node, get its event time
-		# and calculate the time that has elapsed between it and
-		# our branch's end time
-		if next_parent_idx != -1:
-			parent_time = parent_row['event_time']
-		else:
-			parent_idx = next_parent_idx
-			parent_time = data.root_time
-			parent_name = 'root'
-
-		parent_time_delta = row['event_time'] - parent_time
-
-		parent_idxs.append(parent_idx)
-		parent_deltas.append(parent_time_delta)
-
-		# print(f"===> FINAL: name={row['name']}, parent_name={parent_name}, parent_time={parent_time:.3f}, delta={parent_time_delta:.3f}")
-
-		if (i % 100 == 0):
-			print(f"{i}/{len(fold_data.array) + 1}: name={row['name']}, parent_name={parent_name}, parent_idx={parent_idx}, parent_time={parent_time:.3f}, delta={parent_time_delta:.3f}")
-
-	return parent_idxs, parent_deltas
-
-def get_parent_type_info(fold_train_data, fold_test_data, data):
-	# Make a list of all the index numbers contained
-	# in the training set. Note that we need to get unique
-	# values because we have birth events and edges with the 
-	# same idx. Each of these indices will be mapped to a different
-	# estimated birth rate
-	train_indices = np.append(-1, np.unique(fold_train_data.array['idx'])).tolist()
-
-	# Get indices of closest parent in training data set for
-	# phylogeny pieces in both the training and test data sets
-	train_parent_idxs, train_parent_deltas = find_parents(train_indices, fold_train_data, data)
-	test_parent_idxs, test_parent_deltas = find_parents(train_indices, fold_test_data, data)
-
-	type_info_dict = dict(
-		n_types=len(train_indices),
-		train=dict(
-			type_int=[train_indices.index(i) for i in fold_train_data.array['idx']],
-			parent_type_int=[train_indices.index(i) for i in train_parent_idxs],
-			parent_time_delta=[float(i) for i in train_parent_deltas],
-			),
-		test=dict(
-			type_int=[train_indices.index(i) for i in test_parent_idxs],
-			parent_time_delta=[float(i) for i in test_parent_deltas],
-			),
-		)
-	return type_info_dict
+from natsort import natsorted, ns
+# from ecoli_analysis.random_effects_classes import *
 
 def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion):
 	# -----------------------------------------------------
@@ -146,10 +50,122 @@ def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_pr
 
 	return folds, interval_times
 
-def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_folds, test_proportion, root_time, present_time, folds_start=None):
+def next_parent(parent_row, fold_train_indices, branch_names):
+	"""
+	Go to the next parent if:
+		- parent branch name not in training set
+		- parent not in training set
+	"""
+	if parent_row["branch_name"] in branch_names:
+		if parent_row["index"] in fold_train_indices:
+			do_next = False
+		else:
+			do_next = True
+	else:
+		do_next = True
+
+	# if not do_next:
+	# 	dn = do_next
+	# 	pn = parent_name
+	# 	breakpoint()
+
+	return do_next
+
+def find_parents(data_df, fold_train_indices, indices_to_find, verbose=False):
+	data_df["index"] = list(range(len(data_df)))
+	data_df = data_df.set_index("idx")
+
+	train_array = data_df.iloc[fold_train_indices, :]
+	fold_array = data_df.iloc[indices_to_find, :]
+	
+	branch_names = natsorted(train_array["branch_name"].unique(), alg=ns.GROUPLETTERS)
+
+	idx_to_name = {i: row["name"] for i, row in data_df[~data_df.index.duplicated()].iterrows()}
+	idx_to_name[-1] = 'root_parent'
+
+	parents_dict = []
+	for i, (idx, row) in enumerate(fold_array.iterrows()):
+		next_parent_idx = row['parent_idx']
+
+		if verbose: print(f"\n===== {i}/{len(fold_array) + 1}: name: {row['name']} =====")
+		if verbose: print(f"parent: {idx_to_name[row['parent_idx']]}")
+
+		# If the parent index is not in the fold data set,
+		# keep iterating through ancestors until we find the most
+		# recent ancestor that is
+		while next_parent_idx != -1:
+			parent_idx = next_parent_idx
+			parent_row = data_df.loc[parent_idx, :]
+
+			# When have both node and edge, get whichever (if any) is in training set, since
+			# we will have calculated that branch type.
+			if isinstance(parent_row, pd.DataFrame):
+				mod_parent_row = parent_row[parent_row['index'].isin(fold_train_indices)==True].copy()
+				
+				if isinstance(mod_parent_row, pd.Series):
+					parent_row = mod_parent_row
+				else:
+					parent_row = parent_row.iloc[0]
+
+			parent_name = parent_row['name']
+
+			if next_parent(parent_row, fold_train_indices, branch_names):
+				next_parent_idx = parent_row['parent_idx']
+				if verbose: print(f"parent: {parent_name}, next parent: {next_parent_idx}")
+			else:
+				if verbose: print(f"parent: {parent_name} ({parent_idx}), next parent: NONE - breaking")
+				break
+
+		# Once we've found the parent node, get its event time
+		# and calculate the time that has elapsed between it and
+		# our branch's end time
+		if next_parent_idx != -1:
+			parent_time = parent_row['event_time']
+			parent_name = parent_row['name']
+		else:
+			parent_idx = next_parent_idx
+			parent_name = 'root'
+			parent_row = row
+			parent_time = parent_row['birth_time']
+
+		parent_time_delta = row['event_time'] - parent_time
+		parents_dict.append(
+			{
+				**row.to_dict(), 
+				**dict(
+					parent_name=parent_name, parent_idx=parent_idx, parent_index=parent_row["index"],
+					parent_branch_name=parent_row["branch_name"],
+					parent_time=parent_time, parent_time_delta=parent_time_delta,
+					)
+			}
+		)
+
+		if verbose: print(f"===> FINAL: name={row['name']}, true_parent={idx_to_name[row['parent_idx']]}, sigma_parent={parent_name}")
+
+		# if (i % 100 == 0):
+		# 	print(f"{i}/{len(fold_array) + 1}: name={row['name']}, parent_name={parent_name}, parent_idx={parent_idx}, parent_time={parent_time:.3f}, delta={parent_time_delta:.3f}")
+
+	return pd.DataFrame(parents_dict)
+
+def get_parent_type_info(data_df, fold_train_indices, fold_test_indices, all_branch_names):
+	# Get indices of closest parent in training data set for
+	# phylogeny pieces in both the training and test data sets
+	train_df = find_parents(data_df, fold_train_indices, fold_train_indices)
+	test_df = find_parents(data_df, fold_train_indices, fold_test_indices)
+
+	train_df['type_int'] = [all_branch_names.index(i) for i in train_df['branch_name']]
+	train_df['parent_type_int'] = [all_branch_names.index(i) for i in train_df['parent_branch_name']]
+	test_df['type_int'] = [all_branch_names.index(i) for i in test_df['branch_name']]
+	test_df['parent_type_int'] = [all_branch_names.index(i) for i in test_df['parent_branch_name']]
+
+	train_dict = train_df.set_index("index").to_dict(orient="index")
+	test_dict = test_df.set_index("index").to_dict(orient="index")
+
+	return {"train": train_dict, "test": test_dict}
+
+def split_intervals(all_data, train_idx, out_folder, n_folds, test_proportion, root_time, present_time, folds_start=None, alt=False):
 	# This is stupid, there is no way it should be done like this,
 	# but I don't want to rewrite stuff and it's late...
-	# Read in un-segmented tree file
 	
 	# Create interval breakpoints and put into dictionary
 	folds, interval_times = define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion)
@@ -158,19 +174,23 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 	# Get indexes of phylogeny pieces in the train/test
 	# datasets for each fold, plus get their self and/or
 	# parental fitness index and time deltas
-	#
-	# We do this on the UNSEGMENTED tree file
 	# -----------------------------------------------------
 
 	# Convert things to dataframes so they are much easier to work with...
 
-	unseg_arr = pd.DataFrame(all_data.array)
-	train_arr = pd.DataFrame(train_data.array)
+	all_arr = pd.DataFrame(all_data.array)
+	all_arr['index'] = list(range(len(all_arr)))
+	
+	if alt:
+		all_arr["branch_name"] = all_arr["name"]
+	else:
+		all_arr["branch_name"] = all_arr["name"].apply(lambda n: n.split("_interval")[0])
 
-	# Add "branch name" column to segmented array
-	train_arr["branch_name"] = [n.split("_")[0] for n in train_arr['name']]
+	all_branch_names = natsorted(all_arr["branch_name"].unique(), alg=ns.GROUPLETTERS)
 
-	# Split the full, unsegmented data set into folds
+	train_arr = all_arr.loc[train_idx, :]
+	
+	# Split the training data set into folds
 	for i, folds_dict in folds.items():
 		# Get times corresponding with the train/test
 		# datasets for this interval
@@ -178,36 +198,39 @@ def split_intervals(all_unsegmented_data, all_data, train_data, out_folder, n_fo
 		test_interval = folds_dict['test']['idx']
 		
 		# Add a column describing whether each piece is in the scope of the training set of this fold
-		unseg_arr[f"{i}_train"] = unseg_arr['birth_time'] <= folds_dict['train']['end_time']
+		fold_train_df = train_arr.loc[train_arr['birth_time'] <= folds_dict['train']['end_time'], :]
 
 		# Add a column describing whether each piece is in the scope of the test set of this fold
-		unseg_arr[f"{i}_test"] = (unseg_arr['birth_time'] > folds_dict['test']['start_time']) & (unseg_arr['birth_time'] < folds_dict['test']['end_time'])
+		fold_test_df = train_arr.loc[(train_arr['birth_time'] > folds_dict['test']['start_time']) & (train_arr['birth_time'] < folds_dict['test']['end_time']), :]
 		
-		# Get subsets of unsegmented data corresponding to train, test
-		unseg_train_idx = np.nonzero(unseg_arr[f"{i}_train"].values)[0]
-		unseg_test_idx = np.nonzero(unseg_arr[f"{i}_test"].values)[0]
-		unseg_fold_train = all_data.getSubArraySpecific(unseg_train_idx)
-		unseg_fold_test = all_data.getSubArraySpecific(unseg_test_idx)
+		fold_train_indices = fold_train_df['index'].tolist()
+		fold_test_indices = fold_test_df['index'].to_list()
 
-		# Get self and parent type info of the unsegmented data
-		type_info_dict = get_parent_type_info(unseg_fold_train, unseg_fold_test, all_data)
+		# Get self and parent type info of the training data
+		folds[i]['params'] = {k: v for k, v in folds_dict.items()}
+		folds[i]['params']["n_types"]: int(len(all_branch_names))
+		folds[i]['idxs'] = [fold_train_indices, fold_test_indices]
+		folds[i].update(get_parent_type_info(all_arr, fold_train_indices, fold_test_indices, all_branch_names))
+	
+	fname = "brownian_search_setup.json"
+	if alt:
+		fname = fname.replace(".json", "_alt.json")
 
-		folds_dict['train']['data_idx'] = [int(i) for i in unseg_train_idx]
-		folds_dict['test']['data_idx'] = [int(i) for i in unseg_test_idx]
-
-		# Get fitness indices and time deltas
-		folds_dict['train'] = {**folds[i]['train'], **type_info_dict['train']}
-		folds_dict['test'] = {**folds[i]['test'], **type_info_dict['test']}
-		folds_dict['n_types'] = type_info_dict['n_types']
-
-	(out_folder / "fold_params.json").write_text(
+	(out_folder / fname).write_text(
 		json.dumps(
 			dict(
 					n_folds=n_folds, 
 					test_proportion=test_proportion,
+					fold_start=folds_start,
 					interval_times=interval_times,
+					n_types = int(len(all_branch_names)),
 					folds=folds,
-				)
+					names=all_branch_names,
+					int_to_name={i: name for i, name in enumerate(all_branch_names)},
+				), indent=4,
 			)
 		)
+
+if __name__ == "__main__":
+	pass
 

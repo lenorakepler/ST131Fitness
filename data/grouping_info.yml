@@ -1,0 +1,109 @@
+- BlaKPC:
+  - strategy: any
+  - justification: same mechanism of resistance ("the presence of carbapenemase and cephalosporinase combined with the loss of porin (Gaynes & Culver, 1992; Nordmann et al., 2009) ... In the USA, KPC is the most common mechanism for carbapenem resistance")
+  - citation: 
+  - notes: blaKPC-4 occurs in only one isolate, together with aac(3)-ib and qaF, so those have 100% correlation
+- aac(3)/(6'):
+  - strategy: split
+  - groupings:
+    - aac(3)-II:
+      - aac(3)-IId
+      - aac(3)-IIe
+    - aac(6')-Ib-cr:
+      - aac(6')-Ib-cr
+      - aac(6')-Ib-cr5
+  - justification: confer different antibiotic resistance. All are aac(3) confer aminoglycoside (Gentamicin) resistance; aac(6')-Ib-cr/aac(6')-Ib-cr5 confer aminoglycoside and fluoroquinolone resistance (fluoroquinolone-acetylating).
+  - citation:
+  - notes: only 4 meet count threshold; aac(6')-Ib-cr5, aac(6')-Ib-cr, aac(3)-IId, aac(3)-IIe. blaOXA-1, catB3, and aac(6')-Ib-cr5 have 95-97% correlation
+- aadA:
+  - strategy: any
+  - justification: same resistance, not seeing distinctions in terms of function or resistance
+  - notes: combinations of dfrA/aadA occur together on gene cassettes (dfrA17/aadA5, dfrA12/aadA2), but aadA1, aadA16, aadA25 not.
+- qacE:
+  - qacE:
+    - qacE
+    - qacEdelta1
+  - justification: 80% homology between qacE, qacEDelta1. "The qacEΔ1 gene probably represents a disrupted form of qacE that evolved by insertion of a DNA segment containing a sulfonamide-resistance gene near the 3′ end of the qacE gene" though also qacEDelta1 is called an "attenuated version" by Jaglic et al
+  - citation: Kazama_1998_DistributionAntisepticresistanceGenes, Jaglic_2012_GeneticBasisResistance
+- acr:
+  - strategy: split
+  - justification: different mechanisms, resistances, some are point mutations
+  - citation: Lu_2014_FunctionalRelevanceAcrB
+- dfr:
+  - strategy: split
+  - groupings:
+    - dfrA
+    - dfrB
+  - justification: <<The five known dfrB genes ... confer resistance to substantially lower levels of trimethoprim than the dfrA genes (1)>> (Levings) ... <<dfrA genes should be shown to confer resistance to trimethoprim before the designation dfrA is used and a number is assigned>> (Ambrose)
+  - notes: all except dfrA8 and dfrA19 occur on cassettes. phylogeny in Ambrose 2021.
+  - citation: Ambrose_2021_DfrATrimethoprimResistance, Levings_2006_NewIntegronAssociatedGene
+- pap:
+  - strategy: split
+  - groupings:
+    - papC/F/GII:
+      - papC
+      - papF
+      - papG-II
+    - papA: papA
+    - papH: papH
+    - papE: papE
+  - justification: considered separately in studies of virulence; have separate functional properties (see ppt)
+  - citation: Wullt_2002_RoleFimbriaeEscherichia, Nicolas-Chanoine_2014_EscherichiaColiST131, Johnson_2012_VirulenceEscherichiaColi
+  - notes: an identical papA-like gene (perhaps a papA variant?) is present in many samples, but this does not meet the 90/90 threshold. PapC, F, and GII are 98-100% co-occurring. PapA, E, H are ~60% co-occurring.
+- qnr:
+  - strategy: split
+  - justification: <<Most isolates that were resistant to ciprofloxacin and nalidixic acid encoded qnrB and qnrS alone or in association but no qnr genes was detected in 29 E. coli and 15 Klebsiella spp. strains resistant to ciprofloxacin and nalidixic acid. Nevertheless, isolates encoding qnrB or qnrS were also identified among nalidixic acid-susceptible (10/105) and ciprofloxacin-susceptible strains (7/107)>>
+  - notes: only qnrS1 meets count threshold (12, 1.4%)
+  - citation: Salah_2019_DistributionQuinoloneResistance
+- ampC:
+  - strategy: any
+  - justification: same resistance, simililar changes in MIC (Lipworth)
+  - citation: Lipworth_2024_EstimatingEffectAntimicrobial
+- aph(3')/(3'')/(6):
+  - strategy: split
+  - justification: different resistances
+- arr:
+  - strategy: any
+  - justification: seems like different allelic variants dependent on context
+- parE:
+  - <<In a recent study of 20 clinical isolates of E. coli resistant to fluoroquinolones, the failure to detect mutations in the ParE QRDR led the authors to conclude that this region was not linked with the acquisition of quinolone resistance in E. coli clinical isolates (18). In contrast, the finding of a ParE alteration in M. hominis mutants selected in vitro (1, 3) and in vivo (this study), in addition to recent studies describing parE mutants in clinical isolates of S. aureus (19, 20) and S. pneumoniae (17), reinforces the implication of the topoisomerase IV ParE subunit in resistance to fluoroquinolones.>>
+- sul:
+  - strategy: split
+  - justification: sul3 different than sul1 and sul2 in terms of differential expression of proteins, differential impact on growth curve, plasmid retention
+  - citation: Zhou_2021_FitnessCostCompensation
+- mch:
+  - strategy: split
+  - justification: different genes in operon, seem to have different function and some are required for function, some not
+  - citation: Rodriguez_1999_StructuralGeneMicrocin
+- iuc:
+  - strategy: any
+  - justification: "<<Either mutation (iucA or iucC) in the operon left functional the other two genes involved in the biosynthesis: iucB, coding for the Ne-hydroxylysine acetylase, (8; Coy et al., in press), and iucD, required for the NE-oxygenation of L-lysine 8). Therefore, the only step in aerobactin synthesis in which genes iucA and iucC may be involved is the reaction in which two side chains of NE-acetyl-NI-hydroxylysine are attached to a citric acid backbone.>> .... but .... <<Aerobactin synthesis genes iucA and iucC contribute to the pathogenicity of avian pathogenic Escherichia coli O2 strain E058>>"
+- iro:
+  - strategy:
+    all:
+    - iroC
+    - iroD
+    - iroN
+  - justification: <<Complementation with the iroBCDEN genes resulted in a regaining of virulence, whereas the absence of iroC, iroDE, or iroN abrogated restoration of virulence. The iroE gene was not required for virulence, since introduction of iroBCDN restored the capacity to cause lesions and colonize extraintestinal tissues.>>
+  - citation: Caza_2008_SpecificRolesIroBCDEN
+- ????mer:
+  - strategy: split
+  - groupings:
+    - merC, merP, merR, merT
+  - justification: different functions in operon, e.g. merR activates, merD represses. <<Both merT and merP are required for full expression of Hg(II) resistance, but loss of merP is less deleterious than loss of merT ... mutating merC had no effect on Hg(II) resistance>> ... <<merA was acquired in Archaea ... complexity of mer operons, as indicated by the presence of other mer genes found linked to MerA in an operonic structure ... the efficacy and function of the mer detoxification machine was improved including a broadened spectrum of mercurials that could be detoxified by the addition of MerB>> ... <<mer operons may also code for transcriptional regulators such as the repressor/activator MerR or anti-activator MerD>>
+  - citation: Sone_2013_RoleMerCMerE, Nucifora_1989_RegulationMercuryResistance, 
+tet:
+  - strategy: any
+  - justification: Seem to independenly confer resistance, same mechanism (efflux)
+  - citation: Roberts_2005_UpdateAcquiredTetracycline
+cmlA:
+  - strategy: any
+  - justification: difference in plasmids that carry
+catAB:
+  - strategy: split
+  - justification: catA and catB are non-homologous
+  - citation: Dubbert_1988_CloningTwoChloramphenicol
+ter:
+  - strategy: split
+  - justification: seems like uncertain roles, some required for telluride resistance, but unclear; <<Within the core ter operon three main protein families are present, the TerB, the TerC, and the TerD family ... Several genetic arrangements of the ter operon have been identified among Actinobacteria, Firmicutes, and Gammaproteobacteria lineages ... In some of these genetic organizations, additional genes for Ter are present, such as the genes encoding protein TelA and homologs (Franks et al., 2014).>> <<the biologically relevant function of this operon is unknown ... explored a variety of functions ... all of which were independent of TerC ... determined that TerC is necessary for tolerance to ofloxacin, polymyxin B, and cetylpyridinium chloride.>> ... <<We propose that TerD/TerE participates in tellurite resistance through TerC-independent action>>
+  - citations: Farias_2022_PotentialTelluriteResistance, Mason_2023_KlebsiellaPneumoniaeTer, Turkovicova_2016_ProteomicAnalysisTerC

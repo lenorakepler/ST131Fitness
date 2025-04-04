@@ -1,0 +1,1561 @@
+BlaKPC_AMR:
+  category: AMR
+  display name: BlaKPC
+  members:
+  - blaKPC-2
+  - blaKPC-3
+  - blaKPC-4
+  members_long:
+  - blaKPC-2_AMR
+  - blaKPC-3_AMR
+  - blaKPC-4_AMR
+  resistance: Beta-Lactam (Carbapenem)
+  type: Gene
+Col_PLASMID:
+  category: Plasmid
+  display name: Col
+  members:
+  - Col(BS512)
+  - Col(KPHS6)
+  - Col(MP18)
+  - Col(pHAD28)
+  - Col156
+  - Col440II
+  - Col8282
+  - ColKP3
+  - ColRNAI
+  - ColpVC
+  members_long:
+  - Col(BS512)_PLASMID
+  - Col(KPHS6)_PLASMID
+  - Col(MP18)_PLASMID
+  - Col(pHAD28)_PLASMID
+  - Col156_PLASMID
+  - Col440II_PLASMID
+  - Col8282_PLASMID
+  - ColKP3_PLASMID
+  - ColRNAI_PLASMID
+  - ColpVC_PLASMID
+IncB/O/K/Z_PLASMID:
+  category: Plasmid
+  display name: IncB/O/K/Z
+  members:
+  - IncB/O/K/Z
+  members_long:
+  - IncB/O/K/Z_PLASMID
+IncC_PLASMID:
+  category: Plasmid
+  display name: IncC
+  members:
+  - IncC
+  members_long:
+  - IncC_PLASMID
+IncFIA_PLASMID:
+  category: Plasmid
+  display name: IncFIA
+  members:
+  - FIA(pBK30683)
+  - IncFIA
+  - IncFIA(HI1)
+  members_long:
+  - FIA(pBK30683)_PLASMID
+  - IncFIA_PLASMID
+  - IncFIA(HI1)_PLASMID
+IncFIB_PLASMID:
+  category: Plasmid
+  display name: IncFIB
+  members:
+  - IncFIB(AP001918)
+  - IncFIB(H89-PhagePlasmid)
+  - IncFIB(pB171)
+  - IncFIB(pLF82-PhagePlasmid)
+  - IncFIB(pNDM-Mar)
+  - IncFIB(pQil)
+  members_long:
+  - IncFIB(AP001918)_PLASMID
+  - IncFIB(H89-PhagePlasmid)_PLASMID
+  - IncFIB(pB171)_PLASMID
+  - IncFIB(pLF82-PhagePlasmid)_PLASMID
+  - IncFIB(pNDM-Mar)_PLASMID
+  - IncFIB(pQil)_PLASMID
+IncFII_PLASMID:
+  category: Plasmid
+  display name: IncFII
+  members:
+  - IncFII
+  - IncFII(29)
+  - IncFII(pCoo)
+  - IncFII(pHN7A8)
+  - IncFII(pRSB107)
+  - IncFII(pSE11)
+  members_long:
+  - IncFII_PLASMID
+  - IncFII(29)_PLASMID
+  - IncFII(pCoo)_PLASMID
+  - IncFII(pHN7A8)_PLASMID
+  - IncFII(pRSB107)_PLASMID
+  - IncFII(pSE11)_PLASMID
+IncHI_PLASMID:
+  category: Plasmid
+  display name: IncHI
+  members:
+  - IncHI1B(pNDM-MAR)
+  - IncHI2
+  - IncHI2A
+  members_long:
+  - IncHI1B(pNDM-MAR)_PLASMID
+  - IncHI2_PLASMID
+  - IncHI2A_PLASMID
+IncI_PLASMID:
+  category: Plasmid
+  display name: IncI
+  members:
+  - IncI(Gamma)
+  - IncI1-I(Alpha)
+  - IncI2
+  - IncI2(Delta)
+  members_long:
+  - IncI(Gamma)_PLASMID
+  - IncI1-I(Alpha)_PLASMID
+  - IncI2_PLASMID
+  - IncI2(Delta)_PLASMID
+IncN_PLASMID:
+  category: Plasmid
+  display name: IncN
+  members:
+  - IncN
+  - IncN2
+  members_long:
+  - IncN_PLASMID
+  - IncN2_PLASMID
+IncP6_PLASMID:
+  category: Plasmid
+  display name: IncP6
+  members:
+  - IncP6
+  members_long:
+  - IncP6_PLASMID
+IncQ1_PLASMID:
+  category: Plasmid
+  display name: IncQ1
+  members:
+  - IncQ1
+  members_long:
+  - IncQ1_PLASMID
+IncR_PLASMID:
+  category: Plasmid
+  display name: IncR
+  members:
+  - IncR
+  members_long:
+  - IncR_PLASMID
+IncX_PLASMID:
+  category: Plasmid
+  display name: IncX
+  members:
+  - IncX1
+  - IncX3
+  - IncX4
+  members_long:
+  - IncX1_PLASMID
+  - IncX3_PLASMID
+  - IncX4_PLASMID
+IncY_PLASMID:
+  category: Plasmid
+  display name: IncY
+  members:
+  - IncY
+  members_long:
+  - IncY_PLASMID
+aac(3)_AMR:
+  category: AMR
+  display name: aac(3)
+  members:
+  - aac(3)-IId
+  - aac(3)-IIe
+  - aac(3)-Ib
+  - aac(3)-VIa
+  members_long:
+  - aac(3)-IId_AMR
+  - aac(3)-IIe_AMR
+  - aac(3)-Ib_AMR
+  - aac(3)-VIa_AMR
+  resistance: Aminoglycoside (Gentamicin)
+  type: Gene
+aac(6')-Ib-cr_AMR:
+  category: AMR
+  display name: aac(6')-Ib-cr
+  members:
+  - aac(6')-Ib-cr
+  - aac(6')-Ib-cr5
+  members_long:
+  - aac(6')-Ib-cr_AMR
+  - aac(6')-Ib-cr5_AMR
+  resistance: Aminoglycoside/Quinolone (Amikacin/Kanamycin/Quinolone/Tobramycin)
+  type: Gene
+aac(6')_AMR:
+  category: AMR
+  display name: aac(6')
+  members:
+  - aac(6')-Ib
+  - aac(6')-Ib3
+  - aac(6')-Il
+  members_long:
+  - aac(6')-Ib_AMR
+  - aac(6')-Ib3_AMR
+  - aac(6')-Il_AMR
+  resistance: Aminoglycoside (Amikacin/Kanamycin/Tobramycin)
+  type: Gene
+aadA_AMR:
+  category: AMR
+  display name: aadA
+  members:
+  - aadA1
+  - aadA16
+  - aadA2
+  - aadA25
+  - aadA5
+  members_long:
+  - aadA1_AMR
+  - aadA16_AMR
+  - aadA2_AMR
+  - aadA25_AMR
+  - aadA5_AMR
+  resistance: Aminoglycoside (Streptomycin)
+  type: Gene
+aap_VIR:
+  category: Virulence
+  display name: aap
+  members:
+  - aap
+  members_long:
+  - aap_VIR
+aar_VIR:
+  category: Virulence
+  display name: aar
+  members:
+  - aar
+  members_long:
+  - aar_VIR
+aatA_VIR:
+  category: Virulence
+  display name: aatA
+  members:
+  - aatA
+  members_long:
+  - aatA_VIR
+acrB-R620C_AMR:
+  category: AMR
+  display name: acrB-R620C
+  members:
+  - acrB_R620C
+  members_long:
+  - acrB_R620C_AMR
+  resistance: Tetracycline (Tigecycline)
+  type: Point
+acrB-R717L_AMR:
+  category: AMR
+  display name: acrB-R717L
+  members:
+  - acrB_R717L
+  members_long:
+  - acrB_R717L_AMR
+  resistance: Macrolide (Azithromycin/Clarithromycin/Erythromycin)
+  type: Point
+acrF_AMR:
+  category: AMR
+  display name: acrF
+  members:
+  - acrF
+  members_long:
+  - acrF_AMR
+  resistance: Efflux
+  type: Gene
+acrR-R45C_AMR:
+  category: AMR
+  display name: acrR-R45C
+  members:
+  - acrR_R45C
+  members_long:
+  - acrR_R45C_AMR
+  resistance: Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline)
+  type: Point
+afaC_VIR:
+  category: Virulence
+  display name: afaC
+  members:
+  - afaC
+  members_long:
+  - afaC_VIR
+agg3DCB_VIR:
+  category: Virulence
+  display name: agg3DCB
+  members:
+  - agg3B
+  - agg3C
+  - agg3D
+  members_long:
+  - agg3B_VIR
+  - agg3C_VIR
+  - agg3D_VIR
+agg5A_VIR:
+  category: Virulence
+  display name: agg5A
+  members:
+  - agg5A
+  members_long:
+  - agg5A_VIR
+aggR_VIR:
+  category: Virulence
+  display name: aggR
+  members:
+  - aggR
+  members_long:
+  - aggR_VIR
+ampC-C11T_AMR:
+  category: AMR
+  display name: ampC-C11T
+  members:
+  - ampC_C-11T
+  members_long:
+  - ampC_C-11T_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Point
+ampC-T32A_AMR:
+  category: AMR
+  display name: ampC-T32A
+  members:
+  - ampC_T-32A
+  members_long:
+  - ampC_T-32A_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Point
+ant(2'')-Ia_AMR:
+  category: AMR
+  display name: ant(2'')-Ia
+  members:
+  - ant(2'')-Ia
+  members_long:
+  - ant(2'')-Ia_AMR
+  resistance: Aminoglycoside (Gentamicin/Kanamycin/Tobramycin)
+  type: Gene
+aph(3'')-Ib_AMR:
+  category: AMR
+  display name: aph(3'')-Ib
+  members:
+  - aph(3'')-Ib
+  members_long:
+  - aph(3'')-Ib_AMR
+  resistance: Aminoglycoside (Streptomycin)
+  type: Gene
+aph(3')-Ia_AMR:
+  category: AMR
+  display name: aph(3')-Ia
+  members:
+  - aph(3')-Ia
+  members_long:
+  - aph(3')-Ia_AMR
+  resistance: Aminoglycoside (Kanamycin)
+  type: Gene
+aph(3')-VI_AMR:
+  category: AMR
+  display name: aph(3')-VI
+  members:
+  - aph(3')-VI
+  members_long:
+  - aph(3')-VI_AMR
+  resistance: Aminoglycoside (Amikacin/Kanamycin)
+  type: Gene
+aph(6)-Id_AMR:
+  category: AMR
+  display name: aph(6)-Id
+  members:
+  - aph(6)-Id
+  members_long:
+  - aph(6)-Id_AMR
+  resistance: Aminoglycoside (Streptomycin)
+  type: Gene
+arr_AMR:
+  category: AMR
+  display name: arr
+  members:
+  - arr
+  - arr-2
+  - arr-3
+  members_long:
+  - arr_AMR
+  - arr-2_AMR
+  - arr-3_AMR
+  resistance: Rifamycin
+  type: Gene
+astA_VIR:
+  category: Virulence
+  display name: astA
+  members:
+  - astA
+  members_long:
+  - astA_VIR
+basR-G53S_AMR:
+  category: AMR
+  display name: basR-G53S
+  members:
+  - basR_G53S
+  members_long:
+  - basR_G53S_AMR
+  resistance: Colistin
+  type: Point
+blaCARB-2_AMR:
+  category: AMR
+  display name: blaCARB-2
+  members:
+  - blaCARB-2
+  members_long:
+  - blaCARB-2_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaCMY_AMR:
+  category: AMR
+  display name: blaCMY
+  members:
+  - blaCMY
+  - blaCMY-2
+  - blaCMY-6
+  members_long:
+  - blaCMY_AMR
+  - blaCMY-2_AMR
+  - blaCMY-6_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-14_AMR:
+  category: AMR
+  display name: blaCTX-M-14
+  members:
+  - blaCTX-M-14
+  members_long:
+  - blaCTX-M-14_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-15_AMR:
+  category: AMR
+  display name: blaCTX-M-15
+  members:
+  - blaCTX-M-15
+  members_long:
+  - blaCTX-M-15_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-195_AMR:
+  category: AMR
+  display name: blaCTX-M-195
+  members:
+  - blaCTX-M-195
+  members_long:
+  - blaCTX-M-195_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-1_AMR:
+  category: AMR
+  display name: blaCTX-M-1
+  members:
+  - blaCTX-M-1
+  members_long:
+  - blaCTX-M-1_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-24_AMR:
+  category: AMR
+  display name: blaCTX-M-24
+  members:
+  - blaCTX-M-24
+  members_long:
+  - blaCTX-M-24_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-27_AMR:
+  category: AMR
+  display name: blaCTX-M-27
+  members:
+  - blaCTX-M-27
+  members_long:
+  - blaCTX-M-27_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M-55_AMR:
+  category: AMR
+  display name: blaCTX-M-55
+  members:
+  - blaCTX-M-55
+  members_long:
+  - blaCTX-M-55_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaCTX-M_AMR:
+  category: AMR
+  display name: blaCTX-M
+  members:
+  - blaCTX-M
+  members_long:
+  - blaCTX-M_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaDHA_AMR:
+  category: AMR
+  display name: blaDHA
+  members:
+  - blaDHA-1
+  members_long:
+  - blaDHA-1_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaEC_AMR:
+  category: AMR
+  display name: blaEC
+  members:
+  - blaEC
+  members_long:
+  - blaEC_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaFOX-5_AMR:
+  category: AMR
+  display name: blaFOX-5
+  members:
+  - blaFOX-5
+  members_long:
+  - blaFOX-5_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaLAP_AMR:
+  category: AMR
+  display name: blaLAP
+  members:
+  - blaLAP-1
+  members_long:
+  - blaLAP-1_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaNDM_AMR:
+  category: AMR
+  display name: blaNDM
+  members:
+  - blaNDM-1
+  - blaNDM-5
+  - blaNDM-7
+  members_long:
+  - blaNDM-1_AMR
+  - blaNDM-5_AMR
+  - blaNDM-7_AMR
+  resistance: Beta-Lactam (Carbapenem)
+  type: Gene
+blaOXA-CH_AMR:
+  category: AMR
+  display name: blaOXA-CH
+  members:
+  - blaOXA-181
+  - blaOXA-244
+  - blaOXA-48
+  members_long:
+  - blaOXA-181_AMR
+  - blaOXA-244_AMR
+  - blaOXA-48_AMR
+  resistance: Beta-Lactam (Carbapenem)
+  type: Gene
+blaOXA-OH_AMR:
+  category: AMR
+  display name: blaOXA-OH
+  members:
+  - blaOXA-1
+  - blaOXA-10
+  members_long:
+  - blaOXA-1_AMR
+  - blaOXA-10_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaOXA_AMR:
+  category: AMR
+  display name: blaOXA
+  members:
+  - blaOXA
+  members_long:
+  - blaOXA_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaSHV_AMR:
+  category: AMR
+  display name: blaSHV
+  members:
+  - blaSHV-12
+  members_long:
+  - blaSHV-12_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaTEM-CA_AMR:
+  category: AMR
+  display name: blaTEM-CA
+  members:
+  - blaTEM
+  - blaTEM-1
+  - blaTEM-156
+  - blaTEM-176
+  members_long:
+  - blaTEM_AMR
+  - blaTEM-1_AMR
+  - blaTEM-156_AMR
+  - blaTEM-176_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaTEM-ES_AMR:
+  category: AMR
+  display name: blaTEM-ES
+  members:
+  - blaTEM-12
+  - blaTEM-19
+  - blaTEM-29
+  members_long:
+  - blaTEM-12_AMR
+  - blaTEM-19_AMR
+  - blaTEM-29_AMR
+  resistance: Beta-Lactam (Cephalosporin)
+  type: Gene
+blaTEM-IR_AMR:
+  category: AMR
+  display name: blaTEM-IR
+  members:
+  - blaTEM-30
+  - blaTEM-31
+  - blaTEM-34
+  - blaTEM-40
+  members_long:
+  - blaTEM-30_AMR
+  - blaTEM-31_AMR
+  - blaTEM-34_AMR
+  - blaTEM-40_AMR
+  resistance: Beta-Lactam
+  type: Gene
+blaVIM_AMR:
+  category: AMR
+  display name: blaVIM
+  members:
+  - blaVIM-1
+  members_long:
+  - blaVIM-1_AMR
+  resistance: Beta-Lactam (Carbapenem)
+  type: Gene
+ble_AMR:
+  category: AMR
+  display name: ble
+  members:
+  - ble
+  members_long:
+  - ble_AMR
+  resistance: Bleomycin
+  type: Gene
+capU_VIR:
+  category: Virulence
+  display name: capU
+  members:
+  - capU
+  members_long:
+  - capU_VIR
+catA_AMR:
+  category: AMR
+  display name: catA
+  members:
+  - catA1
+  - catA2
+  members_long:
+  - catA1_AMR
+  - catA2_AMR
+  resistance: Phenicol (Chloramphenicol)
+  type: Gene
+catB_AMR:
+  category: AMR
+  display name: catB
+  members:
+  - catB11
+  - catB3
+  members_long:
+  - catB11_AMR
+  - catB3_AMR
+  resistance: Phenicol (Chloramphenicol)
+  type: Gene
+cdtB_VIR:
+  category: Virulence
+  display name: cdtB
+  members:
+  - cdtB
+  members_long:
+  - cdtB_VIR
+cmlA_AMR:
+  category: AMR
+  display name: cmlA
+  members:
+  - cmlA
+  - cmlA1
+  - cmlA5
+  - cmlA6
+  members_long:
+  - cmlA_AMR
+  - cmlA1_AMR
+  - cmlA5_AMR
+  - cmlA6_AMR
+  resistance: Phenicol (Chloramphenicol)
+  type: Gene
+cnf1_VIR:
+  category: Virulence
+  display name: cnf1
+  members:
+  - cnf1
+  members_long:
+  - cnf1_VIR
+cvaC_VIR:
+  category: Virulence
+  display name: cvaC
+  members:
+  - cvaC
+  members_long:
+  - cvaC_VIR
+dfrA_AMR:
+  category: AMR
+  display name: dfrA
+  members:
+  - dfrA1
+  - dfrA12
+  - dfrA14
+  - dfrA15
+  - dfrA17
+  - dfrA19
+  - dfrA25
+  - dfrA27
+  - dfrA5
+  - dfrA8
+  members_long:
+  - dfrA1_AMR
+  - dfrA12_AMR
+  - dfrA14_AMR
+  - dfrA15_AMR
+  - dfrA17_AMR
+  - dfrA19_AMR
+  - dfrA25_AMR
+  - dfrA27_AMR
+  - dfrA5_AMR
+  - dfrA8_AMR
+  resistance: Trimethoprim
+  type: Gene
+dfrB_AMR:
+  category: AMR
+  display name: dfrB
+  members:
+  - dfrB4
+  members_long:
+  - dfrB4_AMR
+  resistance: Trimethoprim
+  type: Gene
+emrD_AMR:
+  category: AMR
+  display name: emrD
+  members:
+  - emrD
+  members_long:
+  - emrD_AMR
+  resistance: Efflux
+  type: Gene
+emrE_STRESS:
+  category: Stress
+  display name: emrE
+  members:
+  - emrE
+  members_long:
+  - emrE_STRESS
+  resistance: Efflux
+  type: Biocide
+erm(B)_AMR:
+  category: AMR
+  display name: erm(B)
+  members:
+  - erm(B)
+  members_long:
+  - erm(B)_AMR
+  resistance: Macrolide
+  type: Gene
+espX1_VIR:
+  category: Virulence
+  display name: espX1
+  members:
+  - espX1
+  members_long:
+  - espX1_VIR
+fdeC_VIR:
+  category: Virulence
+  display name: fdeC
+  members:
+  - fdeC
+  members_long:
+  - fdeC_VIR
+floR_AMR:
+  category: AMR
+  display name: floR
+  members:
+  - floR
+  members_long:
+  - floR_AMR
+  resistance: Phenicol (Chloramphenicol/Florfenicol)
+  type: Gene
+focG_VIR:
+  category: Virulence
+  display name: focG
+  members:
+  - focG
+  members_long:
+  - focG_VIR
+glpT-E448K_AMR:
+  category: AMR
+  display name: glpT-E448K
+  members:
+  - glpT_E448K
+  members_long:
+  - glpT_E448K_AMR
+  resistance: Fosfomycin
+  type: Point
+gyrA-D87N_AMR:
+  category: AMR
+  display name: gyrA-D87N
+  members:
+  - gyrA_D87N
+  members_long:
+  - gyrA_D87N_AMR
+  resistance: Quinolone
+  type: Point
+gyrA-S83L_AMR:
+  category: AMR
+  display name: gyrA-S83L
+  members:
+  - gyrA_S83L
+  members_long:
+  - gyrA_S83L_AMR
+  resistance: Quinolone
+  type: Point
+hlyA-alpha_VIR:
+  category: Virulence
+  display name: hlyA-alpha
+  members:
+  - hlyA-alpha
+  members_long:
+  - hlyA-alpha_VIR
+ibeA_VIR:
+  category: Virulence
+  display name: ibeA
+  members:
+  - ibeA
+  members_long:
+  - ibeA_VIR
+iha_VIR:
+  category: Virulence
+  display name: iha
+  members:
+  - iha
+  members_long:
+  - iha_VIR
+ireA_VIR:
+  category: Virulence
+  display name: ireA
+  members:
+  - ireA
+  members_long:
+  - ireA_VIR
+iroBCDEN_VIR:
+  category: Virulence
+  display name: iroBCDEN
+  members:
+  - iroB
+  - iroC
+  - iroD
+  - iroE
+  - iroN
+  members_long:
+  - iroB_VIR
+  - iroC_VIR
+  - iroD_VIR
+  - iroE_VIR
+  - iroN_VIR
+iss_VIR:
+  category: Virulence
+  display name: iss
+  members:
+  - iss
+  members_long:
+  - iss_VIR
+iucABCD_VIR:
+  category: Virulence
+  display name: iucABCD
+  members:
+  - iucA
+  - iucB
+  - iucC
+  - iucD
+  members_long:
+  - iucA_VIR
+  - iucB_VIR
+  - iucC_VIR
+  - iucD_VIR
+iutA_VIR:
+  category: Virulence
+  display name: iutA
+  members:
+  - iutA
+  members_long:
+  - iutA_VIR
+kefB_STRESS:
+  category: Stress
+  display name: kefB
+  members:
+  - kefB-GI
+  members_long:
+  - kefB-GI_STRESS
+  type: Heat
+lnu(F)_AMR:
+  category: AMR
+  display name: lnu(F)
+  members:
+  - lnu(F)
+  members_long:
+  - lnu(F)_AMR
+  resistance: Lincosamide
+  type: Gene
+marR-R77C_AMR:
+  category: AMR
+  display name: marR-R77C
+  members:
+  - marR_R77C
+  members_long:
+  - marR_R77C_AMR
+  resistance: Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline)
+  type: Point
+marR-R94H_AMR:
+  category: AMR
+  display name: marR-R94H
+  members:
+  - marR_R94H
+  members_long:
+  - marR_R94H_AMR
+  resistance: Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline)
+  type: Point
+mchB_VIR:
+  category: Virulence
+  display name: mchB
+  members:
+  - mchB
+  members_long:
+  - mchB_VIR
+mchF_VIR:
+  category: Virulence
+  display name: mchF
+  members:
+  - mchF
+  members_long:
+  - mchF_VIR
+mcr_AMR:
+  category: AMR
+  display name: mcr
+  members:
+  - mcr-9
+  members_long:
+  - mcr-9_AMR
+  resistance: Colistin
+  type: Gene
+mdtM_AMR:
+  category: AMR
+  display name: mdtM
+  members:
+  - mdtM
+  members_long:
+  - mdtM_AMR
+  resistance: Efflux
+  type: Gene
+merA_STRESS:
+  category: Stress
+  display name: merA
+  members:
+  - merA
+  members_long:
+  - merA_STRESS
+  resistance: Mercury
+  type: Metal
+merB_STRESS:
+  category: Stress
+  display name: merB
+  members:
+  - merB
+  members_long:
+  - merB_STRESS
+  resistance: Mercury (Organomercury)
+  type: Metal
+merCPRT_STRESS:
+  category: Stress
+  display name: merCPRT
+  members:
+  - merC
+  - merP
+  - merR
+  - merT
+  members_long:
+  - merC_STRESS
+  - merP_STRESS
+  - merR_STRESS
+  - merT_STRESS
+  resistance: Mercury (Organomercury)
+  type: Metal
+merD_STRESS:
+  category: Stress
+  display name: merD
+  members:
+  - merD
+  members_long:
+  - merD_STRESS
+  resistance: Mercury
+  type: Metal
+merE_STRESS:
+  category: Stress
+  display name: merE
+  members:
+  - merE
+  members_long:
+  - merE_STRESS
+  resistance: Mercury
+  type: Metal
+mph(A)_AMR:
+  category: AMR
+  display name: mph(A)
+  members:
+  - mph(A)
+  members_long:
+  - mph(A)_AMR
+  resistance: Macrolide
+  type: Gene
+ncr_STRESS:
+  category: Stress
+  display name: ncr
+  members:
+  - ncrA
+  - ncrB
+  - ncrC
+  - ncrY
+  members_long:
+  - ncrA_STRESS
+  - ncrB_STRESS
+  - ncrC_STRESS
+  - ncrY_STRESS
+  resistance: Nickel
+  type: Metal
+nfaE_VIR:
+  category: Virulence
+  display name: nfaE
+  members:
+  - nfaE
+  members_long:
+  - nfaE_VIR
+nfsA-R15C_AMR:
+  category: AMR
+  display name: nfsA-R15C
+  members:
+  - nfsA_R15C
+  members_long:
+  - nfsA_R15C_AMR
+  resistance: Nitrofuran (Nitrofurantoin)
+  type: Point
+nfsA-R203C_AMR:
+  category: AMR
+  display name: nfsA-R203C
+  members:
+  - nfsA_R203C
+  members_long:
+  - nfsA_R203C_AMR
+  resistance: Nitrofuran (Nitrofurantoin)
+  type: Point
+p0111_PLASMID:
+  category: Plasmid
+  display name: p0111
+  members:
+  - p0111
+  members_long:
+  - p0111_PLASMID
+pKPC_PLASMID:
+  category: Plasmid
+  display name: pKPC
+  members:
+  - pKPC-CAV1193
+  members_long:
+  - pKPC-CAV1193_PLASMID
+papA_VIR:
+  category: Virulence
+  display name: papA
+  members:
+  - papA
+  members_long:
+  - papA_VIR
+papCFGII_VIR:
+  category: Virulence
+  display name: papCFGII
+  members:
+  - papC
+  - papF
+  - papG-II
+  members_long:
+  - papC_VIR
+  - papF_VIR
+  - papG-II_VIR
+papE_VIR:
+  category: Virulence
+  display name: papE
+  members:
+  - papE
+  members_long:
+  - papE_VIR
+papG-III_VIR:
+  category: Virulence
+  display name: papG-III
+  members:
+  - papG-III
+  members_long:
+  - papG-III_VIR
+papH_VIR:
+  category: Virulence
+  display name: papH
+  members:
+  - papH
+  members_long:
+  - papH_VIR
+parC-A56T_AMR:
+  category: AMR
+  display name: parC-A56T
+  members:
+  - parC_A56T
+  members_long:
+  - parC_A56T_AMR
+  resistance: Quinolone
+  type: Point
+parC-E84V_AMR:
+  category: AMR
+  display name: parC-E84V
+  members:
+  - parC_E84V
+  members_long:
+  - parC_E84V_AMR
+  resistance: Quinolone
+  type: Point
+parC-S57T_AMR:
+  category: AMR
+  display name: parC-S57T
+  members:
+  - parC_S57T
+  members_long:
+  - parC_S57T_AMR
+  resistance: Quinolone
+  type: Point
+parC-S80I_AMR:
+  category: AMR
+  display name: parC-S80I
+  members:
+  - parC_S80I
+  members_long:
+  - parC_S80I_AMR
+  resistance: Quinolone
+  type: Point
+parC-S80R_AMR:
+  category: AMR
+  display name: parC-S80R
+  members:
+  - parC_S80R
+  members_long:
+  - parC_S80R_AMR
+  resistance: Quinolone
+  type: Point
+parE-E460D_AMR:
+  category: AMR
+  display name: parE-E460D
+  members:
+  - parE_E460D
+  members_long:
+  - parE_E460D_AMR
+  resistance: Quinolone
+  type: Point
+parE-I529L_AMR:
+  category: AMR
+  display name: parE-I529L
+  members:
+  - parE_I529L
+  members_long:
+  - parE_I529L_AMR
+  resistance: Quinolone
+  type: Point
+parE-L445H_AMR:
+  category: AMR
+  display name: parE-L445H
+  members:
+  - parE_L445H
+  members_long:
+  - parE_L445H_AMR
+  resistance: Quinolone
+  type: Point
+pcoABCDERS_STRESS:
+  category: Stress
+  display name: pcoABCDERS
+  members:
+  - pcoA
+  - pcoB
+  - pcoC
+  - pcoD
+  - pcoE
+  - pcoR
+  - pcoS
+  members_long:
+  - pcoA_STRESS
+  - pcoB_STRESS
+  - pcoC_STRESS
+  - pcoD_STRESS
+  - pcoE_STRESS
+  - pcoR_STRESS
+  - pcoS_STRESS
+  resistance: Copper
+  type: Metal
+pmrB-E123D_AMR:
+  category: AMR
+  display name: pmrB-E123D
+  members:
+  - pmrB_E123D
+  members_long:
+  - pmrB_E123D_AMR
+  resistance: Colistin
+  type: Point
+pmrB-G206D_AMR:
+  category: AMR
+  display name: pmrB-G206D
+  members:
+  - pmrB_G206D
+  members_long:
+  - pmrB_G206D_AMR
+  resistance: Colistin
+  type: Point
+pmrB-T156M_AMR:
+  category: AMR
+  display name: pmrB-T156M
+  members:
+  - pmrB_T156M
+  members_long:
+  - pmrB_T156M_AMR
+  resistance: Colistin
+  type: Point
+pmrB-V161G_AMR:
+  category: AMR
+  display name: pmrB-V161G
+  members:
+  - pmrB_V161G
+  members_long:
+  - pmrB_V161G_AMR
+  resistance: Colistin
+  type: Point
+psi-GI_STRESS:
+  category: Stress
+  display name: psi-GI
+  members:
+  - psi-GI
+  members_long:
+  - psi-GI_STRESS
+  type: Heat
+ptsI-V25I_AMR:
+  category: AMR
+  display name: ptsI-V25I
+  members:
+  - ptsI_V25I
+  members_long:
+  - ptsI_V25I_AMR
+  resistance: Fosfomycin
+  type: Point
+qacE_STRESS:
+  category: Stress
+  display name: qacE
+  members:
+  - qacE
+  - qacEdelta1
+  members_long:
+  - qacE_STRESS
+  - qacEdelta1_STRESS
+  resistance: Quaternary Ammonium
+  type: Biocide
+qacF_STRESS:
+  category: Stress
+  display name: qacF
+  members:
+  - qacF
+  members_long:
+  - qacF_STRESS
+  resistance: Quaternary Ammonium
+  type: Biocide
+qacL_STRESS:
+  category: Stress
+  display name: qacL
+  members:
+  - qacL
+  members_long:
+  - qacL_STRESS
+  resistance: Quaternary Ammonium
+  type: Biocide
+qepA4_AMR:
+  category: AMR
+  display name: qepA4
+  members:
+  - qepA4
+  members_long:
+  - qepA4_AMR
+  resistance: Quinolone
+  type: Gene
+qnrA_AMR:
+  category: AMR
+  display name: qnrA
+  members:
+  - qnrA1
+  members_long:
+  - qnrA1_AMR
+  resistance: Quinolone
+  type: Gene
+qnrB_AMR:
+  category: AMR
+  display name: qnrB
+  members:
+  - qnrB19
+  - qnrB2
+  - qnrB4
+  - qnrB6
+  members_long:
+  - qnrB19_AMR
+  - qnrB2_AMR
+  - qnrB4_AMR
+  - qnrB6_AMR
+  resistance: Quinolone
+  type: Gene
+qnrS1_AMR:
+  category: AMR
+  display name: qnrS1
+  members:
+  - qnrS1
+  members_long:
+  - qnrS1_AMR
+  resistance: Quinolone
+  type: Gene
+rep21_PLASMID:
+  category: Plasmid
+  display name: rep21
+  members:
+  - rep21
+  members_long:
+  - rep21_PLASMID
+rmtB1/C_AMR:
+  category: AMR
+  display name: rmtB1/C
+  members:
+  - rmtB1
+  - rmtC
+  members_long:
+  - rmtB1_AMR
+  - rmtC_AMR
+  resistance: Aminoglycoside
+  type: Gene
+rpoB-Q513L_AMR:
+  category: AMR
+  display name: rpoB-Q513L
+  members:
+  - rpoB_Q513L
+  members_long:
+  - rpoB_Q513L_AMR
+  resistance: Rifamycin
+  type: Point
+sat2_AMR:
+  category: AMR
+  display name: sat2
+  members:
+  - sat2
+  members_long:
+  - sat2_AMR
+  resistance: Streptothricin
+  type: Gene
+sat_VIR:
+  category: Virulence
+  display name: sat
+  members:
+  - sat
+  members_long:
+  - sat_VIR
+senB_VIR:
+  category: Virulence
+  display name: senB
+  members:
+  - senB
+  members_long:
+  - senB_VIR
+sfaF_VIR:
+  category: Virulence
+  display name: sfaF
+  members:
+  - sfaF
+  members_long:
+  - sfaF_VIR
+sil_STRESS:
+  category: Stress
+  display name: sil
+  members:
+  - silA
+  - silB
+  - silC
+  - silE
+  - silF
+  - silP
+  - silR
+  - silS
+  members_long:
+  - silA_STRESS
+  - silB_STRESS
+  - silC_STRESS
+  - silE_STRESS
+  - silF_STRESS
+  - silP_STRESS
+  - silR_STRESS
+  - silS_STRESS
+  resistance: Copper/Silver
+  type: Metal
+soxR-G121D_AMR:
+  category: AMR
+  display name: soxR-G121D
+  members:
+  - soxR_G121D
+  members_long:
+  - soxR_G121D_AMR
+  resistance: Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline)
+  type: Point
+sslE_VIR:
+  category: Virulence
+  display name: sslE
+  members:
+  - sslE
+  members_long:
+  - sslE_VIR
+sul_AMR:
+  category: AMR
+  display name: sul
+  members:
+  - sul1
+  - sul2
+  - sul3
+  members_long:
+  - sul1_AMR
+  - sul2_AMR
+  - sul3_AMR
+  resistance: Sulfonamide
+  type: Gene
+terB_STRESS:
+  category: Stress
+  display name: terB
+  members:
+  - terB
+  members_long:
+  - terB_STRESS
+  resistance: Tellurium
+  type: Metal
+terC_STRESS:
+  category: Stress
+  display name: terC
+  members:
+  - terC
+  members_long:
+  - terC_STRESS
+  resistance: Tellurium
+  type: Metal
+terD_STRESS:
+  category: Stress
+  display name: terD
+  members:
+  - terD
+  members_long:
+  - terD_STRESS
+  resistance: Tellurium
+  type: Metal
+terE_STRESS:
+  category: Stress
+  display name: terE
+  members:
+  - terE
+  members_long:
+  - terE_STRESS
+  resistance: Tellurium
+  type: Metal
+terW_STRESS:
+  category: Stress
+  display name: terW
+  members:
+  - terW
+  members_long:
+  - terW_STRESS
+  resistance: Tellurium
+  type: Metal
+terZ_STRESS:
+  category: Stress
+  display name: terZ
+  members:
+  - terZ
+  members_long:
+  - terZ_STRESS
+  resistance: Tellurium
+  type: Metal
+tet_AMR:
+  category: AMR
+  display name: tet
+  members:
+  - tet(A)
+  - tet(B)
+  - tet(D)
+  members_long:
+  - tet(A)_AMR
+  - tet(B)_AMR
+  - tet(D)_AMR
+  resistance: Tetracycline
+  type: Gene
+trxLHR_STRESS:
+  category: Stress
+  display name: trxLHR
+  members:
+  - trxLHR
+  members_long:
+  - trxLHR_STRESS
+  type: Heat
+tsh_VIR:
+  category: Virulence
+  display name: tsh
+  members:
+  - tsh
+  members_long:
+  - tsh_VIR
+uhpT-E350Q_AMR:
+  category: AMR
+  display name: uhpT-E350Q
+  members:
+  - uhpT_E350Q
+  members_long:
+  - uhpT_E350Q_AMR
+  resistance: Fosfomycin
+  type: Point
+ybtPQ_VIR:
+  category: Virulence
+  display name: ybtPQ
+  members:
+  - ybtP
+  - ybtQ
+  members_long:
+  - ybtP_VIR
+  - ybtQ_VIR
+ymgB_STRESS:
+  category: Stress
+  display name: ymgB
+  members:
+  - ymgB
+  members_long:
+  - ymgB_STRESS
+  type: Acid

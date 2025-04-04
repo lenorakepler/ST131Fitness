@@ -5,9 +5,7 @@ import pandas as pd
 import numpy.lib.recfunctions as rf
 import math
 import pickle
-from analysis.param_model import CurrBeta, Offset
 from analysis.optimizer import Optimizer
-import tensorflow as tf
 import re
 
 class PhyloArrayer():
@@ -60,7 +58,6 @@ class PhyloArrayer():
 		a sampled node.
 
 		Columns are:
-			'ft' (featuretype)
 			'name' (as specified in the tree file --
 					note that multiple phylogeny pieces may
 					share a name)
@@ -137,11 +134,9 @@ class PhyloArrayer():
 		back_times = [self.present_time - t for t in event_times]
 		param_intervals = [self.getParamInterval(t) for t in event_times]
 		pE_intervals = [p+1 for p in param_intervals]
-		sequences = [self.features_dict[name] for name in ft_names]
 
 		arr_list = list(zip(
 			idx,
-			sequences,
 			names,
 			birth_times,
 			event_times,
@@ -155,7 +150,6 @@ class PhyloArrayer():
 
 		arr = np.array(arr_list, dtype=[
 			('idx', int),
-			('ft', object),
 			('name', object),
 			('birth_time', float),
 			('event_time', object),
@@ -308,8 +302,6 @@ class PhyloArrayer():
 		if 'rho' in kwargs:
 			self.setCSAs()
 
-		self.existing_fts = np.unique(self.array['ft'])
-
 	def updateArrayParams(self, **kwargs):
 		"""
 		Update existing birth-death parameters in self.array
@@ -420,12 +412,6 @@ class PhyloData(PhyloArrayer):
 	def returnCopy(self):
 		return self.__class__(array=copy.deepcopy(self.array), **self.getDataParams())
 
-	def getSubArray(self, sequences_to_select):
-		new_array = self.array[np.isin(self.array['ft'], sequences_to_select)]
-		sub_array_obj = self.__class__(array=new_array, **self.getDataParams())
-
-		return sub_array_obj
-
 	def getSubArraySpecific(self, indices):
 		"""
 		Given specific indices of .array, returns a new object
@@ -452,25 +438,6 @@ class PhyloData(PhyloArrayer):
 			return self.array[event_mask], event_mask
 		else:
 			return self.array[event_mask]
-			
-	def generateFtdf(self, actual_beta_dict):
-		data = self.returnCopy()
-		fts = data.existing_fts
-		ftdf = pd.DataFrame(index=fts, columns=['edges', 'births', 'weight', 'actual'])
-
-		for ft in fts:
-			tft = data.getSubArray([ft])
-
-			where_birth, where_edge = tft.getBirthDependent()
-			births = tft.array[where_birth].size
-			edges = tft.array[where_edge]['time_step'].sum()
-			weight = births + edges
-
-			actual = actual_beta_dict[ft]
-
-			ftdf.loc[ft, :] = [edges, births, weight, actual]
-
-		self.ftdf = ftdf
 
 	def initCurrBetas(self, init_beta, dtype=np.float64):
 		"""
@@ -494,40 +461,51 @@ class PhyloData(PhyloArrayer):
 
 		return phylo_data_objs
 
-	def updateCurrBetasByFT(self, fts_to_select, add_value):
-		"""
-		Given a list of fts and a value, increases 'curr_beta'
-		of all rows with that feature type by the specified amount
-		"""
-		bools = np.isin(self.array['ft'], fts_to_select)
-		new_beta = self.array['curr_beta'] + (bools * add_value)
+	# def returnCurrLike(self, return_model=False):
+	# 	fit_model = CurrBeta(self, loss_kwargs={})
+	# 	phylo_loss = fit_model.phylo_loss()
+	# 	loss = phylo_loss.call(fit_model.call())
 
-		# Prevent any birth rate from becoming 0 or negative
-		self.array['curr_beta'] = np.where(new_beta > 1e-10, new_beta, 1e-10)
+	# 	if return_model:
+	# 		return loss, fit_model
 
-	def returnCurrLike(self, return_model=False):
-		fit_model = CurrBeta(self, loss_kwargs={})
-		phylo_loss = fit_model.phylo_loss()
-		loss = phylo_loss.call(fit_model.call())
+	# 	return loss
 
-		if return_model:
-			return loss, fit_model
+	# def returnCurrLikePenalized(self, loss_kwargs, weights):
+	# 	fit_model = CurrBeta(self, loss_kwargs=loss_kwargs)
+	# 	phylo_loss = fit_model.phylo_loss(**loss_kwargs)
+	# 	loss = phylo_loss.call(fit_model.call(), weights=tf.constant(weights, dtype=tf.float64))
 
-		return loss
+	# 	return loss
 
-	def returnCurrLikePenalized(self, loss_kwargs, weights):
-		fit_model = CurrBeta(self, loss_kwargs=loss_kwargs)
-		phylo_loss = fit_model.phylo_loss(**loss_kwargs)
-		loss = phylo_loss.call(fit_model.call(), weights=tf.constant(weights, dtype=tf.float64))
+	# def getMLE(self):
+	# 	opt = Optimizer(
+	# 		fit_model=Offset,
+	# 		fit_model_kwargs=dict(data=self, loss_kwargs={}),
+	# 		n_epochs=10000, lr=0.01,
+	# 	)
+	# 	opt.verbose = False
+	# 	offset, loss = opt.doOpt()
+	# 	return offset['Variable']
 
-		return loss
+class PhyloDataFile(PhyloData):
+	def __init__(self, **kwargs):
+		if 'data_params_file' in kwargs:
+			with open(kwargs['data_params_file'], "rb") as f:
+				kwargs = {**kwargs, **pickle.load(f)}
+		if 'array' in kwargs:
+			array = kwargs['array']
+			del kwargs['array']
+		elif 'array_file' in kwargs:
+			array = np.load(kwargs['array_file'], allow_pickle=True)
+		else:
+			sys.exit("Need to specify either array or array_file")
 
-	def getMLE(self):
-		opt = Optimizer(
-			fit_model=Offset,
-			fit_model_kwargs=dict(data=self, loss_kwargs={}),
-			n_epochs=10000, lr=0.01,
-		)
-		opt.verbose = False
-		offset, loss = opt.doOpt()
-		return offset['Variable']
+
+		super().__init__(array, **kwargs)
+
+	def returnCopyWithArray(self, array):
+		return PhyloData(array=copy.deepcopy(array), **self.getDataParams())
+
+	def returnCopy(self):
+		return PhyloData(array=copy.deepcopy(self.array), **self.getDataParams())

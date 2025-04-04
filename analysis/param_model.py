@@ -226,6 +226,27 @@ class ComponentSite(ParamComponent):
 		self.birth_site_b = tf.exp(tf.reduce_sum(ls * self.birth_ft, axis=1))
 		self.pE_site_b = self.edge_site_b
 
+class ComponentSiteMarginal(ComponentSite):
+	"""
+	site-specific effect methods
+	"""
+	def init_site(self):
+		param_val = list(self.bdm['site'])
+
+		if param_val[0] == True:
+			self.edge_ft = np.array([self.marginal_dict[n] for n in self.edge_arr['name']])
+			self.birth_ft = np.array([self.marginal_dict[n] for n in self.birth_arr['name']])
+
+			site = tf.ones(shape=[1, self.edge_ft.shape[1]], dtype=tf.dtypes.float64)
+			self.site = tf.Variable(site, name='site')
+
+		else:
+			self.edge_site_b = tf.ones(self.n_edges, dtype=tf.dtypes.float64)
+			self.birth_site_b = tf.ones(self.n_births, dtype=tf.dtypes.float64)
+
+			if self.iterative_pE:
+				self.pE_site_b = self.edge_site_b
+
 class ComponentB0(ParamComponent):
 	"""
 	"base" birth rate (b0) effect methods
@@ -312,7 +333,49 @@ class Site(ParamModel, ComponentB0, ComponentSite):
 		self.p.pE_b = tf.transpose(tf.transpose(self.pE_b0) * self.pE_site_b)
 
 		return self.p
-	
+
+
+class SiteMarginal(ParamModel, ComponentB0, ComponentSiteMarginal):
+	"""
+	model params: b0, site, d, s, rho
+	call() calls self.edge_b0, self.birth_b0, + self.pE_b0 if pE
+	"""
+	def __init__(self, data, b0, site, gamma, d, s, rho, marginal_dict, iterative_pE=True, **kwargs):
+		self.bdm = dict(b0=b0, site=site, d=d, s=s, rho=rho, gamma=gamma)
+		self.private_vars = [k for k, v in self.bdm.items() if v[0] == True]
+		self.vars = ['b'] + self.private_vars
+
+		self.marginal_dict = marginal_dict
+
+		super().__init__(data=data, iterative_pE=iterative_pE, **kwargs)
+
+		# Set parameter methods
+		self.setMethods()
+
+		# Initialize parameters
+		for var in self.bdm:
+			if var not in self.base_bdm_params:
+				getattr(self, f"init_{var}")()
+
+	def call_(self):
+		for var in self.private_vars:
+			getattr(self, f"{var}_call")()
+
+		self.p.edge_b = self.edge_site_b * self.edge_b0
+		self.p.birth_b = self.birth_site_b * self.birth_b0
+
+		return self.p
+
+	def call_PE(self):
+		for var in self.private_vars:
+			getattr(self, f"{var}_call")()
+
+		self.p.edge_b = self.edge_site_b * self.edge_b0
+		self.p.birth_b = self.birth_site_b * self.birth_b0
+		self.p.pE_b = tf.transpose(tf.transpose(self.pE_b0) * self.pE_site_b)
+
+		return self.p
+
 class ComponentCurrBeta2(ParamComponent):
 	def init_currbeta(self):
 		self.cb = tf.Variable(self.data.array['curr_beta'])
@@ -380,6 +443,130 @@ class ComponentOffset(ParamComponent):
 
 	def get_offsetVar_pE(self):
 		pass
+
+# class DiffSampling(ParamModel, ComponentS0, ComponentSSite, ComponentSite):
+# 	"""
+# 	Model that overrides s and b
+# 	b = site_fitness
+# 	s = s0_t * s_site
+# 	"""
+
+# 	def __init__(self, data, s0, s_site, site, gamma, d, rho, iterative_pE=True, **kwargs):
+# 		self.bdm = dict(site=site, d=d, s=s, rho=rho, gamma=gamma)
+# 		self.private_vars = [k for k, v in self.bdm.items() if v[0] == True]
+# 		self.vars = ['b', 's'] + self.private_vars
+
+# 		super().__init__(data=data, iterative_pE=iterative_pE, **kwargs)
+
+# 		# Set parameter methods
+# 		self.setMethods()
+
+# 		# Initialize parameters
+# 		for var in self.bdm:
+# 			if var not in self.base_bdm_params:
+# 				getattr(self, f"init_{var}")()
+
+# 	def call_(self):
+# 		for var in self.private_vars:
+# 			getattr(self, f"{var}_call")()
+
+# 		self.p.edge_b = self.edge_site_b
+# 		self.p.birth_b = self.birth_site_b
+
+# 		self.p.edge_s = self.edge_s_site_s * self.edge_s0
+# 		self.p.sample_s = self.sample_s_site_s * self.sample_s0
+
+# 		return self.p
+
+# 	def call_PE(self):
+# 		for var in self.private_vars:
+# 			getattr(self, f"{var}_call")()
+
+# 		self.p.edge_b = self.edge_site_b * self.edge_b0
+# 		self.p.birth_b = self.birth_site_b * self.birth_b0
+# 		self.p.pE_b = tf.transpose(tf.transpose(self.pE_b0) * self.pE_site_b)
+
+# 		self.p.edge_s = self.edge_s_site_s * self.edge_s0
+# 		self.p.sample_s = self.sample_s_site_s * self.sample_s0
+# 		self.p.pE_s = tf.transpose(tf.transpose(self.pE_s0) * self.pE_s_site_s)
+
+# 		return self.p
+
+class ComponentS0(ParamComponent):
+	"""
+	"base" sampling rate (s0) effect methods
+	"""
+	def init_s0(self):
+		param_val = list(self.bdm['s0'])
+
+		self.n_sample_intervals = len(tf.unique(self.sampling_rate_idx)[0])
+
+		if param_val[0] == False:
+			self.edge_s0 = self.getParamSingle(self.edge_arr, 's0')
+			self.sample_s0 = self.getParamSingle(self.sample_arr, 's0')
+
+			if self.iterative_pE:
+				self.pE_s0 = self.getParamAll(self.edge_arr, 's0')
+
+		else:
+			# If don't want to vary with time
+			if param_val[1] == False:
+				self.s0 = tf.Variable(1.000001, dtype=tf.dtypes.float64, name='s0')
+
+			else:
+				self.s0 = tf.Variable(tf.ones(shape=self.n_sample_intervals, dtype=tf.dtypes.float64) + .000001, name='s0')
+
+			if self.iterative_pE:
+				self.pE_ones = tf.ones(shape=[self.n_edges, self.n_times], dtype=tf.dtypes.float64)
+
+	def get_s0Var(self):
+		self.edge_s0 = self.sample_s0 = self.s0
+
+	def get_s0Var_pE(self):
+		self.edge_s0 = self.sample_s0 = self.s0
+		self.pE_s0 = self.s0 * self.pE_ones
+
+	def get_s0VarTV(self):
+		expand_s0 = tf.gather(self.s0, self.sampling_rate_idx)
+		self.edge_s0 = tf.gather(expand_s0, self.p.edge_param_interval)
+		self.sample_s0 = tf.gather(expand_s0, self.p.sample_param_interval)
+
+	def get_s0VarTV_pE(self):
+		expand_s0 = tf.gather(self.s0, self.sampling_rate_idx)
+		self.edge_s0 = tf.gather(expand_s0, self.p.edge_param_interval)
+		self.sample_s0 = tf.gather(expand_s0, self.p.sample_param_interval)
+		self.pE_s0 = self.pE_ones * expand_s0
+
+class ComponentSSite(ParamComponent):
+	"""
+	site-specific effect methods
+	"""
+	def init_s_site(self):
+		param_val = list(self.bdm['s_site'])
+
+		if param_val[0] == True:
+			self.edge_s_ft = np.array([np.fromiter(ft, dtype=int) for ft in self.edge_arr['s_ft']])
+			self.sample_s_ft = np.array([np.fromiter(ft, dtype=int) for ft in self.sample_arr['s_ft']])
+
+			s_site = tf.ones(shape=[1, self.edge_ft.shape[1]], dtype=tf.dtypes.float64)
+			self.s_site = tf.Variable(s_site, name='s_site')
+
+	def get_s_siteConst_pE(self):
+		pass
+
+	def get_s_siteConst(self):
+		pass
+
+	def get_s_siteVar(self):
+		ls = tf.math.log(self.s_site)
+		self.edge_s_site_s = tf.exp(tf.reduce_sum(ls * self.edge_s_ft, axis=1))
+		self.sample_s_site_s = tf.exp(tf.reduce_sum(ls * self.sample_s_ft, axis=1))
+
+	def get_s_siteVar_pE(self):
+		ls = tf.math.log(self.s_site)
+		self.edge_s_site_s = tf.exp(tf.reduce_sum(ls * self.edge_s_ft, axis=1))
+		self.sample_s_site_s = tf.exp(tf.reduce_sum(ls * self.sample_s_ft, axis=1))
+		self.pE_s_site_s = self.edge_s_site_s
 
 class Offset(ParamModel, ComponentB0, ComponentOffset):
 	"""

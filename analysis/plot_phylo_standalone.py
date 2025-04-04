@@ -31,7 +31,7 @@ def prune_tree_to_proportion(tree_file, proportion=False, count=False):
 	tree : an ete3 tree pruned to specified size
 	"""
 
-	tree = Tree(str(tree_file), format=3)
+	tree = Tree(str(tree_file), format=1)
 	leaves = tree.get_leaves()
 
 	if proportion:
@@ -43,7 +43,7 @@ def prune_tree_to_proportion(tree_file, proportion=False, count=False):
 	return tree
 
 def removeLeaves(tree_file, remove_leaves):
-	tree = Tree(str(tree_file), format=3)
+	tree = Tree(str(tree_file), format=1)
 	keep = [leaf for leaf in tree.get_leaves() if leaf.name not in remove_leaves]
 	tree.prune(keep, preserve_branch_length=True)
 
@@ -151,7 +151,7 @@ def loadTree(tree_file, internal=True, abs_time=0, sort_descending=True, format=
 
 	return tt
 
-def set_vertical(ax, line_style=(0.0, [1, 10]), color="lightgray"):
+def set_vertical(ax, line_style=(0.0, [1, 10]), color="lightgray", line_width=None):
 	# Get all vertical connecting line segments
 	vert = []
 	for i, seg in enumerate(ax.collections[0].get_segments()):
@@ -163,12 +163,17 @@ def set_vertical(ax, line_style=(0.0, [1, 10]), color="lightgray"):
 	vert_rgba = list(mpl.colors.to_rgba(color))
 	line_styles = [line_style if i in vert else ls for i, ls in enumerate(ax.collections[0].get_linestyle())]
 	line_colors = [vert_rgba if i in vert else c for i, c in enumerate(ax.collections[0].get_color())]
+
+	if line_width:
+		line_widths = [line_width if i in vert else c for i, c in enumerate(ax.collections[0].get_linewidth())]
+		ax.collections[0].set_linewidths(line_widths)
+
 	ax.collections[0].set_linestyles(line_styles)
 	ax.collections[0].set_color(line_colors)
 
 	return ax
 
-def plotTrait(tt, node_c_func, edge_c_func, trait, save, s_func="default", tip_names=False, legend=False, lloc=3, figsize=(10, 20), zoom=False):
+def plotTrait(tt, node_c_func, edge_c_func, trait, save, s_func="default", tip_names=False, legend=False, lloc=3, figsize=(10, 20), zoom=False, width=None):
 	"""
 	Zoom can take a tuple or list of two values indicating the upper and lower limits of the "zoom"
 	"""
@@ -178,7 +183,7 @@ def plotTrait(tt, node_c_func, edge_c_func, trait, save, s_func="default", tip_n
 	x_attr = lambda k: k.absoluteTime ## x coordinate of branches will be absoluteTime attribute
 	s_func = s_func ## size of tips
 
-	tt.plotTree(ax, x_attr=x_attr, colour=edge_c_func) ## plot branches
+	tt.plotTree(ax, x_attr=x_attr, colour=edge_c_func, width=width) ## plot branches
 	if s_func:
 		if s_func == "default":
 			s_func = lambda k: 50 - 4500 / tt.treeHeight
@@ -368,7 +373,7 @@ def plotInSetFunc(
 	if show:
 		plt.show()
 
-def plotTraitAx(ax, tt, edge_c_func, node_c_func, title, s_func=None, tip_names=False, birth_events=False, tips=True, zoom=False, birth_c_func=None):
+def plotTraitAx(ax, tt, edge_c_func, node_c_func, title, s_func=None, tip_names=False, birth_events=False, tips=True, zoom=False, birth_c_func=None, width=None):
 
 	# X position of nodes will be absolute time
 	x_attr = lambda k: k.absoluteTime
@@ -380,7 +385,7 @@ def plotTraitAx(ax, tt, edge_c_func, node_c_func, title, s_func=None, tip_names=
 	else:
 		s_func = lambda k: 0
 
-	tpt = tt.plotTree(ax, x_attr=x_attr, colour=edge_c_func)
+	tpt = tt.plotTree(ax, x_attr=x_attr, colour=edge_c_func, width=width)
 	tpp = tt.plotPoints(ax, x_attr=x_attr, size=s_func, colour=node_c_func, zorder=100)
 
 	if tip_names:
@@ -443,7 +448,7 @@ def get_center(center, min_trait_value, max_trait_value):
 
 	return min_val, max_val
 
-def continuousFunc(trait_dict, trait, cmap='viridis', center=None, vmin=None, vmax=None, null_color="#eeeeee", norm="norm"):
+def continuousFunc(trait_dict, trait, cmap='viridis', vmin=None, vmax=None, center=None, null_color="#eeeeee", norm="norm"):
 	"""
 	"""
 	trait_values = list(set([t for t in trait_dict.values() if t != float("nan")]))
@@ -479,11 +484,14 @@ def continuousFunc(trait_dict, trait, cmap='viridis', center=None, vmin=None, vm
 	c_func = lambda k: cFunc(k)
 	return c_func, cmap, norm
 
-def categoricalFunc(trait_dict, trait, legend=False, color_list=None, null_color="#eeeeee"):
+def categoricalFunc(trait_dict, trait, legend=False, color_list=None, null_color="#eeeeee", trait_value_order=None):
 	"""
 	Output function that maps node/edge names to color corresponding to given trait
 	"""
-	trait_values = list(set(trait_dict.values()))
+	if trait_value_order:
+		trait_values = trait_value_order
+	else:
+		trait_values = list(set(trait_dict.values()))
 
 	if not color_list:
 		color_list = list(mcd.XKCD_COLORS.values())

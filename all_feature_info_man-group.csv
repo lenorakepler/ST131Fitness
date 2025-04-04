@@ -1,0 +1,274 @@
+Category,New Feature Group,Feature Group,Feature Name,Count (%),AMRFinder+ Type,Resistance Class,Sequence Name,Done
+AMR,aac(3),aac(3)/(6'),aac(3)-IId,153 (17.2),AMR,Aminoglycoside (Gentamicin),aminoglycoside N-acetyltransferase AAC(3)-IId,TRUE
+AMR,aac(3),aac(3)/(6'),aac(3)-IIe,149 (16.8),AMR,Aminoglycoside (Gentamicin),aminoglycoside N-acetyltransferase AAC(3)-IIe,TRUE
+AMR,aac(3),aac(3)/(6'),aac(3)-Ib,1 (0.1),AMR,Aminoglycoside (Gentamicin),aminoglycoside N-acetyltransferase AAC(3)-Ib,TRUE
+AMR,aac(3),aac(3)/(6'),aac(3)-VIa,1 (0.1),AMR,Aminoglycoside (Gentamicin),aminoglycoside N-acetyltransferase AAC(3)-VIa,TRUE
+AMR,aac(6'),aac(3)/(6'),aac(6')-Ib,2 (0.2),AMR,Aminoglycoside (Amikacin/Kanamycin/Tobramycin),AAC(6')-Ib family aminoglycoside 6'-N-acetyltransferase (aminoglycoside N-acetyltransferase AAC(6')-Ib3),TRUE
+AMR,aac(6')-Ib-cr,aac(3)/(6'),aac(6')-Ib-cr,8 (0.9),AMR,Aminoglycoside/Quinolone (Amikacin/Kanamycin/Quinolone/Tobramycin),fluoroquinolone-acetylating aminoglycoside 6'-N-acetyltransferase AAC(6')-Ib-cr (fluoroquinolone-acetylating aminoglycoside 6'-N-acetyltransferase AAC(6')-Ib-cr6),TRUE
+AMR,aac(6')-Ib-cr,aac(3)/(6'),aac(6')-Ib-cr5,239 (26.9),AMR,Aminoglycoside/Quinolone (Amikacin/Kanamycin/Quinolone/Tobramycin),fluoroquinolone-acetylating aminoglycoside 6'-N-acetyltransferase AAC(6')-Ib-cr5,TRUE
+AMR,aac(6'),aac(3)/(6'),aac(6')-Ib3,3 (0.3),AMR,Aminoglycoside (Amikacin/Kanamycin/Tobramycin),aminoglycoside N-acetyltransferase AAC(6')-Ib3,TRUE
+AMR,aac(6'),aac(3)/(6'),aac(6')-Il,3 (0.3),AMR,Aminoglycoside (Amikacin/Kanamycin/Tobramycin),aminoglycoside N-acetyltransferase AAC(6')-Il,TRUE
+AMR,aadA,aadA + qacE/F/L (*),aadA1,21 (2.4),AMR,Aminoglycoside (Streptomycin),ANT(3'')-Ia family aminoglycoside nucleotidyltransferase AadA1,TRUE
+AMR,aadA,aadA + qacE/F/L (*),aadA16,2 (0.2),AMR,Aminoglycoside (Streptomycin),ANT(3'')-Ia family aminoglycoside nucleotidyltransferase AadA16,TRUE
+AMR,aadA,aadA + qacE/F/L (*),aadA2,77 (8.7),AMR,Aminoglycoside (Streptomycin),ANT(3'')-Ia family aminoglycoside nucleotidyltransferase AadA2,TRUE
+AMR,aadA,aadA + qacE/F/L (*),aadA25,1 (0.1),AMR,Aminoglycoside (Streptomycin),ANT(3'')-Ia family aminoglycoside nucleotidyltransferase AadA25,TRUE
+AMR,aadA,aadA + qacE/F/L (*),aadA5,433 (48.8),AMR,Aminoglycoside (Streptomycin),ANT(3'')-Ia family aminoglycoside nucleotidyltransferase AadA5,TRUE
+Stress,qacE,aadA + qacE/F/L (*),qacE,5 (0.6),Stress (Biocide),Quaternary Ammonium,quaternary ammonium compound efflux SMR transporter QacE (quaternary ammonium compound efflux SMR transporter QacE delta 1),TRUE
+Stress,qacE,aadA + qacE/F/L (*),qacEdelta1,513 (57.8),Stress (Biocide),Quaternary Ammonium,quaternary ammonium compound efflux SMR transporter QacE delta 1,TRUE
+Stress,qacF,aadA + qacE/F/L (*),qacF,1 (0.1),Stress (Biocide),Quaternary Ammonium,quaternary ammonium compound efflux SMR transporter QacF,TRUE
+Stress,qacL,aadA + qacE/F/L (*),qacL,1 (0.1),Stress (Biocide),Quaternary Ammonium,quaternary ammonium compound efflux SMR transporter QacL,TRUE
+Virulence,aap,aap,aap,6 (0.7),Virulence,N/A,dispersin Aap,TRUE
+Virulence,aar,aar + aatA + agg (*),aar,5 (0.6),Virulence,N/A,AggR-activated transcriptional regulator Aar,TRUE
+Virulence,aatA,aar + aatA + agg (*),aatA,5 (0.6),Virulence,N/A,dispersin export ABC transporter outer membrane protein AatA,TRUE
+Virulence,agg3DCB,aar + aatA + agg (*),agg3B,5 (0.6),Virulence,N/A,aggregative adherence fimbria 3 minor subunit Agg3B,TRUE
+Virulence,agg3DCB,aar + aatA + agg (*),agg3C,5 (0.6),Virulence,N/A,aggregative adherence fimbria 3 usher protein Agg3C,TRUE
+Virulence,agg3DCB,aar + aatA + agg (*),agg3D,5 (0.6),Virulence,N/A,aggregative adherence fimbria 3 chaperone Agg3D,TRUE
+Virulence,agg5A,aar + aatA + agg (*),agg5A,5 (0.6),Virulence,N/A,aggregative adherence fimbria V major subunit Agg5A,TRUE
+Virulence,aggR,aar + aatA + agg (*),aggR,5 (0.6),Virulence,N/A,aggregative adherence transcriptional regulator AggR,TRUE
+AMR,acrB-R620C,acrB/F/R,acrB_R620C,4 (0.5),AMR (Point),Tetracycline (Tigecycline),Escherichia tigecycline resistant AcrB (multidrug efflux RND transporter permease subunit AcrB),TRUE
+AMR,acrB-R717L,acrB/F/R,acrB_R717L,3 (0.3),AMR (Point),Macrolide (Azithromycin/Clarithromycin/Erythromycin),Escherichia azithromycin/clarithromycin/erythromycin resistant AcrB (multidrug efflux RND transporter permease subunit AcrB),TRUE
+AMR,acrF,acrB/F/R,acrF,887 (100.0),AMR,Efflux,multidrug efflux RND transporter permease subunit AcrF,TRUE
+AMR,acrR-R45C,acrB/F/R,acrR_R45C,1 (0.1),AMR (Point),Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline),Escherichia ampicillin/chloramphenicol/quinolone/rifampin/tetracycline resistant AcrR (transcriptional regulator AcrR),TRUE
+Virulence,afaC,afaC + nfaE (*),afaC,192 (21.6),Virulence,N/A,AfaC-I/III family usher protein,TRUE
+Virulence,nfaE,afaC + nfaE (*),nfaE,194 (21.9),Virulence,N/A,Dr family non-fimbrial adhesin I chaperone NfaE,TRUE
+AMR,ampC-C11T,ampC,ampC_C-11T,2 (0.2),AMR (Point),Beta-Lactam (Cephalosporin),Escherichia cephalosporin resistant ampC (ampC/blaEC promoter region),TRUE
+AMR,ampC-T32A,ampC,ampC_T-32A,6 (0.7),AMR (Point),Beta-Lactam (Cephalosporin),Escherichia cephalosporin resistant ampC (ampC/blaEC promoter region),TRUE
+AMR,ant(2'')-Ia,ant(2'')-Ia,ant(2'')-Ia,5 (0.6),AMR,Aminoglycoside (Gentamicin/Kanamycin/Tobramycin),aminoglycoside nucleotidyltransferase ANT(2'')-Ia,TRUE
+AMR,aph(3'')-Ib,aph(3')/(3'')/(6),aph(3'')-Ib,282 (31.8),AMR,Aminoglycoside (Streptomycin),aminoglycoside O-phosphotransferase APH(3'')-Ib,TRUE
+AMR,aph(3')-Ia,aph(3')/(3'')/(6),aph(3')-Ia,10 (1.1),AMR,Aminoglycoside (Kanamycin),aminoglycoside O-phosphotransferase APH(3')-Ia,TRUE
+AMR,aph(3')-VI,aph(3')/(3'')/(6),aph(3')-VI,1 (0.1),AMR,Aminoglycoside (Amikacin/Kanamycin),APH(3')-VI family aminoglycoside O-phosphotransferase,TRUE
+AMR,aph(6)-Id,aph(3')/(3'')/(6),aph(6)-Id,261 (29.4),AMR,Aminoglycoside (Streptomycin),aminoglycoside O-phosphotransferase APH(6)-Id,TRUE
+AMR,arr,arr,arr,9 (1.0),AMR,Rifamycin,NAD(+)--rifampin ADP-ribosyltransferase (NAD(+)--rifampin ADP-ribosyltransferase Arr-2),TRUE
+AMR,arr,arr,arr-2,2 (0.2),AMR,Rifamycin,NAD(+)--rifampin ADP-ribosyltransferase Arr-2,TRUE
+AMR,arr,arr,arr-3,2 (0.2),AMR,Rifamycin,NAD(+)--rifampin ADP-ribosyltransferase Arr-3,TRUE
+Virulence,astA,astA,astA,31 (3.5),Virulence,N/A,heat-stable enterotoxin EAST1,TRUE
+AMR,basR-G53S,basR,basR_G53S,1 (0.1),AMR (Point),Colistin,Escherichia colistin resistant BasR (two-component system response regulator BasR),TRUE
+AMR,blaCARB-2,blaCARB-2,blaCARB-2,2 (0.2),AMR,Beta-Lactam,PSE family carbenicillin-hydrolyzing class A beta-lactamase CARB-2,TRUE
+AMR,blaCMY,blaCMY,blaCMY,3 (0.3),AMR,Beta-Lactam (Cephalosporin),CMY-2 family class C beta-lactamase (class C beta-lactamase CMY-2),TRUE
+AMR,blaCMY,blaCMY,blaCMY-2,8 (0.9),AMR,Beta-Lactam (Cephalosporin),class C beta-lactamase CMY-2,TRUE
+AMR,blaCMY,blaCMY,blaCMY-6,1 (0.1),AMR,Beta-Lactam (Cephalosporin),class C beta-lactamase CMY-6,TRUE
+AMR,blaCTX-M,blaCTX-M,blaCTX-M,10 (1.1),AMR,Beta-Lactam (Cephalosporin),CTX-M family extended-spectrum class A beta-lactamase (extended-spectrum class A beta-lactamase CTX-M-98),TRUE
+AMR,blaCTX-M-1,blaCTX-M-1,blaCTX-M-1,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-1,TRUE
+AMR,blaCTX-M-14,blaCTX-M-14,blaCTX-M-14,14 (1.6),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-14,TRUE
+AMR,blaCTX-M-15,blaCTX-M-15,blaCTX-M-15,349 (39.3),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-15,TRUE
+AMR,blaCTX-M-195,blaCTX-M-195,blaCTX-M-195,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-195,TRUE
+AMR,blaCTX-M-24,blaCTX-M-24,blaCTX-M-24,3 (0.3),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-24,TRUE
+AMR,blaCTX-M-27,blaCTX-M-27,blaCTX-M-27,109 (12.3),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-27,TRUE
+AMR,blaCTX-M-55,blaCTX-M-55,blaCTX-M-55,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase CTX-M-55,TRUE
+AMR,blaDHA,blaDHA,blaDHA-1,1 (0.1),AMR,Beta-Lactam (Cephalosporin),class C beta-lactamase DHA-1,TRUE
+AMR,blaEC,blaEC,blaEC,887 (100.0),AMR,Beta-Lactam,BlaEC family class C beta-lactamase (cephalosporin-hydrolyzing class C beta-lactamase EC-5),TRUE
+AMR,blaFOX-5,blaFOX-5,blaFOX-5,1 (0.1),AMR,Beta-Lactam (Cephalosporin),cephalosporin-hydrolyzing class C beta-lactamase FOX-5,TRUE
+AMR,BlaKPC,BlaKPC,blaKPC-2,14 (1.6),AMR,Beta-Lactam (Carbapenem),carbapenem-hydrolyzing class A beta-lactamase KPC-2,TRUE
+AMR,BlaKPC,BlaKPC,blaKPC-3,12 (1.4),AMR,Beta-Lactam (Carbapenem),carbapenem-hydrolyzing class A beta-lactamase KPC-3,TRUE
+AMR,BlaKPC,BlaKPC,blaKPC-4,1 (0.1),AMR,Beta-Lactam (Carbapenem),carbapenem-hydrolyzing class A beta-lactamase KPC-4,TRUE
+AMR,blaLAP,blaLAP,blaLAP-1,1 (0.1),AMR,Beta-Lactam,class A beta-lactamase LAP-1,TRUE
+AMR,blaNDM,blaNDM + ble (*),blaNDM-1,2 (0.2),AMR,Beta-Lactam (Carbapenem),subclass B1 metallo-beta-lactamase NDM-1,TRUE
+AMR,blaNDM,blaNDM + ble (*),blaNDM-5,12 (1.4),AMR,Beta-Lactam (Carbapenem),subclass B1 metallo-beta-lactamase NDM-5,TRUE
+AMR,blaNDM,blaNDM + ble (*),blaNDM-7,1 (0.1),AMR,Beta-Lactam (Carbapenem),subclass B1 metallo-beta-lactamase NDM-7,TRUE
+AMR,ble,blaNDM + ble (*),ble,15 (1.7),AMR,Bleomycin,bleomycin binding protein Ble-MBL,TRUE
+AMR,blaOXA,blaOXA,blaOXA,8 (0.9),AMR,Beta-Lactam,OXA-9 family class D beta-lactamase (oxacillin-hydrolyzing class D beta-lactamase OXA-9),TRUE
+AMR,blaOXA-OH,blaOXA,blaOXA-1,245 (27.6),AMR,Beta-Lactam (Cephalosporin),oxacillin-hydrolyzing class D beta-lactamase OXA-1,TRUE
+AMR,blaOXA-OH,blaOXA,blaOXA-10,3 (0.3),AMR,Beta-Lactam (Cephalosporin),oxacillin-hydrolyzing class D beta-lactamase OXA-10,TRUE
+AMR,blaOXA-CH,blaOXA,blaOXA-181,1 (0.1),AMR,Beta-Lactam (Carbapenem),OXA-48 family carbapenem-hydrolyzing class D beta-lactamase OXA-181,TRUE
+AMR,blaOXA-CH,blaOXA,blaOXA-244,1 (0.1),AMR,Beta-Lactam (Carbapenem),OXA-48 family carbapenem-hydrolyzing class D beta-lactamase OXA-244,TRUE
+AMR,blaOXA-CH,blaOXA,blaOXA-48,1 (0.1),AMR,Beta-Lactam (Carbapenem),OXA-48 family carbapenem-hydrolyzing class D beta-lactamase OXA-48,TRUE
+AMR,blaSHV,blaSHV,blaSHV-12,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase SHV-12,TRUE
+AMR,blaTEM-CA,blaTEM,blaTEM,36 (4.1),AMR,Beta-Lactam,TEM family class A beta-lactamase (broad-spectrum class A beta-lactamase TEM-1),TRUE
+AMR,blaTEM-CA,blaTEM,blaTEM-1,388 (43.7),AMR,Beta-Lactam,broad-spectrum class A beta-lactamase TEM-1,TRUE
+AMR,blaTEM-ES,blaTEM,blaTEM-12,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase TEM-12,TRUE
+AMR,blaTEM-CA,blaTEM,blaTEM-156,1 (0.1),AMR,Beta-Lactam,class A beta-lactamase TEM-156,TRUE
+AMR,blaTEM-CA,blaTEM,blaTEM-176,1 (0.1),AMR,Beta-Lactam,class A beta-lactamase TEM-176,TRUE
+AMR,blaTEM-ES,blaTEM,blaTEM-19,2 (0.2),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase TEM-19,TRUE
+AMR,blaTEM-ES,blaTEM,blaTEM-29,1 (0.1),AMR,Beta-Lactam (Cephalosporin),extended-spectrum class A beta-lactamase TEM-29,TRUE
+AMR,blaTEM-IR,blaTEM,blaTEM-30,1 (0.1),AMR,Beta-Lactam,inhibitor-resistant broad-spectrum class A beta-lactamase TEM-30,TRUE
+AMR,blaTEM-IR,blaTEM,blaTEM-31,4 (0.5),AMR,Beta-Lactam,inhibitor-resistant broad-spectrum class A beta-lactamase TEM-31,TRUE
+AMR,blaTEM-IR,blaTEM,blaTEM-34,1 (0.1),AMR,Beta-Lactam,inhibitor-resistant broad-spectrum class A beta-lactamase TEM-34,TRUE
+AMR,blaTEM-IR,blaTEM,blaTEM-40,2 (0.2),AMR,Beta-Lactam,inhibitor-resistant broad-spectrum class A beta-lactamase TEM-40,TRUE
+AMR,blaVIM,blaVIM,blaVIM-1,2 (0.2),AMR,Beta-Lactam (Carbapenem),subclass B1 metallo-beta-lactamase VIM-1,TRUE
+Virulence,capU,capU,capU,7 (0.8),Virulence,N/A,putative hexosyltransferase CapU,TRUE
+AMR,catA,catA/B,catA1,9 (1.0),AMR,Phenicol (Chloramphenicol),type A-1 chloramphenicol O-acetyltransferase,TRUE
+AMR,catA,catA/B,catA2,3 (0.3),AMR,Phenicol (Chloramphenicol),type A-2 chloramphenicol O-acetyltransferase CatII,TRUE
+AMR,catB,catA/B,catB11,2 (0.2),AMR,Phenicol (Chloramphenicol),type B-2 chloramphenicol O-acetyltransferase CatB11,TRUE
+AMR,catB,catA/B,catB3,240 (27.1),AMR,Phenicol (Chloramphenicol),type B-3 chloramphenicol O-acetyltransferase CatB3,TRUE
+Virulence,cdtB,cdtB,cdtB,3 (0.3),Virulence,N/A,cytolethal distending toxin type I nuclease subunit CdtB,TRUE
+AMR,cmlA,cmlA,cmlA,2 (0.2),AMR,Phenicol (Chloramphenicol),CmlA family chloramphenicol efflux MFS transporter (chloramphenicol efflux MFS transporter CmlA6),TRUE
+AMR,cmlA,cmlA,cmlA1,1 (0.1),AMR,Phenicol (Chloramphenicol),chloramphenicol efflux MFS transporter CmlA1,TRUE
+AMR,cmlA,cmlA,cmlA5,2 (0.2),AMR,Phenicol (Chloramphenicol),chloramphenicol efflux MFS transporter CmlA5,TRUE
+AMR,cmlA,cmlA,cmlA6,2 (0.2),AMR,Phenicol (Chloramphenicol),chloramphenicol efflux MFS transporter CmlA6,TRUE
+Virulence,cnf1,cnf1 + hlyA-alpha (*),cnf1,170 (19.2),Virulence,N/A,cytotoxic necrotizing factor CNF1,TRUE
+Virulence,hlyA-alpha,cnf1 + hlyA-alpha (*),hlyA-alpha,184 (20.7),Virulence,N/A,RTX toxin hemolysin HlyA,TRUE
+Plasmid,Col,Col,Col(BS512),127 (14.3),,,,TRUE
+Plasmid,Col,Col,Col(KPHS6),4 (0.5),,,,TRUE
+Plasmid,Col,Col,Col(MP18),4 (0.5),,,,TRUE
+Plasmid,Col,Col,Col(pHAD28),1 (0.1),,,,TRUE
+Plasmid,Col,Col,Col156,407 (45.9),,,,TRUE
+Plasmid,Col,Col,Col440II,1 (0.1),,,,TRUE
+Plasmid,Col,Col,Col8282,1 (0.1),,,,TRUE
+Plasmid,Col,Col,ColKP3,1 (0.1),,,,TRUE
+Plasmid,Col,Col,ColRNAI,5 (0.6),,,,TRUE
+Plasmid,Col,Col,ColpVC,6 (0.7),,,,TRUE
+Virulence,cvaC,cvaC,cvaC,16 (1.8),Virulence,N/A,colicin V,TRUE
+AMR,dfrA,dfrA/B,dfrA1,12 (1.4),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA1,TRUE
+AMR,dfrA,dfrA/B,dfrA12,74 (8.3),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA12,TRUE
+AMR,dfrA,dfrA/B,dfrA14,26 (2.9),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA14,TRUE
+AMR,dfrA,dfrA/B,dfrA15,1 (0.1),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA15,TRUE
+AMR,dfrA,dfrA/B,dfrA17,431 (48.6),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA17,TRUE
+AMR,dfrA,dfrA/B,dfrA19,3 (0.3),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA19,TRUE
+AMR,dfrA,dfrA/B,dfrA25,2 (0.2),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA25,TRUE
+AMR,dfrA,dfrA/B,dfrA27,2 (0.2),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA27,TRUE
+AMR,dfrA,dfrA/B,dfrA5,5 (0.6),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA5,TRUE
+AMR,dfrA,dfrA/B,dfrA8,4 (0.5),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrA8,TRUE
+AMR,dfrB,dfrA/B,dfrB4,1 (0.1),AMR,Trimethoprim,trimethoprim-resistant dihydrofolate reductase DfrB4,TRUE
+Stress,emrE,emrE,emrE,880 (99.2),Stress (Biocide),Efflux,multidrug efflux SMR transporter EmrE,TRUE
+AMR,erm(B),erm(B),erm(B),15 (1.7),AMR,Macrolide,23S rRNA (adenine(2058)-N(6))-methyltransferase Erm(B),TRUE
+Virulence,espX1,espX,espX1,1 (0.1),Virulence,N/A,type III secretion system effector EspX1,TRUE
+Virulence,fdeC,fdeC,fdeC,877 (98.9),Virulence,N/A,intimin-like adhesin FdeC,TRUE
+AMR,floR,floR,floR,4 (0.5),AMR,Phenicol (Chloramphenicol/Florfenicol),chloramphenicol/florfenicol efflux MFS transporter FloR,TRUE
+Virulence,focG,focG,focG,4 (0.5),Virulence,N/A,F1C fimbria minor subunit FocG,TRUE
+AMR,glpT-E448K,glpT,glpT_E448K,878 (99.0),AMR (Point),Fosfomycin,Escherichia fosfomycin resistant GlpT (glycerol-3-phosphate transporter GlpT),TRUE
+AMR,gyrA-D87N,gyrA,gyrA_D87N,688 (77.6),AMR (Point),Quinolone,Escherichia quinolone resistant GyrA (DNA gyrase subunit A GyrA),TRUE
+AMR,gyrA-S83L,gyrA,gyrA_S83L,778 (87.7),AMR (Point),Quinolone,Escherichia quinolone resistant GyrA (DNA gyrase subunit A GyrA),TRUE
+Virulence,ibeA,ibeA,ibeA,44 (5.0),Virulence,N/A,putative intracellular survival FAD-dependent oxidoreductase IbeA,TRUE
+Virulence,iha,iha,iha,818 (92.2),Virulence,N/A,bifunctional siderophore receptor/adhesin Iha,TRUE
+Plasmid,IncB/O/K/Z,IncB/O/K/Z,IncB/O/K/Z,13 (1.5),,,,TRUE
+Plasmid,IncC,IncC,IncC,10 (1.1),,,,TRUE
+Plasmid,IncFIA,IncFIA,FIA(pBK30683),1 (0.1),,,,TRUE
+Plasmid,IncFIA,IncFIA,IncFIA,640 (72.2),,,,TRUE
+Plasmid,IncFIA,IncFIA,IncFIA(HI1),11 (1.2),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(AP001918),214 (24.1),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(H89-PhagePlasmid),27 (3.0),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(pB171),8 (0.9),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(pLF82-PhagePlasmid),3 (0.3),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(pNDM-Mar),1 (0.1),,,,TRUE
+Plasmid,IncFIB,IncFIB,IncFIB(pQil),9 (1.0),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII,239 (26.9),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII(29),148 (16.7),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII(pCoo),2 (0.2),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII(pHN7A8),2 (0.2),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII(pRSB107),320 (36.1),,,,TRUE
+Plasmid,IncFII,IncFII,IncFII(pSE11),1 (0.1),,,,TRUE
+Plasmid,IncHI,IncHI,IncHI1B(pNDM-MAR),1 (0.1),,,,TRUE
+Plasmid,IncHI,IncHI,IncHI2,1 (0.1),,,,TRUE
+Plasmid,IncHI,IncHI,IncHI2A,1 (0.1),,,,TRUE
+Plasmid,IncI,IncI,IncI(Gamma),3 (0.3),,,,TRUE
+Plasmid,IncI,IncI,IncI1-I(Alpha),54 (6.1),,,,TRUE
+Plasmid,IncI,IncI,IncI2,3 (0.3),,,,TRUE
+Plasmid,IncI,IncI,IncI2(Delta),1 (0.1),,,,TRUE
+Plasmid,IncN,IncN,IncN,44 (5.0),,,,TRUE
+Plasmid,IncN,IncN,IncN2,1 (0.1),,,,TRUE
+Plasmid,IncP6,IncP6,IncP6,1 (0.1),,,,TRUE
+Plasmid,IncQ1,IncQ1,IncQ1,12 (1.4),,,,TRUE
+Plasmid,IncR,IncR,IncR,1 (0.1),,,,TRUE
+Plasmid,IncX,IncX,IncX1,16 (1.8),,,,TRUE
+Plasmid,IncX,IncX,IncX3,2 (0.2),,,,TRUE
+Plasmid,IncX,IncX,IncX4,41 (4.6),,,,TRUE
+Plasmid,IncY,IncY,IncY,50 (5.6),,,,TRUE
+Virulence,ireA,ireA,ireA,7 (0.8),Virulence,N/A,TonB-dependent siderophore receptor IreA,TRUE
+Virulence,iroBCDEN,iro,iroB,17 (1.9),Virulence,N/A,salmochelin biosynthesis C-glycosyltransferase IroB,No
+Virulence,iroBCDEN,iro,iroC,17 (1.9),Virulence,N/A,salmochelin/enterobactin export ABC transporter IroC,No
+Virulence,iroBCDEN,iro,iroD,20 (2.3),Virulence,N/A,catecholate siderophore esterase IroD,No
+Virulence,iroBCDEN,iro,iroE,20 (2.3),Virulence,N/A,catecholate siderophore esterase IroE,No
+Virulence,iroBCDEN,iro,iroN,17 (1.9),Virulence,N/A,siderophore salmochelin receptor IroN,No
+Virulence,iss,iss,iss,743 (83.8),Virulence,N/A,increased serum survival lipoprotein Iss,TRUE
+Virulence,iucABCD,iuc,iucA,808 (91.1),Virulence,N/A,aerobactin synthase IucA,TRUE
+Virulence,iucABCD,iuc,iucB,809 (91.2),Virulence,N/A,N(6)-hydroxylysine O-acetyltransferase IucB,TRUE
+Virulence,iucABCD,iuc,iucC,804 (90.6),Virulence,N/A,NIS family aerobactin synthetase IucC,TRUE
+Virulence,iucABCD,iuc,iucD,808 (91.1),Virulence,N/A,NADPH-dependent L-lysine N(6)-monooxygenase IucD,TRUE
+Virulence,iutA,iutA,iutA,770 (86.8),Virulence,N/A,ferric aerobactin receptor IutA,TRUE
+Stress,kefB,kefB-GI + psi-GI + trxLHR (*),kefB-GI,11 (1.2),Stress (Heat),N/A,heat resistance system K+/H+ antiporter KefB-GI,TRUE
+Stress,psi-GI,kefB-GI + psi-GI + trxLHR (*),psi-GI,11 (1.2),Stress (Heat),N/A,heat resistance protein PsiE-GI,TRUE
+Stress,trxLHR,kefB-GI + psi-GI + trxLHR (*),trxLHR,11 (1.2),Stress (Heat),N/A,heat resistance system thioredoxin Trx-GI,TRUE
+AMR,lnu(F),lnu(F),lnu(F),1 (0.1),AMR,Lincosamide,lincosamide nucleotidyltransferase Lnu(F),TRUE
+AMR,marR-R77C,marR,marR_R77C,1 (0.1),AMR (Point),Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline),Escherichia ampicillin/chloramphenicol/quinolone/rifampin/tetracycline resistant MarR (transcriptional regulator MarR),TRUE
+AMR,marR-R94H,marR,marR_R94H,1 (0.1),AMR (Point),Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline),Escherichia ampicillin/chloramphenicol/quinolone/rifampin/tetracycline resistant MarR (transcriptional regulator MarR),TRUE
+Virulence,mchB,mchB/F,mchB,2 (0.2),Virulence,N/A,microcin H47,TRUE
+Virulence,mchF,mchB/F,mchF,16 (1.8),Virulence,N/A,microcin H47 export transporter peptidase/ATP-binding subunit MchF,TRUE
+AMR,mcr,mcr,mcr-9,1 (0.1),AMR,Colistin,MCR-9 family phosphoethanolamine--lipid A transferase (phosphoethanolamine--lipid A transferase MCR-9.1),TRUE
+AMR,mdtM,mdtM,mdtM,822 (92.7),AMR,Efflux,multidrug efflux MFS transporter MdtM,TRUE
+Stress,merA,mer,merA,5 (0.6),Stress (Metal),Mercury,mercury(II) reductase,No
+Stress,merB,mer,merB,1 (0.1),Stress (Metal),Mercury (Organomercury),organomercurial lyase MerB,No
+Stress,merCPRT,mer,merC,59 (6.7),Stress (Metal),Mercury (Organomercury),organomercurial transporter MerC,No
+Stress,merD,mer,merD,4 (0.5),Stress (Metal),Mercury,mercury resistance co-regulator MerD,No
+Stress,merE,mer,merE,2 (0.2),Stress (Metal),Mercury,broad-spectrum mercury transporter MerE,No
+Stress,merCPRT,mer,merP,50 (5.6),Stress (Metal),Mercury,mercury resistance system periplasmic binding protein MerP,No
+Stress,merCPRT,mer,merR,65 (7.3),Stress (Metal),Mercury,mercury resistance transcriptional regulator MerR,No
+Stress,merCPRT,mer,merT,57 (6.4),Stress (Metal),Mercury,mercuric transport protein MerT,No
+AMR,mph(A),mph(A),mph(A),485 (54.7),AMR,Macrolide,Mph(A) family macrolide 2'-phosphotransferase,TRUE
+Stress,ncr,ncr,ncrA,2 (0.2),Stress (Metal),Nickel,Metal Resistance,TRUE
+Stress,ncr,ncr,ncrB,2 (0.2),Stress (Metal),Nickel,nickel-sensing transcriptional repressor NcrB,TRUE
+Stress,ncr,ncr,ncrC,2 (0.2),Stress (Metal),Copper/Nickel,Ni(II)/Co(II) efflux transporter permease subunit NcrC,TRUE
+Stress,ncr,ncr,ncrY,2 (0.2),Stress (Metal),Nickel,nickel resistance OB fold protein NcrY,TRUE
+AMR,nfsA-R15C,nfsA,nfsA_R15C,1 (0.1),AMR (Point),Nitrofuran (Nitrofurantoin),Escherichia nitrofurantoin resistant NfsA (nitroreductase NfsA),TRUE
+AMR,nfsA-R203C,nfsA,nfsA_R203C,2 (0.2),AMR (Point),Nitrofuran (Nitrofurantoin),Escherichia nitrofurantoin resistant NfsA (nitroreductase NfsA),TRUE
+Plasmid,p0111,p0111,p0111,6 (0.7),,,,TRUE
+Virulence,papA,pap,papA,757 (85.3),Virulence,N/A,P fimbria major subunit PapA,TRUE
+Virulence,papCFGII,pap,papC,251 (28.3),Virulence,N/A,P fimbrial usher protein PapC,TRUE
+Virulence,papE,pap,papE,37 (4.2),Virulence,N/A,P fimbrial minor subunit PapE,TRUE
+Virulence,papCFGII,pap,papF,253 (28.5),Virulence,N/A,P fimbrial tip protein PapF,TRUE
+Virulence,papCFGII,pap,papG-II,251 (28.3),Virulence,N/A,P fimbria tip G-adhesin PapG-II,TRUE
+Virulence,papG-III,pap,papG-III,2 (0.2),Virulence,N/A,P fimbria tip G-adhesin PapG-III,TRUE
+Virulence,papH,pap,papH,56 (6.3),Virulence,N/A,P fimbrial minor subunit PapH,TRUE
+AMR,parC-A56T,parC/parE,parC_A56T,1 (0.1),AMR (Point),Quinolone,Escherichia quinolone resistant ParC (DNA topoisomerase IV subunit A ParC),TRUE
+AMR,parC-E84V,parC/parE,parC_E84V,664 (74.9),AMR (Point),Quinolone,Escherichia quinolone resistant ParC (DNA topoisomerase IV subunit A ParC),TRUE
+AMR,parC-S57T,parC/parE,parC_S57T,3 (0.3),AMR (Point),Quinolone,Escherichia quinolone resistant ParC (DNA topoisomerase IV subunit A ParC),TRUE
+AMR,parC-S80I,parC/parE,parC_S80I,690 (77.8),AMR (Point),Quinolone,Escherichia quinolone resistant ParC (DNA topoisomerase IV subunit A ParC),TRUE
+AMR,parC-S80R,parC/parE,parC_S80R,6 (0.7),AMR (Point),Quinolone,Escherichia quinolone resistant ParC (DNA topoisomerase IV subunit A ParC),TRUE
+AMR,parE-E460D,parC/parE,parE_E460D,8 (0.9),AMR (Point),Quinolone,Escherichia quinolone resistant ParE (DNA topoisomerase IV subunit B ParE),TRUE
+AMR,parE-I529L,parC/parE,parE_I529L,843 (95.0),AMR (Point),Quinolone,Escherichia quinolone resistant ParE (DNA topoisomerase IV subunit B ParE),TRUE
+AMR,parE-L445H,parC/parE,parE_L445H,17 (1.9),AMR (Point),Quinolone,Escherichia quinolone resistant ParE (DNA topoisomerase IV subunit B ParE),TRUE
+Stress,pcoABCDERS,pco,pcoA,3 (0.3),Stress (Metal),Copper,multicopper oxidase PcoA,TRUE
+Stress,pcoABCDERS,pco,pcoB,3 (0.3),Stress (Metal),Copper,copper-binding protein PcoB,TRUE
+Stress,pcoABCDERS,pco,pcoC,3 (0.3),Stress (Metal),Copper,copper resistance system metallochaperone PcoC,TRUE
+Stress,pcoABCDERS,pco,pcoD,3 (0.3),Stress (Metal),Copper,copper resistance inner membrane protein PcoD,TRUE
+Stress,pcoABCDERS,pco,pcoE,3 (0.3),Stress (Metal),Copper,copper resistance system metallochaperone PcoE,TRUE
+Stress,pcoABCDERS,pco,pcoR,3 (0.3),Stress (Metal),Copper,copper response regulator transcription factor PcoR,TRUE
+Stress,pcoABCDERS,pco,pcoS,3 (0.3),Stress (Metal),Copper,copper resistance membrane spanning protein PcoS,TRUE
+Plasmid,pKPC,pKPC,pKPC-CAV1193,3 (0.3),,,,TRUE
+AMR,pmrB-E123D,pmrB,pmrB_E123D,882 (99.4),AMR (Point),Colistin,Escherichia colistin resistant PmrB (two-component system sensor histidine kinase PmrB),TRUE
+AMR,pmrB-G206D,pmrB,pmrB_G206D,2 (0.2),AMR (Point),Colistin,Escherichia colistin resistant PmrB (two-component system sensor histidine kinase PmrB),TRUE
+AMR,pmrB-T156M,pmrB,pmrB_T156M,1 (0.1),AMR (Point),Colistin,Escherichia colistin resistant PmrB (two-component system sensor histidine kinase PmrB),TRUE
+AMR,pmrB-V161G,pmrB,pmrB_V161G,4 (0.5),AMR (Point),Colistin,Escherichia colistin resistant PmrB (two-component system sensor histidine kinase PmrB),TRUE
+AMR,ptsI-V25I,ptsI,ptsI_V25I,886 (99.9),AMR (Point),Fosfomycin,Escherichia fosfomycin resistant PtsI (phosphoenolpyruvate--protein phosphotransferase PtsI),TRUE
+AMR,qepA4,qepA4,qepA4,1 (0.1),AMR,Quinolone,fluoroquinolone efflux MFS transporter QepA4,TRUE
+AMR,qnrA,qnrA/B/S,qnrA1,1 (0.1),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrA1,TRUE
+AMR,qnrB,qnrA/B/S,qnrB19,2 (0.2),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrB19,TRUE
+AMR,qnrB,qnrA/B/S,qnrB2,1 (0.1),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrB2,TRUE
+AMR,qnrB,qnrA/B/S,qnrB4,1 (0.1),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrB4,TRUE
+AMR,qnrB,qnrA/B/S,qnrB6,1 (0.1),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrB6,TRUE
+AMR,qnrS1,qnrA/B/S,qnrS1,12 (1.4),AMR,Quinolone,quinolone resistance pentapeptide repeat protein QnrS1,TRUE
+Plasmid,rep21,rep21,rep21,1 (0.1),,,,TRUE
+AMR,rmtB1/C,rmtB1/C,rmtB1,1 (0.1),AMR,Aminoglycoside,16S rRNA (guanine(1405)-N(7))-methyltransferase RmtB1,TRUE
+AMR,rmtB1/C,rmtB1/C,rmtC,1 (0.1),AMR,Aminoglycoside,RmtC family 16S rRNA (guanine(1405)-N(7))-methyltransferase,TRUE
+AMR,rpoB-Q513L,rpoB,rpoB_Q513L,3 (0.3),AMR (Point),Rifamycin,Escherichia rifamycin resistant RpoB (DNA-directed RNA polymerase subunit beta RpoB),TRUE
+Virulence,sat,sat,sat,800 (90.2),Virulence,N/A,serine protease autotransporter toxin Sat,TRUE
+AMR,sat2,sat2,sat2,5 (0.6),AMR,Streptothricin,streptothricin N-acetyltransferase Sat2,TRUE
+Virulence,senB,senB,senB,449 (50.6),Virulence,N/A,enterotoxin production-related protein TieB,TRUE
+Virulence,sfaF,sfaF,sfaF,7 (0.8),Virulence,N/A,S/F1C fimbrial biogenesis usher protein SfaF/FocD,TRUE
+Stress,sil,sil,silA,3 (0.3),Stress (Metal),Copper/Silver,Cu(+)/Ag(+) efflux RND transporter permease subunit SilA,TRUE
+Stress,sil,sil,silB,3 (0.3),Stress (Metal),Copper/Silver,Cu(+)/Ag(+) efflux RND transporter periplasmic adaptor subunit SilB,TRUE
+Stress,sil,sil,silC,3 (0.3),Stress (Metal),Copper/Silver,Cu(+)/Ag(+) efflux RND transporter outer membrane channel SilC,TRUE
+Stress,sil,sil,silE,3 (0.3),Stress (Metal),Silver,silver-binding protein SilE,TRUE
+Stress,sil,sil,silF,3 (0.3),Stress (Metal),Copper/Silver,Cu(+)/Ag(+) efflux RND transporter periplasmic metallochaperone SilF,TRUE
+Stress,sil,sil,silP,3 (0.3),Stress (Metal),Silver,Ag(+)-translocating P-type ATPase SilP,TRUE
+Stress,sil,sil,silR,3 (0.3),Stress (Metal),Copper/Silver,copper/silver response regulator transcription factor SilR,TRUE
+Stress,sil,sil,silS,3 (0.3),Stress (Metal),Copper/Silver,copper/silver sensor histidine kinase SilS,TRUE
+AMR,soxR-G121D,soxR,soxR_G121D,3 (0.3),AMR (Point),Multidrug (Ampicillin/Chloramphenicol/Quinolone/Rifampin/Tetracycline),Escherichia ampicillin/chloramphenicol/quinolone/rifampin/tetracycline resistant SoxR (redox-sensitive transcriptional activator SoxR),TRUE
+Virulence,sslE,sslE,sslE,23 (2.6),Virulence,N/A,lipoprotein metalloprotease SslE,TRUE
+AMR,sul,sul,sul1,514 (57.9),AMR,Sulfonamide,sulfonamide-resistant dihydropteroate synthase Sul1,TRUE
+AMR,sul,sul,sul2,283 (31.9),AMR,Sulfonamide,sulfonamide-resistant dihydropteroate synthase Sul2,TRUE
+AMR,sul,sul,sul3,1 (0.1),AMR,Sulfonamide,sulfonamide-resistant dihydropteroate synthase Sul3,TRUE
+Stress,terB,ter,terB,1 (0.1),Stress (Metal),Tellurium,tellurium resistance membrane protein TerB,TRUE
+Stress,terC,ter,terC,1 (0.1),Stress (Metal),Tellurium,tellurium resistance membrane protein TerC,TRUE
+Stress,terD,ter,terD,2 (0.2),Stress (Metal),Tellurium,tellurium resistance membrane protein TerD,TRUE
+Stress,terE,ter,terE,1 (0.1),Stress (Metal),Tellurium,tellurium resistance cAMP binding protein TerE,TRUE
+Stress,terW,ter,terW,1 (0.1),Stress (Metal),Tellurium,tellurium resistance protein TerW,TRUE
+Stress,terZ,ter,terZ,1 (0.1),Stress (Metal),Tellurium,tellurium resistance-associated protein TerZ,TRUE
+AMR,tet,tet(A),tet(A),446 (50.3),AMR,Tetracycline,tetracycline efflux MFS transporter Tet(A),TRUE
+AMR,tet,tet(B),tet(B),20 (2.3),AMR,Tetracycline,tetracycline efflux MFS transporter Tet(B),TRUE
+AMR,tet,tet(D),tet(D),2 (0.2),AMR,Tetracycline,tetracycline efflux MFS transporter Tet(D),TRUE
+Virulence,tsh,tsh,tsh,2 (0.2),Virulence,N/A,temperature-sensitive protease autotransporter hemagglutinin Tsh,TRUE
+AMR,uhpT-E350Q,uhpT,uhpT_E350Q,886 (99.9),AMR (Point),Fosfomycin,Escherichia fosfomycin resistant UhpT (hexose phosphate transporter UhpT),TRUE
+Virulence,ybtPQ,ybtP/Q,ybtP,885 (99.8),Virulence,N/A,yersiniabactin ABC transporter ATP-binding/permease protein YbtP,TRUE
+Virulence,ybtPQ,ybtP/Q,ybtQ,885 (99.8),Virulence,N/A,yersiniabactin ABC transporter ATP-binding/permease protein YbtQ,TRUE
+Stress,ymgB,ymgB,ymgB,873 (98.4),Stress (Acid),N/A,biofilm/acid-resistance regulator AriR,TRUE
+AMR,emrD,emrD,emrD,,AMR,Efflux,multidrug efflux MFS transporter EmrD,TRUE

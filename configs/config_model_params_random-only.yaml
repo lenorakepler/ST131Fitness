@@ -1,0 +1,45 @@
+model_name: "random-only"
+sigma_opt: True
+
+effects_model: "no_random_birth_background_TV+birth_features+sampling_background_TV+sampling_features"
+
+# -----------------------------------------------------
+# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# -----------------------------------------------------
+fit_model_params:
+  # Not estimated
+  death_rate: 1
+  sampling_mask: "data_new/sampling_mask.csv"
+
+  # Potentially estimated
+  birth_background:
+    estimate: False
+    changepoints: [2003, 2013]
+  birth_features:
+    estimate: False
+    penalize: True
+    states: "data_new/functional_groups_corr_pastml/marginal_states.csv" # Binary features file for each sample + ancestral node
+  sampling_features:
+    estimate: False
+    states: "data_new/meta_features_marginal.csv"
+  sampling_background:
+    estimate: False
+    changepoints: [2003, 2013]
+  brownian_motion:
+    estimate: True
+    penalize: False
+    value: 1
+    states: "data_new/analysis/three_sampling_intervals/brownian_search_setup.json"
+
+# -----------------------------------------------------
+# HYPERPARAMETER SEARCH SETUP
+# -----------------------------------------------------
+lr: .00005
+n_epochs: 80000
+
+# Values of regularization type, lambda penalty types to test
+hyper_param_values:
+  reg_type: ["l1"]
+  lamb: [0]
+  # sigma: [0.005, 0.01, 0.025, 0.05, 0.1, 0.15, 0.25]
+  sigma: [0.02, 0.03]

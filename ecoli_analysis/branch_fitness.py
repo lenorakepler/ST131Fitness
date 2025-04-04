@@ -17,7 +17,7 @@ else:
 ncbi = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset"
 dir = ncbi / "final"
 
-def color_tree_components(params, data, out_file_phylo, zoom=None):
+def color_tree_components(params, data, out_file_phylo, zoom=None, null_color="white"):
 	tt = pp.loadTree(
 		Path(params['tree_file']),
 		internal=True,
@@ -42,7 +42,7 @@ def color_tree_components(params, data, out_file_phylo, zoom=None):
 		fit_dict = df[c].to_dict()
 
 		# sns.color_palette("flare", as_cmap=True)
-		c_func, cmap, norm = pp.continuousFunc(trait_dict=fit_dict, trait="name", cmap="viridis", vmin=vmin, vmax=vmax, norm="lognorm")
+		c_func, cmap, norm = pp.continuousFunc(trait_dict=fit_dict, trait="name", cmap="viridis", vmin=vmin, vmax=vmax, null_color=null_color, norm="lognorm")
 		
 		ax = pp.plotTraitAx(
 			ax,
@@ -71,14 +71,14 @@ def color_tree_components(params, data, out_file_phylo, zoom=None):
 
 	mpl.rcParams.update(mpl.rcParamsDefault)
 
-def color_tree(tree_file, fit_dict, out_file_phylo, center=False):
+def color_tree(tree_file, fit_dict, out_file_phylo, center=False, null_color="white"):
 	tt = pp.loadTree(
 		tree_file,
 		internal=True,
 		abs_time=2023,
 	)
 
-	c_func, cmap, norm = pp.continuousFunc(trait_dict=fit_dict, trait="name", cmap='coolwarm', center=center)
+	c_func, cmap, norm = pp.continuousFunc(trait_dict=fit_dict, trait="name", cmap='coolwarm', center=center, null_color=null_color)
 
 	fig, ax = plt.subplots(figsize=(12, 30))
 	ax = pp.plotTraitAx(
@@ -92,7 +92,7 @@ def color_tree(tree_file, fit_dict, out_file_phylo, center=False):
 	)
 	
 	# ax = pp.add_legend(clade_colors, "lower left", ax)
-	pp.add_cmap_colorbar(fig, ax, cmap, norm=norm)
+	pp.add_cmap_colorbar(ax, cmap, norm=norm)
 	plt.tight_layout()
 	plt.savefig(out_file_phylo)
 

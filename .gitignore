@@ -9,6 +9,19 @@ coverage/*
 data/analysis/*
 data/analysis/3-interval_constrained-sampling/*
 old/*
+_analysis/*
+*.html
+Configs/old/*
+data_new/old/*
+data_new/analysis/*
+data_new/tests/*
+*.tab
+profiling/*
+phyloTF2/*
+*.png
+old_data_and_info/*
+ecoli_external_workflow/*
+*.tex
 
 # Mac things
 *.DS_Store

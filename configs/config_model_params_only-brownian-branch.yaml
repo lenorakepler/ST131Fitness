@@ -1,0 +1,52 @@
+model_name: "fit-branch"
+sigma_opt: False
+
+# -----------------------------------------------------
+# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# -----------------------------------------------------
+fit_model_params:
+
+  # Not estimated
+  death_rate: 1
+  sampling_mask: "data_new/sampling_mask.csv"
+
+  # Potentially estimated
+  birth_background:
+    estimate: False
+    value: [1.000001, 1.000001]
+    changepoints: [2023.2]
+    penalize: False
+  birth_features:
+    estimate: False
+    states: "data_new/functional_groups_corr_pastml/marginal_states.csv" # Binary features file for each sample + ancestral node
+    value: 1
+    penalize: True
+  sampling_features:
+    estimate: False
+    states: "data_new/meta_features_marginal.csv"
+    value: 1
+    penalize: True
+  sampling_background:
+    estimate: False
+    value: [0.0001, 0.0001, 0.0001]
+    changepoints: [2003, 2013]
+    penalize: False
+  branch_effects:
+    estimate: False
+    value: 1
+    penalize: True
+  brownian_motion:
+    estimate: True
+    penalize: False
+    value: 1
+    states: "data_new/analysis/three_sampling_intervals/brownian_fit_setup.json"
+
+# -----------------------------------------------------
+# HYPERPARAMETER SEARCH SETUP
+# -----------------------------------------------------
+hyper_param_values:
+  sigma: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.75, 1, 1.25, 2]
+  lamb: [0]
+  reg_type: ["l1"]
+lr: .00005
+n_epochs: 80000

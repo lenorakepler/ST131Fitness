@@ -3,9 +3,7 @@ import numpy as np
 import math
 
 class Optimizer():
-	def __init__(self, fit_model, fit_model_kwargs, n_epochs=10000, lr=0.005, verbose=False, **kwargs):
-		self.fit_model = fit_model(**fit_model_kwargs)
-
+	def __init__(self, n_epochs=10000, lr=0.005, verbose=False, **kwargs):
 		self.n_epochs = n_epochs
 		self.lr = lr
 		self.verbose = verbose
@@ -15,9 +13,11 @@ class Optimizer():
 		self.losses = []
 		self.epoch_gradients = []
 
-		self.optimizer = tf.keras.optimizers.Nadam(learning_rate=self.lr)
+		self.optimizer = tf.keras.optimizers.legacy.Nadam(learning_rate=self.lr)
 
-	def doOpt(self):
+	def doOpt(self, fit_model, phylo_loss):
+		self.fit_model = fit_model
+
 		# tf.debugging.enable_check_numerics()
 
 		# https://www.tensorflow.org/api_docs/python/tf/debugging/check_numerics
@@ -28,9 +28,6 @@ class Optimizer():
 
 		optimizer = self.optimizer
 
-		fit_model = self.fit_model
-		phylo_loss = self.fit_model.phylo_loss(**self.fit_model.loss_kwargs)
-
 		losses = self.losses
 		values = self.values
 		epoch_gradients = self.epoch_gradients
@@ -38,7 +35,8 @@ class Optimizer():
 		for epoch in range(1, self.n_epochs + 1):
 			with tf.GradientTape() as tape:
 				c = fit_model.call()
-				weights = tf.concat([tf.reshape(v, [-1]) for v in fit_model.trainable_variables], axis=-1)
+				poss_weights = [tf.reshape(v, [-1]) for v in fit_model.trainable_variables if v.name in fit_model.penalize]
+				weights = tf.cond(len(poss_weights) > 0, lambda: tf.concat(poss_weights, axis=-1), lambda: np.array([1.01]))
 				loss = phylo_loss.call(c.__dict__, weights=weights)
 
 			# Check if loss is nan/inf
@@ -53,11 +51,11 @@ class Optimizer():
 					if self.verbose: print(f"Breaking: Last 5 values are the same (epoch {epoch})")
 					break
 
-			values.append([v.numpy() for v in fit_model.trainable_variables])
+			values.append({v.name.split(":")[0]: v.numpy() for v in fit_model.trainable_variables})
 			losses.append(loss.numpy())
 
 			gradients = tape.gradient(loss, fit_model.trainable_variables)
-
+			gradients = [tf.convert_to_tensor(g) if isinstance(g, tf.IndexedSlices) else g for g in gradients]
 			optimizer.apply_gradients(zip(gradients, fit_model.trainable_variables))
 
 			if epoch % 500 == 0:
@@ -69,22 +67,26 @@ class Optimizer():
 		if self.save_values:
 			self.values = values
 			self.losses = losses
-			self.names = [v.name for v in fit_model.trainable_variables]
 
 		# with np.printoptions(precision=2):
 		# 	print(f"{epoch=}")
 		# 	print(f"{values[-1]}")
 		
-		min_loss = np.nanmin(losses)
+		try:
+			min_loss = np.nanmin(losses)
+		except:
+			print(f"{losses=}")
+			return {v.name.split(":")[0]: v.numpy() for v in fit_model.trainable_variables}, np.nan
+
 		min_loss_loc = np.where(losses == min_loss)[0][0]
-		offset = values[min_loss_loc]
+		best_values = values[min_loss_loc]
 		loss = min_loss
 
-		print(f"{min_loss_loc=}")
+		if epoch > 1: print(f"{min_loss_loc=}")
 		
 		if self.save_values:
 			self.min_loss_loc = min_loss_loc
 			self.epoch_gradients = epoch_gradients
-			self.offset = offset
+			self.best_values = best_values
 
-		return {v.name.split(":")[0]: v.numpy() for v in fit_model.trainable_variables}, loss
+		return best_values, loss

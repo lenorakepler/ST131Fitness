@@ -1,0 +1,3 @@
+functional groups yaml: data_new/new_groups.yaml
+functional groups correlation heatmap: data_new/functional_group_features_average-ordered-corr.png
+colinear groups yaml: data_new/functional_group_correlations/groups_0.05.yml

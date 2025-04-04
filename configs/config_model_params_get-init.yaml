@@ -1,0 +1,41 @@
+model_name: "get-init"
+sigma_opt: False
+
+# -----------------------------------------------------
+# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# -----------------------------------------------------
+fit_model_params:
+
+  # Not estimated
+  death_rate: 1
+  sampling_mask: "data_new/sampling_mask.csv"
+
+  # Potentially estimated
+  birth_background:
+    estimate: True
+    value: [1]
+    changepoints: []
+    penalize: True
+  birth_features:
+    estimate: False
+    states: "data_new/functional_groups_corr_pastml/marginal_states.csv" # Binary features file for each sample + ancestral node
+    value: 1
+    penalize: True
+  sampling_features:
+    estimate: False
+    states: "data_new/meta_features_marginal.csv"
+    value: 1
+    penalize: True
+  sampling_background:
+    estimate: False
+    value: [0.0001, 0.0001, 0.0001]
+    changepoints: [2003, 2013]
+    penalize: False
+  branch_effects:
+    estimate: False
+    value: 1
+    penalize: True
+  brownian_motion:
+    estimate: False
+    value: 1
+    states: "data_new/analysis/three_sampling_intervals/brownian_fit_setup.json"

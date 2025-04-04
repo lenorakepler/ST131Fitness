@@ -1,33 +1,30 @@
-data_dir: "data"
+data_dir: "data_new"
 
 # -----------------------------------------------------
 # ANALYSIS NAME (directory automatically created)
 # -----------------------------------------------------
-analysis_name: "3-interval_constrained-sampling"
+analysis_name: "three_sampling_intervals"
 
 # -----------------------------------------------------
 # FEATURES FILES AND ORIGINAL PHYLOGENY
 # -----------------------------------------------------
-# Binary features file for each sample + ancestral node
-features_file: ?this["data_dir"] + "/combined_ancestral_states_binary_grouped_diverse_uncorr.csv"
-
 # Ancestral clade reconstruction for each branch
 clades_file: ?this["data_dir"] + "/clade_combined_ancestral_states.csv"
 
 # Original tree output of LSD, pruned of reference node, unannotated
-original_tree_file: ?this["data_dir"] + "/named.tree_lsd.date.noref.pruned_unannotated.nwk"
+original_tree_file: "data/named.tree_lsd.date.noref.pruned_unannotated.nwk"
 
 # -----------------------------------------------------
 # TREE INTERVALS SETUP
 # -----------------------------------------------------
-interval_tree_name: "2003-2013-bioprojsampling"
+interval_tree_name: "3_interval_tree_test_a"
 
 # To correctly date the tree
 last_sample_date: 2023
 
-# We will divide the tree into four time intervals, with changepoints at 2003 and 2013, 
+# We will divide the tree into three time intervals, with changepoints at 2003 and 2013, 
 # and estimate a separate background birth rate for each
-birth_rate_changepoints: [2003, 2013]
+sampling_prob_changepoints: [2003, 2013]
 
 # Additionally, we  constrains sampling on removal so that a sample has 0 sampling probability
 # outside of its BioProject sample collection window (estimated as the min and max of existing
@@ -35,45 +32,22 @@ birth_rate_changepoints: [2003, 2013]
 # rounded to one decimal, ensuring the window starts just before the first sample and ends right
 # after the last.
 bioproject_times_file: ?this["data_dir"] + "/bioproject_times.csv"
+bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.8,2012.9,2012.0,2014.0,2014.8,2016.0,2017.0,2018.0,2019.7,2016.4,2018.1,2020.1,2023.1,2015.2,2019.1,2020.8,2020.0,2020.2]
 
 # -----------------------------------------------------
-# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# ANALYSIS PARAMETERS
 # -----------------------------------------------------
-# Specify whether birth-death model variables will be estimated (first value)
-# and whether they are time varying (second value)
-bdm_params:
-  b0: [True, True]
-  site: [True, False]
-  gamma: [False, False]
-  d: [False, False]
-  s: [False, True]
-  rho: [False, True]
+# Whether to use full pE values (recommended if heavily time-varying)
+iterative_pE: True
 
-# Probability of being sampled upon removal in collection window
-constrained_sampling_rate: 0.0001
-
-# Other birth-death rates/probabilities that are not being estimated
-# Second value specifies whether the parameter is time-varying
-bd_array_params:
-  d: [1, False]
-  gamma: [0, False]
-  rho: [0, False]
-
-# -----------------------------------------------------
-# ANALYSIS PARAMETERS AND HYPERPARAMETERS
-# -----------------------------------------------------
 # Learning rate
 lr: 0.00005
 
 # Number of epochs the optimizer will run
 n_epochs: 20000
 
-# Values of regularization type, lambda penalty types to test
-# Plus specify that the offest penalize values that are far from 1, since fitness is multiplicative
-hyper_param_values:
-  reg_type: ['l1']
-  lamb: [0, 25, 50, 100]
-  offset: [1]
+# Number of threads to use simultaneously when searching for optimal hyperparameters
+n_threads: 6
 
 # -----------------------------------------------------
 # RESIDUAL FITNESS PARAMETERS AND HYPERPARAMETERS
