@@ -22,6 +22,9 @@ phyloTF2/*
 old_data_and_info/*
 ecoli_external_workflow/*
 *.tex
+extraneous/*
+.claude/*
+make_features/out/*
 
 # Mac things
 *.DS_Store

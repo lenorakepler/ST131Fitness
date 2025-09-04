@@ -1,8 +1,8 @@
 from pathlib import Path
 import click
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
-from analysis_new.do_model_fit import ResultsObj, crossvalidate
-from analysis_new.analyze_fit import lj
+from analysis.do_model_fit import ResultsObj, crossvalidate
+from analysis.analyze_fit import lj
 import json
 
 @click.command()

@@ -15,8 +15,8 @@ import click
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-from analysis_new.do_model_fit import ResultsObj
-from analysis_new.fitness_model import BirthSamplingSite
+from analysis.do_model_fit import ResultsObj
+from analysis.fitness_model import BirthSamplingSite
 from ecoli_analysis.branch_fitness import color_tree
 from ecoli_analysis.feature_matrix import load_info
 from analysis.arrayer import PhyloArrayer, PhyloDataFile
@@ -430,8 +430,18 @@ def check_gradients(results_dir):
 	epsilon = 0.0000005
 	fdf["denom_alt"] = hyperparams["sigma"] * fdf["time_delta"] + epsilon
 	fdf["penalty_alt"] = fdf["num"] / fdf["denom_alt"]
+
+	fdf = fdf.sort_values(by="eff")
+	print(fdf)
 	
-	probs = tf.clip_by_value(tf.math.exp(-0.5 * fit_shifts**2 / (sigma * times + epsilon)), epsilon, np.inf) # variance is proportional to time * sigma
+	# probs = tf.clip_by_value(tf.math.exp(-0.5 * fit_shifts**2 / (sigma * times + epsilon)), epsilon, np.inf) # variance is proportional to time * sigma
+	
+
+	# Examine penalty 
+	# ---------------------------------	
+	pdf = pd.DataFrame(phylo_loss.sigma_penalty_info)
+
+	
 
 	breakpoint()
 
@@ -440,18 +450,8 @@ def check_gradients(results_dir):
 @click.argument("model")
 @click.option("--combo_key", "-k")
 def main(command, model, combo_key=""):
-	if model == "full":
-		result_key = "full_model_birth_features+brownian_motion+sampling_background_TV+sampling_features"
-	elif model == "intercept":
-		result_key = "intercept_birth_background+sampling_background_TV"
-	elif model == "intercept-fixed":
-		result_key = "intercept_birth_features+brownian_motion+sampling_features"
-	elif model == "full-intercept":
-		result_key = "full_model_birth_background+birth_features+brownian_motion+sampling_background_TV+sampling_features"
-	elif model == "full-intercept-tvb":
+	if model == "full-intercept-tvb":
 		result_key = "full_model_birth_background_TV+birth_features+brownian_motion+sampling_background_TV+sampling_features"
-	elif model == "nonidentifiable":
-		result_key = "full_model_birth_features+brownian_motion+sampling_background_TV+sampling_features"
 	elif model == "combined":
 		result_key = "no_random_birth_background_TV+birth_features+sampling_background_TV+sampling_features+nso-random-only_brownian_motion"
 	elif model == "combined-so":

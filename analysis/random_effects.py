@@ -1,8 +1,11 @@
 import json
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from natsort import natsorted, ns
-# from ecoli_analysis.random_effects_classes import *
+from analysis.do_model_fit import ResultsObj
+import analysis.plot_phylo_standalone as pp
 
 def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion):
 	# -----------------------------------------------------
@@ -230,6 +233,119 @@ def split_intervals(all_data, train_idx, out_folder, n_folds, test_proportion, r
 				), indent=4,
 			)
 		)
+
+def phylo_plot_in_train_test(tree_file, present_time, train_data, folds, out_file):
+	# Load tree
+	tt = pp.loadTree(
+		tree_file,
+		internal=True,
+		abs_time=present_time
+	)
+
+	n_folds = len(folds)
+	fig, axs = plt.subplots(1, n_folds, figsize=(12 * n_folds, 25))
+	axs = axs.ravel()
+
+	for fold_num, fold_dict in folds.items():
+		test_start = fold_dict['params']['test']['start_time']
+		test_end = fold_dict['params']['test']['end_time']
+
+		fold_trait = {
+			**{n['name']: "Train" for n in fold_dict['train'].values()},
+			**{n['name']: "Test" for n in fold_dict['test'].values()},
+		}
+
+		colors, c_func = pp.categoricalFunc(fold_trait, 'name', legend=True, null_color="red")
+
+		axs[fold_num] = pp.plotTraitAx(
+			axs[fold_num],
+			tt,
+			edge_c_func=c_func,
+			node_c_func=c_func,
+			s_func=lambda x: 4,
+			tip_names=False,
+			zoom=False,
+			title=f"Fold {fold_num}",
+		)
+		axs[fold_num].axvline(x=test_start, linestyle="--", color="red")
+		axs[fold_num].axvline(x=test_end, linestyle="--", color="blue")
+
+	pp.add_legend(colors, axs[fold_num], lloc="lower left")
+
+	plt.tight_layout()
+	plt.savefig(out_file, dpi=300)
+	plt.close("all")
+
+def prep_data_for_hyperparam_search(analysis_dir, n_folds=3, test_proportion=(1/2), folds_start=1960, plot=False, alt=False):
+	"""
+	Adds "parent_idx" to 
+	"""
+
+	RO = ResultsObj(folder=analysis_dir)
+	data = RO.data
+
+	# -----------------------------------------------------
+	# Load / make time folds info
+	# -----------------------------------------------------
+	split_intervals(
+		all_data=data, 
+		train_idx=RO.train_idx, 
+		out_folder=RO.folder,
+		n_folds=n_folds,
+		test_proportion=test_proportion, 
+		root_time=data.root_time, 
+		present_time=data.present_time, 
+		folds_start=folds_start,
+		alt=alt,
+		)
+
+	fname = "brownian_search_setup.json"
+	if alt:
+		fname = fname.replace(".json", "_alt.json")
+
+	fold_params = json.loads((RO.folder / fname).read_text())
+	folds = {int(i): v for i, v in fold_params['folds'].items()}
+
+	if plot:
+		phylo_plot_in_train_test(RO.params['tree_file'], data.present_time, data, folds, RO.folder / "brownian_search_setup.png")
+
+	return RO, folds
+
+def prep_data_for_fitting(analysis_dir, plot=True, alt=False):
+	RO = ResultsObj(folder=analysis_dir)
+	out_folder = RO.folder
+	data = RO.data
+	
+	all_arr = pd.DataFrame(data.array)
+	all_arr['index'] = list(range(len(all_arr)))
+
+	if alt:
+		all_arr["branch_name"] = all_arr["name"]
+	else:
+		all_arr["branch_name"] = all_arr["name"].apply(lambda n: n.split("_interval")[0])
+	
+	all_branch_names = natsorted(all_arr["branch_name"].unique(), alg=ns.GROUPLETTERS)
+
+	brownian_info_dict = dict(
+		n_types=int(len(all_branch_names)),
+		names=all_branch_names,
+		int_to_name={i: name for i, name in enumerate(all_branch_names)},
+		)
+
+	brownian_info_dict["full"] = get_parent_type_info(all_arr, RO.train_idx, RO.validate_idx, all_branch_names)
+	for i, [train_idxs, test_idxs] in enumerate(RO.cv_idxs):
+		brownian_info_dict[i] = get_parent_type_info(all_arr, train_idxs, test_idxs, all_branch_names)
+
+	fname = "brownian_fit_setup.json"
+	if alt:
+		fname = fname.replace(".json", "_alt.json")
+
+	(RO.folder / fname).write_text(json.dumps(brownian_info_dict, indent=4))
+
+	if plot:
+		plot_fname = fname.replace(".json", ".png")
+		plot_dict = {i: {'params': {'test': {'start_time': data.root_time, 'end_time': data.present_time}}, **fold_dict} for i, fold_dict in brownian_info_dict.items() if isinstance(i, int)}
+		phylo_plot_in_train_test(RO.params['tree_file'], data.present_time, data, plot_dict, RO.folder / plot_fname)
 
 if __name__ == "__main__":
 	pass
