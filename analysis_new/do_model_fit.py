@@ -913,7 +913,7 @@ def resume_fits():
 @click.option('--test', '-t', is_flag=True, default=False, help='Use to ensure setup works. Sets n_epochs to 3 and model name to "test"')
 @click.option('--debug', '-d', is_flag=True, default=False, help='Use to debug anything done in parallel or TensorFlow. Sets n_threads to 0 to remove parallelization and changes graph execution to false')
 @click.option('--graph', '-g', is_flag=True)
-def main_func(model_config, lr=1e-05, n_epochs=20000, reg_type=["l1"], lamb=[0], sigma=[0], sigma_opt=False, n_threads=8, test=False, debug=False, graph=False):
+def main_func(model_config, n_threads=8, test=False, debug=False, graph=False):
 	config = load(Path("config.yaml").read_text(), Loader=Loader)
 	model_config = load(Path(f"configs/config_model_params_{model_config}.yaml").read_text(), Loader=Loader)
 	config.update(model_config)

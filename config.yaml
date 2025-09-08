@@ -17,7 +17,7 @@ original_tree_file: "data/named.tree_lsd.date.noref.pruned_unannotated.nwk"
 # -----------------------------------------------------
 # TREE INTERVALS SETUP
 # -----------------------------------------------------
-interval_tree_name: "3_interval_tree_test_a"
+interval_tree_name: "3_interval_tree"
 
 # To correctly date the tree
 last_sample_date: 2023
@@ -39,15 +39,6 @@ bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.
 # -----------------------------------------------------
 # Whether to use full pE values (recommended if heavily time-varying)
 iterative_pE: True
-
-# Learning rate
-lr: 0.00005
-
-# Number of epochs the optimizer will run
-n_epochs: 20000
-
-# Number of threads to use simultaneously when searching for optimal hyperparameters
-n_threads: 6
 
 # -----------------------------------------------------
 # RESIDUAL FITNESS PARAMETERS AND HYPERPARAMETERS
