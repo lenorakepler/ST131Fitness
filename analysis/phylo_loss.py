@@ -4,11 +4,14 @@ import numpy as np
 class PhyloLoss(tf.keras.losses.Loss):
 	def __init__(self, **kwargs):
 		super().__init__()
-		self.graph = getattr(kwargs, 'graph', True)
-		self.sigma = getattr(kwargs, 'sigma', False)
+
+		self.epsilon = kwargs.get('epsilon', 0.0000005)
 
 		for k, v in kwargs.items():
 			setattr(self, k, v)
+
+		self.graph = kwargs.get('graph', True)
+		self.sigma = kwargs.get('sigma', 0)
 
 		if self.graph:
 			self.Sigma = tf.function(self.Sigma)
@@ -42,6 +45,8 @@ class PhyloLoss(tf.keras.losses.Loss):
 		loss = self.Sigma(m) if self.sigma else self.call_(m)
 		penalty = tf.reduce_sum(self.lamb * tf.abs(weights))
 		reg_loss = loss + penalty
+
+		self.penalty = penalty
 		# print(f"loss={round(loss.numpy(), 2)}, penalty={round(penalty.numpy(), 2)}, coeff={round(coeff.numpy(), 2)}")
 
 		return reg_loss
@@ -50,6 +55,8 @@ class PhyloLoss(tf.keras.losses.Loss):
 		loss = self.Sigma(m) if self.sigma else self.call_(m)
 		penalty = tf.reduce_sum(self.lamb * tf.math.square(weights))
 		reg_loss = loss + penalty
+
+		self.penalty = penalty
 
 		# with np.printoptions(precision=2):
 		# 	print(f"loss={round(loss.numpy(), 2)}, penalty={round(penalty.numpy(), 2)}, coeff={weights.numpy()}")
@@ -60,6 +67,8 @@ class PhyloLoss(tf.keras.losses.Loss):
 		loss = self.Sigma(m) if self.sigma else self.call_(m)
 		penalty = tf.reduce_sum(self.lamb * tf.abs(weights - 1))
 		reg_loss = loss + penalty
+
+		self.penalty = penalty
 
 		# print(f"lambda penalty={penalty}")
 		# print(f"loss={reg_loss}")
@@ -73,6 +82,8 @@ class PhyloLoss(tf.keras.losses.Loss):
 		reg_loss = loss + penalty
 		# print(f"loss={loss.numpy():.2f}, penalty={penalty.numpy():.2f}, total={reg_loss.numpy():.2f}, coeff={[round(w, 2) for w in weights.numpy()[0]]}")
 
+		self.penalty = penalty
+
 		return reg_loss
 
 	def Sigma(self, m, **kwargs):
@@ -84,7 +95,7 @@ class PhyloLoss(tf.keras.losses.Loss):
 		
 		# p(child fitness u | parent fitness) = -exp[(u_c - u_p)^2 / (2 * sigma)]
 		# but we are dealing in log likelihood, so take log
-		probs = tf.math.divide_no_nan(-0.5 * fit_shifts**2, sigma * times)
+		probs = tf.math.divide_no_nan(-0.5 * fit_shifts**2, sigma * times + self.epsilon)
 		penalty = tf.reduce_sum(probs) # Sum log prob values
 
 		# Penalty term will always be negative: the more negative,
@@ -93,6 +104,16 @@ class PhyloLoss(tf.keras.losses.Loss):
 		# the added penalty needs to be LARGER the farther we are from
 		# optimal. So, multiply by -1
 		penalty = penalty * -1
+
+		# self.sigma_penalty_info = dict(
+		# 	fit_shifts = fit_shifts,
+		# 	probs = probs,
+		# 	sigma_penalty = penalty.numpy(),
+		# 	child_effs = tf.gather(m["brownian_eff"], m["edge_type_int"]),
+		# 	parent_effs = tf.gather(m["brownian_eff"], m["edge_parent_type_int"]),
+		# 	times = times,
+		# )
+
 		# print(f"sigma penalty={penalty}")
 
 		# if (self.i % 100 == 0):
