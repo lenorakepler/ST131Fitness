@@ -365,13 +365,27 @@ class ResultsObj():
 
 		return epoch_estimates_dict
 
-	def do_validation(self, result_key, iterative_pE, graph, debug):
+	def do_validation(self, result_key, iterative_pE, graph, debug, best_type="best_overall"):
 		# Run on full dataset
 		# ------------------------------------
-		df = pd.read_csv(self.folder / result_key / "hyperparam_search.csv")
+		results_with_overfitting = self.folder / result_key / "mean_stats.csv"
 
-		best_iter = df.iloc[0]
-		best_params = best_iter[['h_combo', 'lr', 'n_epochs', 'iterative_pE']].to_dict()
+		if results_with_overfitting.exists():
+			df = pd.read_csv(results_with_overfitting)
+			df = df.sort_values(by="best_loss")
+
+			best_iter = df.iloc[0]
+
+			best_params = best_iter[['h_combo', 'lr', 'n_epochs', 'iterative_pE']].to_dict()
+
+			breakpoint()
+
+		else:
+			df = pd.read_csv(self.folder / result_key / "hyperparam_search.csv")
+			best_iter = df.iloc[0]
+			best_params = best_iter[['h_combo', 'lr', 'n_epochs', 'iterative_pE']].to_dict()
+
+
 		if isinstance(best_params["h_combo"], str):
 			best_params["h_combo"] = eval(best_params["h_combo"])
 

@@ -45,5 +45,5 @@ n_epochs: 80000
 # Values of regularization type, lambda penalty types to test
 hyper_param_values:
   reg_type: ["l1"]
-  lamb: [1, 5, 10]
-  sigma: [0.00000005, 0.000000005]
+  lamb: [25, 50]
+  sigma: [0.0005]

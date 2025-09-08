@@ -413,6 +413,7 @@ class ComponentOffset(ParamComponent):
 		pass
 
 class DiffSampling(ParamModel):
+	pass
 	
 class Offset(ParamModel, ComponentB0, ComponentOffset):
 	"""
