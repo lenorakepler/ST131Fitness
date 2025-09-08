@@ -41,14 +41,6 @@ bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.
 iterative_pE: True
 
 # -----------------------------------------------------
-# RESIDUAL FITNESS PARAMETERS AND HYPERPARAMETERS
-# -----------------------------------------------------
-residual_name: "Est-Random_Fixed-BetaSite"
-n_sigmas: 21
-sigma_start: 0
-sigma_stop: 5
-
-# -----------------------------------------------------
 # FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
 # -----------------------------------------------------
 # Length of time intervals used in decomposition 
