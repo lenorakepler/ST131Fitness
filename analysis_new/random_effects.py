@@ -281,6 +281,8 @@ def prep_data_for_hyperparam_search(analysis_dir, n_folds=3, test_proportion=(1/
 	Adds "parent_idx" to 
 	"""
 
+	# TODO: BUG: do I ever use this???
+
 	RO = ResultsObj(folder=analysis_dir)
 	data = RO.data
 
@@ -335,6 +337,8 @@ def prep_data_for_fitting(analysis_dir, plot=True, alt=False):
 	brownian_info_dict["full"] = get_parent_type_info(all_arr, RO.train_idx, RO.validate_idx, all_branch_names)
 	for i, [train_idxs, test_idxs] in enumerate(RO.cv_idxs):
 		brownian_info_dict[i] = get_parent_type_info(all_arr, train_idxs, test_idxs, all_branch_names)
+
+	# TODO: BUG: What is alt??
 
 	fname = "brownian_fit_setup.json"
 	if alt:

@@ -916,6 +916,8 @@ def resume_fits():
 def main_func(model_config, n_threads=8, test=False, debug=False, graph=False):
 	config = load(Path("config.yaml").read_text(), Loader=Loader)
 	model_config = load(Path(f"configs/config_model_params_{model_config}.yaml").read_text(), Loader=Loader)
+
+	# TODO: BUG: model_config (specified on command line) is not the same as model_name (specified in configs/config_model_params_<model_config>.yaml)
 	config.update(model_config)
 
 	if test:
