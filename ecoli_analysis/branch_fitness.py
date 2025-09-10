@@ -8,15 +8,6 @@ import re
 import seaborn as sns
 import matplotlib as mpl
 
-if Path("/home/lenora/Dropbox").exists():
-	dropbox_dir = Path("/home/lenora/Dropbox")
-
-else:
-	dropbox_dir = Path("/Users/lenorakepler/Dropbox")
-
-ncbi = dropbox_dir / "NCSU/Lab/ESBL-HAI/NCBI_Dataset"
-dir = ncbi / "final"
-
 def color_tree_components(params, data, out_file_phylo, zoom=None, null_color="white"):
 	tt = pp.loadTree(
 		Path(params['tree_file']),
@@ -105,6 +96,8 @@ def get_time_interval(time, interval_times):
 	return param_interval
 
 def effects_to_fitness(estimates_file, features_file, tree_file, interval_times, interval_tree=False):
+	# TODO: BUG: remove hard-coded date
+
 	est_dict = pd.read_csv(estimates_file, index_col=0)
 	
 	if (est_times_file := (estimates_file.parent / "time_estimates.csv")).exists():
@@ -152,93 +145,8 @@ def effects_to_fitness(estimates_file, features_file, tree_file, interval_times,
 
 	return features_df, params
 
-def effects_to_fitness_tsim(analysis_dir, random_name):
-	# -----------------------------------------------------
-	# Load and sort estimates
-	# -----------------------------------------------------
-	est_dict = pd.read_csv(analysis_dir / "estimates.csv", index_col=0)
-	est_dict = est_dict.set_index("feature").squeeze().to_dict()
-
-	est_sites_dict = {k: v for k, v in est_dict.items() if "Interval" not in k}
-	est_times_dict = {k: v for k, v in est_dict.items() if "Interval" in k}
-
-	log_site_effs = np.log(list(est_sites_dict.values()))
-	time_effs = list(est_times_dict.values())
-
-	# -----------------------------------------------------
-	# Load data object, extract feature types
-	# -----------------------------------------------------
-	data = pd.read_csv(analysis_dir / "data.csv")
-	data.set_index("name", inplace=True)
-
-	# Remove nodes, since we don't treat them differently
-	data = data[data['event'] == 4]
-
-	# -----------------------------------------------------
-	# Get site fitness
-	# -----------------------------------------------------
-	feature_types = np.array([np.fromiter(ft, int) for ft in data['ft']])
-	data['site_fitness'] = np.exp(np.matmul(feature_types, log_site_effs))
-	
-	# -----------------------------------------------------
-	# Get time fitness
-	# -----------------------------------------------------
-	params = json.loads((analysis_dir / "params.json").read_text())
-	data['birth_interval'] = np.take(params['birth_rate_idx'], data['param_interval'])
-	data['time_fitness'] = np.take(time_effs, data['birth_interval'])
-
-	# -----------------------------------------------------
-	# Get random fitness
-	# -----------------------------------------------------
-	edge_random = pd.read_csv(analysis_dir / random_name / "edge_random_effects_all.csv", index_col=0)
-	data = pd.concat([data, edge_random], axis=1)
-
-	# -----------------------------------------------------
-	# Calculate total fitness
-	# -----------------------------------------------------
-	data["total_model_fitness"] = data["site_fitness"] * data["time_fitness"]
-	data["total_fitness"] = data["total_model_fitness"] * data["random_fitness"]
-	
-	return data, params
-
-def site_effects_to_fitness_tsim(analysis_dir):
-	# -----------------------------------------------------
-	# Load and sort estimates
-	# -----------------------------------------------------
-	est_dict = pd.read_csv(analysis_dir / "estimates.csv", index_col=0)
-	est_dict = est_dict.loc[est_dict['feature'].str.contains("Interval")==False]
-
-	features = est_dict["feature"].values
-	estimates = est_dict["estimate"].values
-
-	# -----------------------------------------------------
-	# Load data object, extract feature types
-	# -----------------------------------------------------
-	data = pd.read_csv(analysis_dir / "data.csv")
-
-	# Remove nodes, since we don't treat them differently
-	data = data[data['event'] == 4]
-
-	# -----------------------------------------------------
-	# Get site fitness
-	# -----------------------------------------------------
-	feature_groups = ["AMR", "VIR", "PLASMID", "STRESS", "PRJNA"]
-	feature_types = np.array([np.fromiter(ft, int) for ft in data['ft']])
-
-	for feature_group in feature_groups:
-		locs = np.array([i for i, c in enumerate(features) if feature_group in c])
-		log_site_effs = np.log(np.take(estimates, locs))
-
-		ft = np.take(feature_types, locs, axis=1)
-
-		data[feature_group] = np.exp(np.matmul(ft, log_site_effs))
-	
-	data.set_index("name", inplace=True)
-
-	params = json.loads((analysis_dir / "params.json").read_text())
-	return data[feature_groups], params
-
 def plot_with_random_vs_without(data, out_dir):
+	# TODO: BUG: remove hard-coded dates
 
 	data = data[data['time_step'] <= 20]
 	data = data[data['event_time'] >= 1960]
@@ -267,7 +175,8 @@ def plot_with_random_vs_without(data, out_dir):
 if __name__ == "__main__":
 	import numpy as np
 
-
+	# TODO: BUG: remove hard-coded analysis directory
+	# TODO: BUG: figure out what plotting is actually needed
 
 	analysis_dir = dir / "analysis" / "3-interval_constrained-sampling"
 
