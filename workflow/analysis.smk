@@ -37,7 +37,7 @@ rule create_interval_tree:
 		interval_tree_file = f"{data_dir}/interval_trees/{interval_tree_name}/phylo.nwk",
 	run:
 		import pandas as pd
-		from ecoli_analysis.param_intervals import make_intervals
+		from data_prep.param_intervals import make_intervals
 
 		bioproject_times = pd.read_csv(input.bioproject_times_file, index_col=0)
 
@@ -65,7 +65,7 @@ rule fit_model:
 		n_epochs = config['n_epochs'],
 		lr = config['lr'],
 	run:
-		from ecoli_analysis.fit_model import fit_model
+		from model_fit.fit_model import fit_model
 
 		fit_model(analysis_dir, analysis_name, input.interval_tree_file, input.features_file, config)
 
@@ -105,7 +105,7 @@ rule fitness_components:
 		f"{residual_dir}/all_edges.csv",
 		f"{residual_dir}/edge_log_fitness_components.csv",
 	run:
-		from ecoli_analysis.fitness_decomp import calc_fitness_totals
+		from analysis.fitness_decomp import calc_fitness_totals
 
 		calc_fitness_totals(analysis_dir, residual_dir)
 
@@ -124,7 +124,7 @@ rule fitness_decomposition:
 		interval_length = interval_length,
 		interval_cutoff = interval_cutoff,
 	run:
-		from ecoli_analysis.fitness_decomp import do_decomp
+		from analysis.fitness_decomp import do_decomp
 
 		do_decomp(Path(analysis_dir), residual_name, total=True, interval_length=params.interval_length, interval_cutoff=params.interval_cutoff)
 		do_decomp(Path(analysis_dir), residual_name, total=False, interval_length=params.interval_length, interval_cutoff=params.interval_cutoff)
@@ -139,8 +139,8 @@ rule calc_CIs:
 	output:
 		f"{analysis_dir}/profile_CIs.csv"
 	run:
-		from ecoli_analysis.results_obj import load_data_and_RO_from_file, load_data_and_RO
-		from ecoli_analysis.likelihood_profile import make_profiles, get_CIs
+		from model_fit.results_obj import load_data_and_RO_from_file, load_data_and_RO
+		from analysis.likelihood_profile import make_profiles, get_CIs
 
 		estimating = {k: v for k, v in config["bdm_params"].items() if v[0] == True}
 		result_key = ('+').join(sorted([f"{k}_TV" if (len(v) > 1 and v[1] == True) else k for k, v in estimating.items()]))

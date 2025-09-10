@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 from numpy.lib import recfunctions as rfn
-from analysis.phylo_obj import PhyloObjPlain
+from model_fit.phylo_obj import PhyloObjPlain
 
 def make_intervals(interval_dir, original_tree_file, last_sample_date, *start_time_lists):
 	"""

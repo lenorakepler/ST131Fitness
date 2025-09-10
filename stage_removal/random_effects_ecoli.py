@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from analysis.optimizer import Optimizer
+from model_fit.optimizer import Optimizer
 from ecoli_analysis.random_effects import find_parents, split_intervals, get_parent_type_info
 from _analysis.test_parallel import test_param_fold, init_model_params
-from ecoli_analysis.results_obj import ResultsObj
+from model_fit.results_obj import ResultsObj
 from natsort import natsorted, ns
 
 # from ecoli_analysis.random_effects_classes import RandomEffectSite
@@ -512,7 +512,7 @@ def test(analysis_dir, random_name):
 if __name__ == "__main__":
 	from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 	from pathlib import Path
-	from ecoli_analysis.results_obj import ResultsObj
+	from model_fit.results_obj import ResultsObj
 	from _analysis.test_prob import make_intervals
 
 	config = load(Path("config.yaml").read_text(), Loader=Loader)

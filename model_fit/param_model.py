@@ -3,7 +3,7 @@ from tensorflow import keras
 import numpy as np
 from numpy.lib import recfunctions as rfn
 from types import SimpleNamespace
-from analysis.phylo_loss import PhyloLossNonIterative, PhyloLossIterative
+from model_fit.phylo_loss import PhyloLossNonIterative, PhyloLossIterative
 
 class ParamModel(keras.Model):
 	"""

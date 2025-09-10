@@ -2,7 +2,7 @@ from pathlib import Path
 from yte import process_yaml
 import pandas as pd
 import numpy as np
-from ecoli_analysis.results_obj import ResultsObj
+from model_fit.results_obj import ResultsObj
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 
 config = load(Path("config.yaml").read_text(), Loader=Loader)
@@ -68,7 +68,7 @@ estimates, loss, opt = RO.fit_score(
 # do_decomp(Path(analysis_dir), residual_name, total=False, interval_length=interval_length, interval_cutoff=interval_cutoff)
 
 # from ecoli_analysis.RO import load_data_and_RO_from_file, load_data_and_RO
-# from ecoli_analysis.likelihood_profile import make_profiles, get_CIs
+# from analysis.likelihood_profile import make_profiles, get_CIs
 
 # estimating = {k: v for k, v in config["bdm_params"].items() if v[0] == True}
 # result_key = ('+').join(sorted([f"{k}_TV" if (len(v) > 1 and v[1] == True) else k for k, v in estimating.items()]))

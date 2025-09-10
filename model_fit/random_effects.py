@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from natsort import natsorted, ns
-from analysis_new.do_model_fit import ResultsObj
+from model_fit.results_obj import ResultsObj
 import analysis.plot_phylo_standalone as pp
 
 def define_fold_intervals(n_folds, root_time, present_time, folds_start, test_proportion):

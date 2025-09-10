@@ -15,12 +15,12 @@ import click
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-from analysis_new.do_model_fit import ResultsObj
-from analysis_new.fitness_model import BirthSamplingSite
-from ecoli_analysis.branch_fitness import color_tree
-from ecoli_analysis.feature_matrix import load_info
-from analysis.arrayer import PhyloArrayer, PhyloDataFile
-from analysis.phylo_loss import PhyloLoss, PhyloLossIterative
+from model_fit.results_obj import ResultsObj
+from model_fit.fitness_model  import BirthSamplingSite
+from analysis.branch_fitness import color_tree
+from analysis.feature_matrix import load_info
+from model_fit.arrayer import PhyloArrayer, PhyloDataFile
+from model_fit.phylo_loss import PhyloLoss, PhyloLossIterative
 
 def lj(file):
 	return json.loads(Path(file).read_text())

@@ -34,7 +34,7 @@ rule fig1_phylogeny_matrix:
 	output:
 		f"{figures_dir}/Figure-1_phylo_fitness_effect_matrix_no-bioproj.png"
 	run:
-		from ecoli_analysis.feature_matrix import significant_phylo_matrix
+		from analysis.feature_matrix import significant_phylo_matrix
 		significant_phylo_matrix(data_dir, analysis_dir, input.clade_ancestral_file, figures_dir)
 
 rule fig2_clade_sample_proportions:
@@ -61,7 +61,7 @@ rule fig3_fig6_decomp_through_time:
 		f"{figures_dir}/{residual_name}/Figure-3_Time_Mean_Fitness_Decomp_Stacked-Line_intervallength-{interval_length}_cutoff-{interval_cutoff}.png",
 		f"{figures_dir}/{residual_name}/Figure-6_Time_Variance_Decomp_Stacked_Abs-Prop_intervallength-{interval_length}_cutoff-{interval_cutoff}.png"
 	run:
-		from ecoli_analysis.fitness_decomp import do_plots
+		from analysis.fitness_decomp import do_plots
 
 		do_plots(analysis_dir, config["residual_name"], figures_dir, interval_length=interval_length, interval_cutoff=interval_cutoff)
 
@@ -75,7 +75,7 @@ rule fig4_effects_boxplot:
 	output:
 		f"{figures_dir}/Figure-4_profile_CIs_boxplot_non-background_sig.png"
 	run:
-		from ecoli_analysis.likelihood_profile import do_box_plots
+		from analysis.likelihood_profile import do_box_plots
 
 		do_box_plots(analysis_dir, figures_dir, config["category_info_file"])
 
@@ -90,7 +90,7 @@ rule fig5_amr_vir_by_clade:
 	output:
 		f"{figures_dir}/Figure-5_Fitness-Components_ByClade_{'-'.join([c for c in config['fig5_categories']])}-{interval_length}_cutoff-{interval_cutoff}_combined-alt.png"
 	run:
-		from ecoli_analysis.fitness_decomp import components_by_clade
+		from analysis.fitness_decomp import components_by_clade
 
 		components_by_clade(
 			residual_dir,

@@ -8,14 +8,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib as mpl
-from analysis_new.do_model_fit import ResultsObj
-from analysis_new.fitness_model import BirthSamplingSite
-from analysis.phylo_loss import PhyloLoss, PhyloLossIterative
+from model_fit.results_obj import ResultsObj
+from model_fit.fitness_model  import BirthSamplingSite
+from model_fit.phylo_loss import PhyloLoss, PhyloLossIterative
 import time
 import copy
 import tqdm
 import json
-# from ecoli_analysis.utils import cat_display
+# from analysis.utils import cat_display
 
 def plot_effect_profile(site, profile_results, mle_eff, CI, out_dir):
 	profile = profile_results[site].dropna()

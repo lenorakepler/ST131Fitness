@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 from sklearn.model_selection import KFold, train_test_split
-from analysis.phylo_obj import PhyloObjPlain
-from analysis.arrayer import PhyloArrayer, PhyloDataFile
-from analysis.phylo_loss import PhyloLoss, PhyloLossIterative
-from analysis.optimizer import Optimizer
-from analysis_new.fitness_model import BirthSamplingSite
+from model_fit.phylo_obj import PhyloObjPlain
+from model_fit.arrayer import PhyloArrayer, PhyloDataFile
+from model_fit.phylo_loss import PhyloLoss, PhyloLossIterative
+from model_fit.optimizer import Optimizer
+from model_fit.fitness_model  import BirthSamplingSite
 
 # https://stackoverflow.com/questions/69924881/userwarning-starting-a-matplotlib-gui-outside-of-the-main-thread-will-likely-fa
 import matplotlib

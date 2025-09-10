@@ -1,6 +1,6 @@
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 from pathlib import Path
-from ecoli_analysis.results_obj import ResultsObj
+from model_fit.results_obj import ResultsObj
 from _analysis.test_parallel import crossvalidate
 import click
 from memory_profiler import profile

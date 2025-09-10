@@ -7,8 +7,8 @@ import numpy as np
 import re
 import seaborn as sns
 import matplotlib as mpl
-from ecoli_analysis.branch_fitness import color_tree_components, site_effects_to_fitness_tsim, effects_to_fitness_tsim, dir
-from ecoli_analysis.feature_matrix import plot_phylo_matrix, get_clade_changepoints
+from analysis.branch_fitness import color_tree_components, site_effects_to_fitness_tsim, effects_to_fitness_tsim, dir
+from analysis.feature_matrix import plot_phylo_matrix, get_clade_changepoints
 from natsort import natsorted, natsort_keygen
 
 def plot_clade_sampling_over_time(clade_ancestral_file, analysis_dir, out_dir):

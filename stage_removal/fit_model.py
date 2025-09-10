@@ -1,4 +1,4 @@
-from ecoli_analysis.results_obj import load_data_and_RO_from_file, load_data_and_RO
+from model_fit.results_obj import load_data_and_RO_from_file, load_data_and_RO
 import numpy as np
 import pandas as pd
 import click

@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
-from analysis_new.do_model_fit import ResultsObj
+from model_fit.results_obj import ResultsObj
 from matplotlib.colors import PowerNorm
 import plotly.express as px
 

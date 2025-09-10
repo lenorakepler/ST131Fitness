@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
-from analysis.arrayer import PhyloDataFile
+from model_fit.arrayer import PhyloDataFile
 from multiprocessing import freeze_support, set_start_method, Pool
 from collections import ChainMap
 import json
 import copy
 import matplotlib.pyplot as plt
-from ecoli_analysis.param_intervals import make_intervals
-from analysis_new.do_model_fit import ResultsObj
+from data_prep.param_intervals import make_intervals
+from model_fit.results_obj import ResultsObj
 from analysis_new.random_effects import prep_data_for_hyperparam_search, prep_data_for_fitting
 import analysis.plot_phylo_standalone as pp
 import seaborn as sns

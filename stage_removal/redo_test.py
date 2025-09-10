@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
-from ecoli_analysis.results_obj import ResultsObj
+from model_fit.results_obj import ResultsObj
 from multiprocessing import freeze_support, set_start_method, Pool
 from collections import ChainMap
 import json

@@ -5,7 +5,7 @@ import pandas as pd
 import numpy.lib.recfunctions as rf
 import math
 import pickle
-from analysis.optimizer import Optimizer
+from model_fit.optimizer import Optimizer
 import re
 
 class PhyloArrayer():

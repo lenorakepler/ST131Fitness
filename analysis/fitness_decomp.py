@@ -12,8 +12,8 @@ import json
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-from ecoli_analysis.results_obj import load_data_and_RO_from_file
-from ecoli_analysis.utils import cat_display
+from model_fit.results_obj import load_data_and_RO_from_file
+from analysis.utils import cat_display
 
 def calc_fitness_totals(analysis_dir, residual_dir):
 	analysis_dir = Path(analysis_dir)

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from analysis.param_model import ParamComponent, ParamModel, ComponentSite
-from analysis.phylo_loss import PhyloLossIterative
+from model_fit.phylo_loss import PhyloLossIterative
 
 class ComponentRandomEffect(ParamComponent):
 	def init_random_effect(self):

@@ -10,7 +10,7 @@ import json
 import numpy as np
 import seaborn as sns
 import yaml
-from ecoli_analysis.utils import cat_display
+from analysis.utils import cat_display
 
 def get_clade_changepoints(tt, data, clade_ancestral_file, out_file_changepoints):
 	# Read in file of ancestral clade states, apply to data df

@@ -9,12 +9,12 @@ import tensorflow as tf
 import analysis.plot_phylo_standalone as pp
 import seaborn as sns
 import matplotlib.pyplot as plt
-from analysis.optimizer import Optimizer
+from model_fit.optimizer import Optimizer
 from analysis.param_model import SiteMarginal
-from analysis.phylo_obj import PhyloObj, PhyloObjPlain
-from analysis.phylo_loss import PhyloLossIterative
-from analysis.arrayer import PhyloArrayer
-from ecoli_analysis.param_intervals import make_intervals
+from model_fit.phylo_obj import PhyloObj, PhyloObjPlain
+from model_fit.phylo_loss import PhyloLossIterative
+from model_fit.arrayer import PhyloArrayer
+from data_prep.param_intervals import make_intervals
 from tensorflow.keras import Model as KerasModel
 from types import SimpleNamespace
 
