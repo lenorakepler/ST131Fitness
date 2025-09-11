@@ -23,6 +23,10 @@ data/3_interval_tree
 data/data_prep_out
 data/*
 internal/
+data/interval_trees/
+data/data
+!data/.gitkeep
+!results/.gitkeep
 
 
 # Mac things
