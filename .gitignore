@@ -11,18 +11,19 @@ data/analysis/3-interval_constrained-sampling/*
 old/*
 _analysis/*
 *.html
-Configs/old/*
-data_new/old/*
-data_new/analysis/*
-data_new/tests/*
-data_new/data_prep_out
 *.tab
 profiling/*
 phyloTF2/*
 *.png
-old_data_and_info/*
-ecoli_external_workflow/*
+archive/
+ecoli_external_workflow/
 *.tex
+results/*
+data/3_interval_tree
+data/data_prep_out
+data/*
+internal/
+
 
 # Mac things
 *.DS_Store
