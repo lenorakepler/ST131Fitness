@@ -1,4 +1,4 @@
-model_name: "full_model"
+model_name: "full_model_tvbs"
 sigma_opt: False
 
 # -----------------------------------------------------
@@ -7,7 +7,7 @@ sigma_opt: False
 fit_model_params:
   # Not estimated
   death_rate: 1
-  sampling_mask: "data_new/sampling_mask.csv"
+  sampling_mask: "../data/model_input/sampling_mask.csv"
 
   # Potentially estimated
   birth_background:
@@ -18,12 +18,12 @@ fit_model_params:
   birth_features:
     estimate: True
     penalize: True
-    states: "data_new/functional_groups_corr_pastml/marginal_states.csv" # Binary features file for each sample + ancestral node
+    states: "../data/model_input/marginal_states_genetic.csv" # Binary features file for each sample + ancestral node
     value: 1
   sampling_features:
     estimate: True
     penalize: True
-    states: "data_new/meta_features_marginal.csv"
+    states: "../data/model_input/marginal_states_meta.csv"
     value: 1
   sampling_background:
     estimate: True
@@ -34,16 +34,14 @@ fit_model_params:
     estimate: True
     penalize: False
     value: 1
-    states: "data_new/analysis/three_sampling_intervals/brownian_fit_setup.json"
 
 # -----------------------------------------------------
 # HYPERPARAMETER SEARCH SETUP
 # -----------------------------------------------------
-lr: .00005
-n_epochs: 80000
-
-# Values of regularization type, lambda penalty types to test
+# Values of regularization type, lambda penalty types, etc. to test
 hyper_param_values:
+  lr: 0.00005
+  n_epochs: 80000
   reg_type: ["l1"]
-  lamb: [25, 50]
-  sigma: [0.0005]
+  lamb: [1, 5, 25, 50]
+  sigma: [0.00005, 0.05]

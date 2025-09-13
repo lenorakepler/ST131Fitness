@@ -1,4 +1,5 @@
-data_dir: "data_new"
+data_dir: "../data"
+results_dir: "../results"
 
 # -----------------------------------------------------
 # ANALYSIS NAME (directory automatically created)
@@ -9,15 +10,19 @@ analysis_name: "three_sampling_intervals"
 # FEATURES FILES AND ORIGINAL PHYLOGENY
 # -----------------------------------------------------
 # Ancestral clade reconstruction for each branch
-clades_file: ?this["data_dir"] + "/clade_combined_ancestral_states.csv"
-
-# Original tree output of LSD, pruned of reference node, unannotated
-original_tree_file: "data/named.tree_lsd.date.noref.pruned_unannotated.nwk"
+clades_file: "../data/model_input/clade_resconstruction.csv"
 
 # -----------------------------------------------------
-# TREE INTERVALS SETUP
+# TREE SETUP
 # -----------------------------------------------------
-interval_tree_name: "3_interval_tree"
+# Newick tree that has had branches split at
+# appropriate interval times
+# 
+# TODO: BUG: since I'm doing sampling, too, do I split there? 
+#       Or just at the two birth changepoints?
+# 
+tree file: "../data/model_input/three_interval_tree.nwk"
+interval_times: "../data/model_input/interval_times.txt"
 
 # To correctly date the tree
 last_sample_date: 2023
@@ -31,7 +36,7 @@ sampling_prob_changepoints: [2003, 2013]
 # samples for that BioProject). This is just a .csv file that specifies these dates as year
 # rounded to one decimal, ensuring the window starts just before the first sample and ends right
 # after the last.
-bioproject_times_file: ?this["data_dir"] + "/bioproject_times.csv"
+bioproject_times_file: "../data/model_input/bioproject_times.csv"
 bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.8,2012.9,2012.0,2014.0,2014.8,2016.0,2017.0,2018.0,2019.7,2016.4,2018.1,2020.1,2023.1,2015.2,2019.1,2020.8,2020.0,2020.2]
 
 # -----------------------------------------------------
@@ -44,17 +49,23 @@ iterative_pE: True
 # FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
 # -----------------------------------------------------
 # Length of time intervals used in decomposition 
-interval_length: 1
+decomp_interval_length: 1
 
 # Can omit recent years since very few samples
-interval_cutoff: 2021
+decomp_interval_cutoff: 2021
 
 # -----------------------------------------------------
 # FIGURE OUTPUT PARAMETERS
 # -----------------------------------------------------
-figures_dir: ?this["data_dir"] + "/figures"
+# Figures will be output in subfolders of the results directory
+# defined above based on the analysis name and model configuration
+# specified. If you would like final, named figures to instead be
+# saved to a different directory (e.g. a working directory for)
+# publication, specify that below. If nothing is specified, these 
+# figures will be output with everything else.
+figures_dir: ""
 
-category_info_file: ?this["data_dir"] + "/group_short_name_to_display_manual.yml"
+feature_info_file: "../data/model_input/feature_info.csv"
 
 fig5_categories:
   - "AMR"

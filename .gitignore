@@ -24,9 +24,10 @@ data/data_prep_out
 data/*
 internal/
 data/interval_trees/
-data/data
-!data/.gitkeep
-!results/.gitkeep
+data/raw/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/model_input
 
 
 # Mac things
