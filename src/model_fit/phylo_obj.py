@@ -6,78 +6,34 @@ from pathlib import Path
 import sys
 from collections import OrderedDict
 
-class ParamObj():
-	"""
-	Takes in a path string, Path, or dictionary
-	If reading from file, tries to evaluate values
-	This is mostly for passing to PhyloObj
-	"""
-
-	def __init__(self, params):
-		if isinstance(params, str) or isinstance(params, Path):
-			assert params.exists() == True, f"Parameter file does not exist ({params})"
-
-			try:
-				params_df = pd.read_csv(params, index_col=0).squeeze("columns")
-				self.setParamsFromString(params_df)
-
-			except:
-				print("Couldn't read parameter file as csv")
-				print(f"Tried to read: {params}")
-
-
-		elif isinstance(params, dict):
-			for k, v in params.items():
-				setattr(self, k, v)
-
-	def setParamsFromString(self, params):
-		for k, v in params.items():
-			try:
-				setattr(self, k, eval(v))
-			except:
-				setattr(self, k, v)
-
 class PhyloObj():
-	"""
-	Takes in, loads, and stores:
-		dendropy tree object path
-		feature dataframe or dict
-		params as ParamObj
-
-	Performs counts of feature types, sites, etc.
-	"""
-
-	def __init__(self, tree_file, tree_schema, features_file, params):
-		if isinstance(features_file, str):
-			features_file = Path(features_file)
-
-		# Get and store objects
+	def __init__(self, tree_file, tree_schema, last_sample_date=None):
 		self.tree = self.getDendroTree(tree_file, tree_schema)
-		self.features_df = self.loadFeaturesDF(features_file)
-		self.params = params
-
+		
 		# Compute and store attributes
 		self.root = self.tree.seed_node
 		self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
 		self.present_time = self.tree.max_distance_from_root() + self.root.age
-		self.count = self.features_df.size
-		self.feature_names = self.features_df.columns.to_list()
-		self.features_dict = self.genFeaturesDict(self.features_df)
-		self.site_counts = self.features_df.sum(axis=0).to_list()
-		self.observed_mutations = [i for i, count in enumerate(self.site_counts) if count != 0]
-		self.feature_type_counts = self.getFeaturetypeCounts(self.features_dict)
-		self.genome_length = len(list(self.features_dict.values())[0])
 
-		self.feature_types = dict(
-			observed = list(self.feature_type_counts.keys()),
-		)
-
+		if last_sample_date:
+			self.last_sample_date = last_sample_date
+			for n in self.tree.nodes():
+				n.age = n.age + (last_sample_date - self.present_time)
+				
+			self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
+			self.present_time = last_sample_date
+			
 		# Files and input
-		self.tree_file = tree_file
+		self.tree_file = Path(tree_file)
 		self.tree_schema = tree_schema
-		self.features_file = features_file
 
 		self.phylo_obj_type = self.__class__.__name__
+
+		self.features_dict = {}
+
+	def save(self, out_folder):
+		with open(out_folder / "phylo_obj_dict.pkl", "wb") as f:
+			pickle.dump(self.__dict__, f)
 
 	def getDendroTree(self, tree_file, tree_schema):
 		"""
@@ -228,84 +184,6 @@ class PhyloObj():
 			suppress_leaf_node_labels=False,
 			unquoted_underscores=True, # Baltic can't deal with this
 		)
-
-	def loadFeaturesDF(self, features_file):
-		"""
-		Loads feature types DataFrame from .csv
-		"""
-		if features_file.suffix == ".csv":
-			return pd.read_csv(features_file, index_col=0)
-		elif features_file.suffix == ".tsv":
-			return pd.read_csv(features_file, sep="\t", index_col=0)
-		elif features_file.suffix in [".fasta", ".fa", ".aln"]:
-			feature_dict = {}
-			feature_strs = features_file.read_text().split(">")[1:]
-			for feature_str in feature_strs:
-				name, features, _ = feature_str.split("\n")
-				feature_dict[name] = list(map(int, features))
-			return pd.DataFrame(feature_dict).T
-		else:
-			sys.exit(f"Features file must be .csv, .tsv, or .fasta/.fa/.aln (got {features_file.suffix})")
-
-	def genFeaturesDict(self, features_df):
-		"""
-		Loads features types
-		into ordered dict from .csv
-		"""
-		features_dict = OrderedDict({})
-
-		for name, row in features_df.iterrows():
-			features_dict[name] = ''.join(map(str, row.values.tolist()))
-
-		return features_dict
-
-	def getFeaturetypeCounts(self, features_dict):
-		unique = np.unique(np.array(list(features_dict.values())), return_counts=True)
-		return {ft: c for ft, c in zip(*unique)}
-
-	def getFTsWithObsMuts(self, observed_mutations, all_possible_feature_types):
-		with_observed_muts = []
-
-		observed_muts = set(observed_mutations)
-
-		for seq in all_possible_feature_types:
-			muts = {i for i, val in enumerate(seq) if val == '1'}
-
-			# If this sequence doesn't have any mutations that aren't
-			# observed, add it to the list
-			if not muts.difference(observed_muts):
-				with_observed_muts.append(seq)
-
-		return with_observed_muts
-
-	def save(self, out_folder):
-		with open(out_folder / "phylo_obj_dict.pkl", "wb") as f:
-			pickle.dump(self.__dict__, f)
-
-class PhyloObjPlain(PhyloObj):
-	def __init__(self, tree_file, tree_schema, last_sample_date=None):
-		self.tree = self.getDendroTree(tree_file, tree_schema)
-		
-		# Compute and store attributes
-		self.root = self.tree.seed_node
-		self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
-		self.present_time = self.tree.max_distance_from_root() + self.root.age
-
-		if last_sample_date:
-			self.last_sample_date = last_sample_date
-			for n in self.tree.nodes():
-				n.age = n.age + (last_sample_date - self.present_time)
-				
-			self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
-			self.present_time = last_sample_date
-			
-		# Files and input
-		self.tree_file = Path(tree_file)
-		self.tree_schema = tree_schema
-
-		self.phylo_obj_type = self.__class__.__name__
-
-		self.features_dict = {}
 
 class PhyloObjInfo():
 	def __init__(self, out_folder):

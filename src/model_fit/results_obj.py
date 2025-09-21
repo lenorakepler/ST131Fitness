@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 from sklearn.model_selection import KFold, train_test_split
-from model_fit.phylo_obj import PhyloObjPlain
+from model_fit.phylo_obj import PhyloObj
 from model_fit.arrayer import PhyloArrayer, PhyloDataFile
 from model_fit.phylo_loss import PhyloLoss, PhyloLossIterative
 from model_fit.optimizer import Optimizer
@@ -100,7 +100,7 @@ class ResultsObj():
 		# -----------------------------------------------------
 		interval_times = [float(t) for t in Path(interval_times_file).read_text().splitlines()]
 
-		self.phylo_obj = PhyloObjPlain(
+		self.phylo_obj = PhyloObj(
 			tree_file=Path(tree_file),
 			tree_schema="newick",
 			last_sample_date=last_sample_date,
