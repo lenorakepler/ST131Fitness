@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import re
-# from model_fit.phylo_obj import PhyloObjPlain
+from model_fit.phylo_obj import PhyloObj
 
 """
 Functions for formatting data files as necessary for input into the model
@@ -15,10 +15,10 @@ PROBABLY WILL NOT ACTUALLY RUN AS IS ... cleanup incoming.
 
 def concat_marginal_states(pastml_probabilities_dir, out_file):
 	"""
-	Input:  Directory containing pastml's marginal reconstructed
+	Input:	Directory containing pastml's marginal reconstructed
 		    character probability files (usually /work)
 	
-	Output: Dataframe as CSV file with probability that a tree
+	Output:	Dataframe as CSV file with probability that a tree
 			node (row) is in a given state (column)
 	"""
 
@@ -55,7 +55,7 @@ def concat_marginal_states(pastml_probabilities_dir, out_file):
 			renamed_columns = {c: f"{feature}_{state}" for state in fdf.columns}
 			formatted_feature_probability_df = feature_state_probabilities.rename(columns=renamed_columns)
 
-	feature_type == "binary"
+	if feature_type == "binary":
 		formatted_feature_probability_df = pd.concat(formatted_feature_probability_dfs, axis=1)
 
 	formatted_feature_probability_df.to_csv(out_file)
@@ -108,63 +108,66 @@ def marginal_for_analysis(pastml_dir, pastml_dict_file, meta=False, drop_first=F
 
 	mar.to_csv(dir / "marginal_states.csv")
 
-# def make_intervals(interval_dir, original_tree_file, last_sample_date, *start_time_lists):
-# 	"""
-# 	Get all times, add root time if not there, sort,
-# 	make interval tree, return interval list
-# 	"""
+def make_intervals(interval_dir, original_tree_file, last_sample_date, *start_time_lists):
+	"""
+	Get all times, add root time if not there, sort,
+	make interval tree, return interval list
+	"""
 
-# 	interval_dir = Path(interval_dir)
-# 	print(start_time_lists)
+	interval_dir = Path(interval_dir)
 
-# 	# -----------------------------------------------------
-# 	# Load phylo obj, set dates
-# 	# -----------------------------------------------------
-# 	phylo_obj = PhyloObjPlain(
-# 		tree_file=original_tree_file,
-# 		tree_schema="newick",
-# 	)
+	# -----------------------------------------------------
+	# Load phylo obj, set dates
+	# -----------------------------------------------------
+	phylo_obj = PhyloObj(
+		tree_file=original_tree_file,
+		tree_schema="newick",
+	)
 	
-# 	for n in phylo_obj.tree.nodes():
-# 		n.age = n.age + (last_sample_date - phylo_obj.present_time)
+	for n in phylo_obj.tree.nodes():
+		n.age = n.age + (last_sample_date - phylo_obj.present_time)
 
-# 	phylo_obj.root = phylo_obj.tree.seed_node
-# 	phylo_obj.root_time = phylo_obj.root.age - (phylo_obj.root.edge_length if phylo_obj.root.edge_length else 0)
-# 	phylo_obj.present_time = last_sample_date
+	phylo_obj.root = phylo_obj.tree.seed_node
+	phylo_obj.root_time = phylo_obj.root.age - (phylo_obj.root.edge_length if phylo_obj.root.edge_length else 0)
+	phylo_obj.present_time = last_sample_date
 
-# 	# -----------------------------------------------------
-# 	# Get list of all interval times, make interval tree
-# 	# -----------------------------------------------------
-# 	interval_times = sorted(list(set([phylo_obj.root_time] + [item for sublist in start_time_lists for item in sublist])))
+	# -----------------------------------------------------
+	# Get list of all interval times, make interval tree
+	# -----------------------------------------------------
+	interval_times = sorted(list(set([phylo_obj.root_time] + [item for sublist in start_time_lists for item in sublist])))
 	
-# 	interval_dir.mkdir(exist_ok=True, parents=True)
+	interval_dir.mkdir(exist_ok=True, parents=True)
 
-# 	interval_tree = interval_dir / "phylo.nwk"
-# 	phylo_obj.createIntervals(
-# 		interval_times=interval_times,
-# 		save_name=interval_tree,
-# 		verbose=False,
-# 	)
+	interval_tree = interval_dir / "phylo.nwk"
+	phylo_obj.createIntervals(
+		interval_times=interval_times,
+		save_name=interval_tree,
+		verbose=False,
+	)
 
-# 	np.savetxt(str(interval_dir / "interval_times.txt"), np.array(interval_times), delimiter=',')
+	np.savetxt(str(interval_dir / "interval_times.txt"), np.array(interval_times), delimiter=',')
 	
-# 	return interval_times, interval_tree
+	return interval_times, interval_tree
 
 def get_bioproject_times_list(bioproject_times_file, changepoints_out_file):
 	"""
-	Just get list of all bioproject starts and ends, output to file
-	Can put in config
+	Input:	CSV file with columns:
+			- bioproject feature names (formatted with category name, e.g. PRJNA248737_META)
+			- true_min_time (time of first sample in dataset from bioproject)
+			- true_max_time (time of last sample in dataset from bioproject)
+			- min_time (rounded time slightly before true min time)
+			- max_time (rounded time slightly after true max time)
+
+	Output: Concatenates min and max times to list, outputs as text file
 	"""
 	bioproject_times = pd.read_csv(bioproject_times_file, index_col=0)
 
 	# Output a list of the sampling changepoints
-	sampling_changepoints = list(set(bioproject_times["min_time"].to_list() + bioproject_times["max_time"].to_list()))
+	sampling_changepoints = sorted(set(bioproject_times["min_time"].to_list() + bioproject_times["max_time"].to_list()))
 	Path(changepoints_out_file).write_text(",".join([str(s) for s in sampling_changepoints]))
 
-def make_sampling_mask(bioproject_ancestral_file, bioproject_times_file, interval_times_file, mask_out_file, uncertainty=True):
+def make_sampling_mask(bioproject_times_file, interval_times_file, mask_out_file):
 	"""
-	Given data object, set sampling upon removal rate for each
-	phylogeny segment based on its bioproject
 	"""
 
 	# Read in interval times, but remove last
@@ -172,58 +175,28 @@ def make_sampling_mask(bioproject_ancestral_file, bioproject_times_file, interva
 
 	# Read in CSV of bioproject times
 	bioproject_times = pd.read_csv(bioproject_times_file, index_col=0)
-	bioproject_times = bioproject_times[["min_time", "max_time"]]
-	bioproject_times.index = [i.split("_")[0] for i in bioproject_times.index]
 	bioprojects = bioproject_times.index.to_list()
 
-	# Get reconstructed bioproject feature states
-	bp_anc = pd.read_csv(bioproject_ancestral_file, sep="\t")[['node', 'bioproject_id_META']]
-	bp_anc = bp_anc.dropna(subset="bioproject_id_META")
-
-	n_obs = len(bp_anc['node'].unique())
 	n_int = len(interval_times)
+	n_proj = len(bioprojects)
 
 	# Initialize matrix of zeroes with rows for each sample, column for each parameter interval
-	s_arr = np.zeros((n_obs, n_int), dtype=float)
+	s_mask = pd.DataFrame(0, index=bioprojects, columns=interval_times, dtype=float)
 
-	# For each sample, figure out window in which sampling could have occurred based on the
-	# first and last sample from that bioproject. 
+	for t in interval_times:
+		# bioprojects where this time point falls within active period (= or after start, = or before end)
+		active = bioproject_times[(bioproject_times['min_time'] <= t) & (bioproject_times['max_time'] >= t)]
+		print(f"{t}: {active.index.to_list()}")
+		
+		# set mask for these bioprojects at interval t to 1 to allow sampling to occur
+		s_mask.loc[active.index, t] = 1
 
-	# If uncertain=True, we also take into account ancestral uncertainty in bioproject. 
-	# Otherwise, we just use the first listed ancestral state
-	if not uncertainty:
-		bp_anc = bp_anc.loc[bp_anc.index.drop_duplicates(keep="first"), :]
+	s_mask = s_mask.drop(columns=[interval_times[-1]])
 
-	nodes = []
-	for i, (sample, sdf) in enumerate(bp_anc.groupby('node')):
-		nodes.append(sample)
-
-		# sdf is a dataframe of all potential bioprojects, which we weight as equally likely
-		prob = 1 / len(sdf) # TODO: BUG: WAIT WHY DO WE WAIT THESE AS EQUALLY LIKELY!?
-
-		# For each potential bioproject, add marginal probability to time intervals that occur
-		# during the window in which that project's sampling was taking place
-		for r, row in sdf.iterrows():
-
-			# Determine bioproject for sample
-			proj = row['bioproject_id_META']
-
-			# Get start and end of bioproject sampling
-			if proj in bioproject_times.index:
-				start, end = bioproject_times.loc[proj, :].apply(lambda x: interval_times.index(x)).values
-				
-				# Add to the mask
-				s_arr[i, start:end] += prob
-
-	s_df = pd.DataFrame(s_arr, columns=interval_times, index=nodes)
-	s_df = s_df.drop(columns=[interval_times[-1]])
-	s_df.to_csv(mask_out_file)
+	out_dir = Path(mask_out_file).parent
+	out_dir.mkdir(parents=True, exist_ok=True)
+	s_mask.to_csv(mask_out_file)
 
 def concat_meta_features(out_file, *feature_files):
 	df = pd.concat([pd.read_csv(f, index_col=0) for f in feature_files], axis=1)
 	df.to_csv(out_file)
-
-if __name__ == "__main__":
-
-	pastml_work_dir = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025 No Results/data_new/functional_groups_corr_pastml/work/"
-	concat_marginal_states(pastml_work_dir, "")
