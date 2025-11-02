@@ -218,7 +218,7 @@ def crossvalidate(analysis_dir, hyper_param_values, config, debug, n_epochs=2000
 			interval_times_file=Path(config["data_dir"]) / config["interval_tree_name"] / "interval_times.txt",
 			last_sample_date=config["last_sample_date"]
 		)
-		results_obj.set_folds(test_size=0.2, n_splits=4, stratify=None, shuffle=True, random_state=8)
+		results_obj.set_folds(test_size=0.2, n_splits=4, shuffle=True, random_state=8)
 
 	# -----------------------------------------------------
 	# Init fitness model parameters

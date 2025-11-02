@@ -125,7 +125,7 @@ class ResultsObj():
 
 		self.save()
 
-	def set_folds(self, test_size=0.2, n_splits=4, stratify=None, random_state=8):
+	def set_folds(self, test_size=0.2, n_splits=4, random_state=8):
 		"""
 		# Get and set indices corresponding to
 		# train and validation data sets
@@ -137,7 +137,6 @@ class ResultsObj():
 			[0] * len(self.data.array),
 			random_state=random_state,
 			test_size=test_size,
-			stratify=stratify,
 		)
 
 		kf = KFold(
@@ -160,7 +159,7 @@ class ResultsObj():
 		fold_params_dict = dict(
 			test_size=test_size, 
 			n_splits=n_splits, 
-			stratify=stratify, random_state=random_state
+			random_state=random_state
 			)
 		self.params.update(fold_params_dict)
 		self.save()
