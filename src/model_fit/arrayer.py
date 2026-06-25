@@ -57,6 +57,8 @@ class PhyloArrayer():
 		phylogeny "piece", e.g. an edge segment, a birth node, or
 		a sampled node.
 
+		Also adds "idx" feature to phylogeny and outputs tree
+
 		Columns are:
 			'name' (as specified in the tree file --
 					note that multiple phylogeny pieces may

@@ -1,43 +1,66 @@
-data_dir: "../data"
-results_dir: "../results"
+data_dir: "data"
+results_dir: "results"
 
 # -----------------------------------------------------
 # ANALYSIS NAME (directory automatically created)
 # -----------------------------------------------------
-analysis_name: "three_sampling_intervals"
+analysis_dir: "results"
 
 # -----------------------------------------------------
 # FEATURES FILES AND ORIGINAL PHYLOGENY
 # -----------------------------------------------------
 # Ancestral clade reconstruction for each branch
-clades_file: "../data/model_input/clade_resconstruction.csv"
+clades_file: "data/model_input/clade_resconstruction.csv"
 
 # -----------------------------------------------------
 # TREE SETUP
 # -----------------------------------------------------
 # Newick tree that has had branches split at
 # appropriate interval times
-# 
-# TODO: BUG: since I'm doing sampling, too, do I split there? 
-#       Or just at the two birth changepoints?
-# 
-tree file: "../data/model_input/three_interval_tree.nwk"
-interval_times: "../data/model_input/interval_times.txt"
+tree_file: "data/model_input/three_interval_tree.nwk"
+interval_times: "data/model_input/interval_times.txt"
 
 # To correctly date the tree
 last_sample_date: 2023
 
-# We will divide the tree into three time intervals, with changepoints at 2003 and 2013, 
+# We will divide the tree into three time intervals, with changepoints at 2003 and 2013,
 # and estimate a separate background birth rate for each
-sampling_prob_changepoints: [2003, 2013]
+rate_changepoints: [2003, 2013]
 
 # Additionally, we  constrains sampling on removal so that a sample has 0 sampling probability
 # outside of its BioProject sample collection window (estimated as the min and max of existing
 # samples for that BioProject). This is just a .csv file that specifies these dates as year
 # rounded to one decimal, ensuring the window starts just before the first sample and ends right
 # after the last.
-bioproject_times_file: "../data/model_input/bioproject_times.csv"
-bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.8,2012.9,2012.0,2014.0,2014.8,2016.0,2017.0,2018.0,2019.7,2016.4,2018.1,2020.1,2023.1,2015.2,2019.1,2020.8,2020.0,2020.2]
+bioproject_times_file: "data/model_input/bioproject_times.csv"
+bioproject_changepoints:
+  [
+    2015.0,
+    1985.9,
+    1995.0,
+    2000.0,
+    2008.0,
+    2009.0,
+    2010.0,
+    2011.8,
+    2012.9,
+    2012.0,
+    2014.0,
+    2014.8,
+    2016.0,
+    2017.0,
+    2018.0,
+    2019.7,
+    2016.4,
+    2018.1,
+    2020.1,
+    2023.1,
+    2015.2,
+    2019.1,
+    2020.8,
+    2020.0,
+    2020.2,
+  ]
 
 # -----------------------------------------------------
 # ANALYSIS PARAMETERS
@@ -48,7 +71,7 @@ iterative_pE: True
 # -----------------------------------------------------
 # FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
 # -----------------------------------------------------
-# Length of time intervals used in decomposition 
+# Length of time intervals used in decomposition
 decomp_interval_length: 1
 
 # Can omit recent years since very few samples
@@ -61,11 +84,11 @@ decomp_interval_cutoff: 2021
 # defined above based on the analysis name and model configuration
 # specified. If you would like final, named figures to instead be
 # saved to a different directory (e.g. a working directory for)
-# publication, specify that below. If nothing is specified, these 
+# publication, specify that below. If nothing is specified, these
 # figures will be output with everything else.
 figures_dir: ""
 
-feature_info_file: "../data/model_input/feature_info.csv"
+feature_info_file: "../../data/model_input/feature_info.csv"
 
 fig5_categories:
   - "AMR"

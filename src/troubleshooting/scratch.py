@@ -8,11 +8,12 @@ from collections import ChainMap
 import json
 import copy
 import matplotlib.pyplot as plt
-from data_prep.param_intervals import make_intervals
+from model_fit.utils import make_intervals
 from model_fit.results_obj import ResultsObj
-from analysis_new.random_effects import prep_data_for_hyperparam_search, prep_data_for_fitting
+from model_fit.random_effects import prep_data_for_hyperparam_search, prep_data_for_fitting
 import analysis.plot_phylo_standalone as pp
 import seaborn as sns
+from yte import process_yaml
 
 def lj(file):
 	return json.loads(Path(file).read_text())
@@ -413,5 +414,11 @@ def Jan29_3():
 	df = pd.read_csv(RO.folder / "hyperparam_search.csv", index_col=0)
 	print(df.sort_values(by="mean_train_loss").head())
 
+def Sep21():
+	config_file = Path().resolve().parent / "configs" / "test_config.yaml"
+	config = process_yaml(config_file.read_text())
+
+	
+
 if __name__ == "__main__":
-	Jan29_3()
+	Sep21()

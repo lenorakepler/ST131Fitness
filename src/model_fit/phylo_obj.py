@@ -16,13 +16,8 @@ class PhyloObj():
 		self.present_time = self.tree.max_distance_from_root() + self.root.age
 
 		if last_sample_date:
-			self.last_sample_date = last_sample_date
-			for n in self.tree.nodes():
-				n.age = n.age + (last_sample_date - self.present_time)
-				
-			self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
-			self.present_time = last_sample_date
-			
+			self.set_dates(last_sample_date)
+
 		# Files and input
 		self.tree_file = Path(tree_file)
 		self.tree_schema = tree_schema
@@ -65,7 +60,14 @@ class PhyloObj():
 				pickle.dump(tree, p)
 
 		return tree
-
+	def set_dates(self, last_sample_date):
+		self.last_sample_date = last_sample_date
+		for n in self.tree.nodes():
+			n.age = n.age + (last_sample_date - self.present_time)
+			
+		self.root_time = self.root.age - (self.root.edge_length if self.root.edge_length else 0)
+		self.present_time = last_sample_date
+		
 	def getParamInterval(self, time):
 		"""
 		Given an event time, returns the index of the

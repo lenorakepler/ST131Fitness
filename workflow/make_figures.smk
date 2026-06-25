@@ -12,8 +12,8 @@ analysis_dir=f"{data_dir}/analysis/{analysis_name}"
 residual_dir=f"{analysis_dir}/{residual_name}"
 figures_dir = config['figures_dir']
 
-interval_length = config["interval_length"]
-interval_cutoff = config["interval_cutoff"]
+interval_length = config["decomp_interval_length"]
+interval_cutoff = config["decomp_interval_cutoff"]
 
 rule all:
 	input:

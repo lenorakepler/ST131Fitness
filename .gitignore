@@ -1,3 +1,6 @@
+logdir2/
+logdir/
+
 # Temp ignore
 transmission_sim/*
 data/analysis/3-interval_constrained-sampling/Figures/*
@@ -25,10 +28,11 @@ data/*
 internal/
 data/interval_trees/
 data/raw/
+_*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/model_input
-
+*/_*.py
 
 # Mac things
 *.DS_Store

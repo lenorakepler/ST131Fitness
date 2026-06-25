@@ -95,9 +95,7 @@ def get_time_interval(time, interval_times):
 
 	return param_interval
 
-def effects_to_fitness(estimates_file, features_file, tree_file, interval_times, interval_tree=False):
-	# TODO: BUG: remove hard-coded date
-
+def effects_to_fitness(estimates_file, features_file, tree_file, interval_times, last_sample_date, interval_tree=False):
 	est_dict = pd.read_csv(estimates_file, index_col=0)
 	
 	if (est_times_file := (estimates_file.parent / "time_estimates.csv")).exists():
@@ -119,7 +117,7 @@ def effects_to_fitness(estimates_file, features_file, tree_file, interval_times,
 	tt = pp.loadTree(
 		tree_file,
 		internal=True,
-		abs_time=2023,
+		abs_time=last_sample_date,
 	)
 
 	if interval_tree:

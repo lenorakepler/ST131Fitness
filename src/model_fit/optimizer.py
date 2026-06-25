@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import math
+from datetime import datetime
 
 class Optimizer():
 	def __init__(self, n_epochs=10000, lr=0.005, verbose=False, **kwargs):
@@ -14,17 +15,12 @@ class Optimizer():
 		self.epoch_gradients = []
 
 		self.optimizer = tf.keras.optimizers.legacy.Nadam(learning_rate=self.lr)
+		self.debug = getattr(kwargs, "debug", False)
 
 	def doOpt(self, fit_model, phylo_loss):
 		self.fit_model = fit_model
 
 		# tf.debugging.enable_check_numerics()
-
-		# https://www.tensorflow.org/api_docs/python/tf/debugging/check_numerics
-		# try:
-  		# 	tf.debugging.check_numerics(b, message='Checking b')
-		# except Exception as e:
-  		# 	assert "Checking b : Tensor had NaN values" in e.message
 
 		optimizer = self.optimizer
 
@@ -44,7 +40,7 @@ class Optimizer():
 				if self.verbose: print(f"Breaking: Loss is NaN (epoch {epoch})")
 				if self.debug: breakpoint()
 				break
-					
+
 			# Check if we have gotten about the same value for the past 5 epochs
 			if epoch > 10:	
 				if all([math.isclose(l, loss) for l in losses[-5:]]):
@@ -56,14 +52,25 @@ class Optimizer():
 
 			gradients = tape.gradient(loss, fit_model.trainable_variables)
 			gradients = [tf.convert_to_tensor(g) if isinstance(g, tf.IndexedSlices) else g for g in gradients]
+
+			# https://www.tensorflow.org/api_docs/python/tf/debugging/check_numerics
+			# try:
+			# 	for g in gradients:
+			# 		tf.debugging.check_numerics(g, message='Checking gradients')
+			# except Exception as e:
+			# 	breakpoint()
+				# assert "Checking gradients : Tensor had NaN values" in e.message
+
+
 			optimizer.apply_gradients(zip(gradients, fit_model.trainable_variables))
 
+			# print(f"{epoch=}")
 			if epoch % 500 == 0:
 				if self.verbose:
 					with np.printoptions(precision=4):
 						# print(f"{epoch=}, loss={loss.numpy():.3f}, values={[v.numpy() for v in fit_model.trainable_variables]}")
 						print(f"{epoch=}, loss={loss.numpy():.3f}")
-
+			
 		if self.save_values:
 			self.values = values
 			self.losses = losses

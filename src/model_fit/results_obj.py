@@ -13,6 +13,7 @@ from model_fit.arrayer import PhyloArrayer, PhyloDataFile
 from model_fit.phylo_loss import PhyloLoss, PhyloLossIterative
 from model_fit.optimizer import Optimizer
 from model_fit.fitness_model  import BirthSamplingSite
+from datetime import datetime
 
 # https://stackoverflow.com/questions/69924881/userwarning-starting-a-matplotlib-gui-outside-of-the-main-thread-will-likely-fa
 import matplotlib
@@ -98,10 +99,10 @@ class ResultsObj():
 		# -----------------------------------------------------
 		# Create
 		# -----------------------------------------------------
-		interval_times = [float(t) for t in Path(interval_times_file).read_text().splitlines()]
+		interval_times = [float(t) for t in Path(interval_times_file).resolve().read_text().splitlines()]
 
 		self.phylo_obj = PhyloObj(
-			tree_file=Path(tree_file),
+			tree_file=Path(tree_file).resolve(),
 			tree_schema="newick",
 			last_sample_date=last_sample_date,
 		)
@@ -110,6 +111,7 @@ class ResultsObj():
 			phylo_obj=self.phylo_obj,
 			param_interval_times=interval_times,
 		).toData()
+		self.data.addColumn("abs_index", list(range(len(self.data.array))), "int64")
 
 		# -----------------------------------------------------
 		# Save
@@ -193,12 +195,13 @@ class ResultsObj():
 		fit_model_params["rho"] = 0
 		fit_model_params["gamma"] = 0
 
+		# Should we have a BirthSamplingSite object for each fold's test/train that we don't init each time?
 		fitness_model = BirthSamplingSite(
 			data=data, 
 			fit_model_params=fit_model_params,
 			iterative_pE=iterative_pE,
 		)
-
+		
 		if iterative_pE:
 			phylo_loss = PhyloLossIterative(graph=graph, reg_type=reg_type, lamb=lamb, offset=offset, sigma=sigma)
 		else:
@@ -214,9 +217,9 @@ class ResultsObj():
 		else:
 			opt.save_values = False
 
-		# Do training, save loss
+		# Do training, save loss	
 		estimates, train_loss = opt.doOpt(fit_model=fitness_model, phylo_loss=phylo_loss)
-
+	
 		if return_opt:
 			return estimates, train_loss, opt
 		else:
@@ -240,8 +243,12 @@ class ResultsObj():
 			test_fit_model_params = copy.deepcopy(fit_model_params)
 			test_fit_model_params["brownian_motion"]["info"] = test_fit_model_params["brownian_motion"]["info"]["test"]
 			for variable in train_opt.fit_model.model_variables:
-				test_fit_model_params[variable]['value'] = estimates[variable]
-	
+				if variable in test_fit_model_params:
+					test_fit_model_params[variable]['value'] = estimates[variable]
+				else:
+					test_fit_model_params[variable] = {'value': estimates[variable]}
+					
+			# TODO: it seems especially unnecessary to initialize a graph here, and to do anything in a gradient at all
 			_, test_loss, test_opt = self.fit_score(
 				data=test_data, fit_model_params=test_fit_model_params,
 				iterative_pE=iterative_pE, reg_type=None, lamb=0, sigma=False, n_epochs=1, lr=lr, graph=graph,
@@ -370,29 +377,35 @@ class ResultsObj():
 			df = df.sort_values(by="best_loss")
 
 			best_iter = df.iloc[0]
-
 			best_params = best_iter[['h_combo', 'lr', 'n_epochs', 'iterative_pE']].to_dict()
-
-			breakpoint()
 
 		else:
 			df = pd.read_csv(self.folder / result_key / "hyperparam_search.csv")
 			best_iter = df.iloc[0]
 			best_params = best_iter[['h_combo', 'lr', 'n_epochs', 'iterative_pE']].to_dict()
 
-
+		# If not goten from results_with_overfitting, will be a str
 		if isinstance(best_params["h_combo"], str):
 			best_params["h_combo"] = eval(best_params["h_combo"])
 
-		if (full_dict := self.results_dict[result_key].get("full", False)):
+		# if we have already run validation
+		if "full" in self.results_dict[result_key]:
+			full_dict = self.results_dict[result_key]["full"]
 			curr_best_params = {k: full_dict.get(k, None) for k in ['h_combo', 'lr', 'n_epochs', 'iterative_pE']}
+			
 			if isinstance(curr_best_params["h_combo"], str):
 				curr_best_params["h_combo"] = eval(curr_best_params["h_combo"])
+			
+			# If we've already run validation on best params, return
 			if curr_best_params == best_params:
 				print(f"******* Already ran validation on best hyperparams {best_params} *******")
 				return
+
+			# Otherwise, replace with new best parameter values
 			else:
 				full_dict = best_params
+
+		# If haven't run validation
 		else:
 			self.results_dict[result_key]["full"] = best_params
 			full_dict = self.results_dict[result_key]["full"]
@@ -415,7 +428,6 @@ class ResultsObj():
 		self.results_dict[result_key]["full"][f"test_loss"] = float(validation_test_loss)
 		self.results_dict[result_key]["full"]["train_n_epochs"] = len(validation_train_opt.losses)
 		
-
 		losses_df = pd.DataFrame([{"epoch": i, "loss": l} for i, l in enumerate(validation_train_opt.losses)])
 		losses_df.to_csv(self.folder / result_key / "losses.csv", index=False)
 
@@ -558,7 +570,7 @@ class ResultsObj():
 		if results_list:
 			self.update_from_folds_list(result_key, results_list)
 
-	def rename_move_delete(self, result_key, rename=False, move=False, delete=False):
+	def rename_move_delete(self, result_key, rename=False, move=False, delete=False, update=False):
 		dir = self.folder / result_key
 
 		if rename:
@@ -586,6 +598,13 @@ class ResultsObj():
 			del self.results_dict[result_key]
 
 		# Update graphs and summaries
-		self.summarize_searches()
-		self.plot_hyperparams(self.folder)
+		if update:
+			self.summarize_searches()
+			self.plot_hyperparams(self.folder)
+
 		self.save()
+
+if __name__ == "__main__":
+	import sys
+	ro = ResultsObj(sys.argv[1])
+	breakpoint()

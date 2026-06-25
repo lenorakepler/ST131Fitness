@@ -5,7 +5,7 @@ class PhyloLoss(tf.keras.losses.Loss):
 	def __init__(self, **kwargs):
 		super().__init__()
 
-		self.epsilon = kwargs.get('epsilon', 0.0000005)
+		self.epsilon = kwargs.get('epsilon', 0.000005)
 
 		for k, v in kwargs.items():
 			setattr(self, k, v)
@@ -40,6 +40,9 @@ class PhyloLoss(tf.keras.losses.Loss):
 
 		if self.graph:
 			self.call = tf.function(self.call)
+			self.safedivide = tf.function(self.safedivide)
+			self.safelog = tf.function(self.safelog)
+			self.replace_zero = tf.function(self.replace_zero)
 
 	def L1_0(self, m, weights):
 		loss = self.Sigma(m) if self.sigma else self.call_(m)
@@ -93,9 +96,10 @@ class PhyloLoss(tf.keras.losses.Loss):
 		fit_shifts = tf.gather(m["brownian_eff"], m["edge_type_int"]) - tf.gather(m["brownian_eff"], m["edge_parent_type_int"])
 		times = m["edge_parent_time_delta"]
 		
+		# TODO: is the denominator 2*sigma or sigma*times???
 		# p(child fitness u | parent fitness) = -exp[(u_c - u_p)^2 / (2 * sigma)]
 		# but we are dealing in log likelihood, so take log
-		probs = tf.math.divide_no_nan(-0.5 * fit_shifts**2, sigma * times + self.epsilon)
+		probs = tf.math.divide_no_nan(-0.5 * fit_shifts**2, self.replace_zero(sigma * times))
 		penalty = tf.reduce_sum(probs) # Sum log prob values
 
 		# Penalty term will always be negative: the more negative,
@@ -123,13 +127,20 @@ class PhyloLoss(tf.keras.losses.Loss):
 		
 		return loss + penalty
 
+	def replace_zero(self, a):
+		sign = tf.where(a <= 0, tf.ones_like(a) * -1, tf.ones_like(a))
+		clipped = tf.where(tf.abs(a) < self.epsilon, tf.ones_like(a) * self.epsilon, abs(a))
+		return sign * clipped
+
 	def safedivide(self, a, b):
-		safe_x = tf.where(tf.not_equal(b, 0.), b, tf.ones_like(b))
-		return tf.where(tf.not_equal(b, 0.), tf.math.divide(x=a, y=safe_x), tf.zeros_like(safe_x))
+		return tf.math.divide(x=a, y=self.replace_zero(b))
+		# safe_x = tf.where(tf.not_equal(b, 0.), b, tf.ones_like(b))
+		# return tf.where(tf.not_equal(b, 0.), tf.math.divide(x=a, y=safe_x), tf.zeros_like(safe_x))
 
 	def safelog(self, a):
-		safe_a = tf.where(tf.not_equal(a, 0.), a, tf.ones_like(a))
-		return tf.where(tf.not_equal(a, 0.), tf.math.log(safe_a), tf.zeros_like(a))
+		return tf.math.log(self.replace_zero(a))
+		# safe_a = tf.where(tf.not_equal(a, 0.), a, tf.ones_like(a))
+		# return tf.where(tf.not_equal(a, 0.), tf.math.log(safe_a), tf.zeros_like(a))
 
 	def find_nonfinite(self, pEs):
 		if (nonfinite_pE := tf.reduce_all(tf.math.is_finite(pEs))):
@@ -177,11 +188,11 @@ class PhyloLossNonIterative(PhyloLoss):
 
 		loss = -(line_like + sample_like + sample_like_csa + birth_like)
 
-		# self.edge_beta = m["edge_b"].numpy()
-		# self.log_pD = log_pD.numpy()
-		# self.log_sample_like = tf.math.log(m["sample_s"] * m["sample_d"]).numpy()
-		# self.log_birth_like = tf.math.log(2 * m["birth_b"]).numpy()
-		# self.log_sample_like_csa = tf.math.log(m["csa_rho"]).numpy()
+		self.edge_beta = m["edge_b"].numpy()
+		self.log_pD = log_pD.numpy()
+		self.log_sample_like = tf.math.log(m["sample_s"] * m["sample_d"]).numpy()
+		self.log_birth_like = tf.math.log(2 * m["birth_b"]).numpy()
+		self.log_sample_like_csa = tf.math.log(m["csa_rho"]).numpy()
 		
 		return loss
 
@@ -211,6 +222,9 @@ class PhyloLossIterative(PhyloLoss):
 			self.call = tf.function(self.call)
 			self.calcIterativePEs = tf.function(self.calcIterativePEs)
 			self.calcPEs = tf.function(self.calcPEs)
+			self.safedivide = tf.function(self.safedivide)
+			self.safelog = tf.function(self.safelog)
+			self.replace_zero = tf.function(self.replace_zero)
 
 	def calcIterativePEs(self, m):
 		n_edges = m["edge_d"].shape[0]
@@ -220,7 +234,6 @@ class PhyloLossIterative(PhyloLoss):
 		rho_scalar_init = (1 - m["pE_rho"][:, -1])
 
 		pEs = tf.reshape(pE_init * rho_scalar_init, [1, -1])
-
 
 		for i in m["pE_back_idxs"][::-1]:
 
@@ -309,9 +322,15 @@ class PhyloLossIterative(PhyloLoss):
 
 		log_pD = self.safelog(pD)
 		line_like = tf.reduce_sum(log_pD)
-		sample_like = tf.reduce_sum(tf.math.log(m["sample_s"] * m["sample_d"]))
-		sample_like_csa = tf.reduce_sum(tf.math.log(m["csa_rho"]))
-		birth_like = tf.reduce_sum(tf.math.log(m["birth_b"]))
+		sample_like = tf.reduce_sum(self.safelog(m["sample_s"] * m["sample_d"]))
+		sample_like_csa = tf.reduce_sum(self.safelog(m["csa_rho"]))
+		birth_like = tf.reduce_sum(self.safelog(m["birth_b"]))
+
+		# for value in [log_pD, line_like, sample_like, sample_like_csa, birth_like]:
+		# 	finite = tf.reduce_all(tf.math.is_finite(value))
+		# 	if not finite:
+		# 		print(f"nan here: {np.argwhere(not tf.math.is_finite(value))}")
+		# 		breakpoint()
 
 		loss = -(line_like + sample_like + sample_like_csa + birth_like)
 
@@ -327,6 +346,7 @@ class PhyloLossIterative(PhyloLoss):
 		# self.log_sample_like = tf.math.log(m["sample_s"] * m["sample_d"]).numpy()
 		# self.log_birth_like = tf.math.log(m["birth_b"]).numpy()
 		# self.log_sample_like_csa = tf.math.log(m["csa_rho"]).numpy()
+		# self.pEs = pEs
 
 		# if not tf.math.is_finite(loss):
 		# 	breakpoint()

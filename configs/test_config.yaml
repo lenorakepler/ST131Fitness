@@ -1,0 +1,68 @@
+data_dir: "../test_data"
+results_dir: "../test_results"
+
+# -----------------------------------------------------
+# ANALYSIS NAME (directory automatically created)
+# -----------------------------------------------------
+analysis_name: "test"
+
+# -----------------------------------------------------
+# FEATURES FILES AND ORIGINAL PHYLOGENY
+# -----------------------------------------------------
+# Ancestral clade reconstruction for each branch
+clades_file: "../test_data/model_input/clade_resconstruction.csv"
+
+# -----------------------------------------------------
+# TREE SETUP
+# -----------------------------------------------------
+# Newick tree that has had branches split at
+# appropriate interval times
+tree_file: "../test_data/model_input/test_a.nwk"
+# interval_times: "../test_data/model_input/interval_times.txt"
+
+# To correctly date the tree
+last_sample_date: 2023
+
+# We will divide the tree into three time intervals, with changepoints at 2003 and 2013, 
+# and estimate a separate background birth rate for each
+rate_changepoints: [2003, 2013]
+
+# Additionally, we  constrains sampling on removal so that a sample has 0 sampling probability
+# outside of its BioProject sample collection window (estimated as the min and max of existing
+# samples for that BioProject). This is just a .csv file that specifies these dates as year
+# rounded to one decimal, ensuring the window starts just before the first sample and ends right
+# after the last.
+bioproject_times_file: "../test_data/model_input/bioproject_times.csv"
+bioproject_changepoints: [2015.0,1985.9,1995.0,2000.0,2008.0,2009.0,2010.0,2011.8,2012.9,2012.0,2014.0,2014.8,2016.0,2017.0,2018.0,2019.7,2016.4,2018.1,2020.1,2023.1,2015.2,2019.1,2020.8,2020.0,2020.2]
+
+# -----------------------------------------------------
+# ANALYSIS PARAMETERS
+# -----------------------------------------------------
+# Whether to use full pE values (recommended if heavily time-varying)
+iterative_pE: True
+
+# -----------------------------------------------------
+# FITNESS DECOMPOSITION PARAMETERS AND HYPERPARAMETERS
+# -----------------------------------------------------
+# Length of time intervals used in decomposition 
+decomp_interval_length: 1
+
+# Can omit recent years since very few samples
+decomp_interval_cutoff: 2021
+
+# -----------------------------------------------------
+# FIGURE OUTPUT PARAMETERS
+# -----------------------------------------------------
+# Figures will be output in subfolders of the results directory
+# defined above based on the analysis name and model configuration
+# specified. If you would like final, named figures to instead be
+# saved to a different directory (e.g. a working directory for)
+# publication, specify that below. If nothing is specified, these 
+# figures will be output with everything else.
+figures_dir: ""
+
+feature_info_file: "../test_data/model_input/feature_info.csv"
+
+fig5_categories:
+  - "AMR"
+  - "VIR"

@@ -1,0 +1,46 @@
+model_name: "no_samplingbg"
+sigma_opt: False
+
+# -----------------------------------------------------
+# BIRTH-DEATH-SAMPLING MODEL PARAMETERS
+# -----------------------------------------------------
+fit_model_params:
+  # Not estimated
+  death_rate: 1
+
+  # Potentially estimated
+  birth_background:
+    estimate: True
+    penalize: False
+    value: [1.000001, 1.000001, 1.000001]
+    changepoints: [2003, 2013]
+  birth_features:
+    estimate: True
+    penalize: True
+    states: "data/model_input/marginal_features_genetic.csv" # Binary features file for each sample + ancestral node
+    value: 1
+  sampling_features:
+    variables:
+      bioproject:
+        type: "multi"
+        states: "data/model_input/bioproject_marginal_states_for_analysis.csv"
+        mask: "data/model_input/sampling_mask.csv"
+        value: 1
+        estimate: True
+        penalize: True
+      specimen_type:
+        type: "binary"
+        states: "data/model_input/specimen_marginal_states_for_analysis.csv"
+        value: 1
+        estimate: True
+        penalize: True
+  sampling_background:
+    estimate: False
+    penalize: False
+    value: [0.0001, 0.0001, 0.0001]
+    changepoints: [2003, 2013]
+  brownian_motion:
+    estimate: True
+    penalize: False
+    value: 1
+    states: "results/three_sampling_intervals/brownian_fit_setup.json"

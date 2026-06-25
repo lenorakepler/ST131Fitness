@@ -84,6 +84,7 @@ def test_param_fold(results_obj, result_key, h_combo, fold, fit_model_params, it
 	if resume: print(f"Resuming from {starting_json.stem} at epoch {resume_from}")
 
 	results_dir.mkdir(exist_ok=True, parents=True)
+	# TODO: shouldnt results dict be made by results obj?
 	results_dict = dict(
 		combo_key=combo_key,
 		fold=fold,
@@ -105,7 +106,7 @@ def test_param_fold(results_obj, result_key, h_combo, fold, fit_model_params, it
 
 	# Set brownian motion info for this fold
 	fit_model_params["brownian_motion"]["info"] = fit_model_params["brownian_motion"][str(fold)]
-
+	
 	estimates, train_loss, test_loss, train_opt, test_opt = results_obj.do_train_test(
 		fit_model_params, cv_train, cv_test, h_combo['reg_type'],
 		h_combo['lamb'], h_combo['sigma'], iterative_pE, remaining_n_epochs, lr, graph, 
@@ -118,6 +119,7 @@ def test_param_fold(results_obj, result_key, h_combo, fold, fit_model_params, it
 	# ---------------------------------------------------------------------
 	# Write results to file and return dictionary
 	# ---------------------------------------------------------------------
+	# TODO: why is this not in results obj?
 	results_dict.update(
 		dict(
 			test_loss=float(test_loss),
@@ -127,6 +129,7 @@ def test_param_fold(results_obj, result_key, h_combo, fold, fit_model_params, it
 			)
 		)
 
+	# TODO: shouldn't this be whole point of results obj? to I/O this stuff?
 	epoch_estimates_dict = results_obj.epoch_estimates_to_dict(train_opt, fit_model_params)
 	epoch_estimates_out = json.dumps(epoch_estimates_dict)
 	(estimates_dir / f"{combo_key}_fold-{fold}.json").write_text(epoch_estimates_out)
@@ -167,7 +170,7 @@ def init_model_params(results_obj, config, sigma_opt):
 
 	# Brownian motion
 	# -----------------------------------------------------
-	all_brownian = json.loads(Path(fit_model_params["brownian_motion"]["states"]).read_text())
+	all_brownian = json.loads(Path(fit_model_params["brownian_motion"]["states"]).resolve().read_text())
 	
 	if sigma_opt:
 		fit_model_params["brownian_motion"].update({k: v for k, v in all_brownian.items() if k != "folds"})
@@ -185,7 +188,10 @@ def init_model_params(results_obj, config, sigma_opt):
 	# Birth and sampling features
 	# -----------------------------------------------------
 	fit_model_params["birth_features"]["names"] = pd.read_csv(fit_model_params["birth_features"]["states"], index_col=0).columns.to_list()
-	fit_model_params["sampling_features"]["names"] = pd.read_csv(fit_model_params["sampling_features"]["states"], index_col=0).columns.to_list()
+	
+	for feature_type, feature_dict in fit_model_params["sampling_features"]["variables"].items():
+		fit_model_params[feature_type] = feature_dict
+		fit_model_params[feature_type]["names"] = pd.read_csv(feature_dict["states"], index_col=0).columns.to_list()
 
 	return fit_model_params
 
@@ -214,11 +220,11 @@ def crossvalidate(analysis_dir, hyper_param_values, config, debug, n_epochs=2000
 	
 	if not results_obj.success["index"]:
 		results_obj.set_data(
-			tree_file=Path(config["data_dir"]) / config["interval_tree_name"] / "phylo.nwk",
-			interval_times_file=Path(config["data_dir"]) / config["interval_tree_name"] / "interval_times.txt",
+			tree_file=config["tree_file"],
+			interval_times_file=config["interval_times"],
 			last_sample_date=config["last_sample_date"]
 		)
-		results_obj.set_folds(test_size=0.2, n_splits=4, shuffle=True, random_state=8)
+		results_obj.set_folds(test_size=0.2, n_splits=4, random_state=8)
 
 	# -----------------------------------------------------
 	# Init fitness model parameters
@@ -249,6 +255,7 @@ def crossvalidate(analysis_dir, hyper_param_values, config, debug, n_epochs=2000
 		result_key = f"sigma-opt_{result_key}"
 
 	# Create/load results dict
+	# TODO: why do I init the fit model params if they are often just here?
 	if not results_obj.results_dict.get(result_key, None):
 		results_obj.results_dict[result_key] = {
 			'fit_model_params': fit_model_params, 
@@ -324,26 +331,141 @@ def resume_fits():
 	# Load
 	pass
 
+module_path = Path(__file__).parent.parent
+
+def read_yaml(yaml_file):
+	return load(Path(yaml_file).resolve().read_text(), Loader=Loader)
+
+def cli_override_config(config, clconfig):
+	"""
+	Adapted ClaudeAI-generated code to parse, e.g. 
+	--config 'key1=value1,key2=value2' into a dictionary or
+	--config 'key1.subkey1=subvalue1'
+	"""
+
+	if not clconfig:
+		return {}
+	
+	print(f"")
+	for item in clconfig.split(';'):
+		update = {}
+
+		if '=' not in item:
+			raise click.BadParameter(f"Invalid format: '{item}'")
+		
+		key, val = item.split('=', 1)
+		key = key.strip()
+		val = val.strip()
+		
+		# Type conversion
+		if "[" in val and "]" in val:
+			try:
+				val = eval(val)
+			except Exception as e:
+				print(e)
+				print(f"Could not parse {val} as a list. Leaving as a string.")
+		else:		
+			try:
+				val = int(val)
+			except ValueError:
+				try:
+					val = float(val)
+				except ValueError:
+					if val.lower() in ('true', 'yes', '1'):
+						val = True
+					elif val.lower() in ('false', 'no', '0'):
+						val = False
+		
+		# Handle nested keys (e.g., "model.learning_rate")
+		keys = key.split('.')
+		if len(keys) > 1:
+			nested = update
+			for k in keys[:-1]:
+				nested = nested.setdefault(k, {})
+			nested[keys[-1]] = val
+		else:
+			update[key] = val
+
+		# Update config
+		config = deep_merge(config, update, update)
+
+	print(f"")
+	return config
+
+def flatten_dict_dot(d, parent_key='', sep='.'):
+    """
+    Flattens a nested dictionary into a single-level dictionary 
+    using dot notation for nested keys.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        # If the value is a dictionary, recursively call the function
+        if isinstance(v, dict):
+            items.extend(flatten_dict_dot(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+def deep_merge(base, override, original_override):
+	"""Recursively merge override dict into base dict"""
+
+	result = base.copy()
+	for key, value in override.items():
+		if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+			result[key] = deep_merge(result[key], value, original_override)
+		else:
+			if key in result:
+				print(f"Overriding parameter {list(flatten_dict_dot(original_override).keys())[0]}: {result[key]} --> {value}")
+			else:
+				print(f"Adding new parameter: {original_override}")
+			result[key] = value
+
+	return result
+
 @click.command()
-@click.argument('model_config')
+@click.option("--data", default=module_path / "../configs/config.yaml", type=click.Path(exists=True), help="Path to config specifying data parameters")
+@click.option("--model", default=module_path / "../configs/config_model_params_full-model-tvbs.yaml", type=click.Path(exists=True), help="Path to config specifying fitness model parameters")
+@click.option("--opt", default=module_path / "../configs/opt_params.yaml", type=click.Path(exists=True), help="Path to config specifying optimization parameters")
 @click.option('--n_threads', default=8, type=int)
 @click.option('--test', '-t', is_flag=True, default=False, help='Use to ensure setup works. Sets n_epochs to 3 and model name to "test"')
-@click.option('--debug', '-d', is_flag=True, default=False, help='Use to debug anything done in parallel or TensorFlow. Sets n_threads to 0 to remove parallelization and changes graph execution to false')
-@click.option('--graph', '-g', is_flag=True)
-def main_func(model_config, n_threads=8, test=False, debug=False, graph=False):
-	config = load(Path("config.yaml").read_text(), Loader=Loader)
-	model_config = load(Path(f"configs/config_model_params_{model_config}.yaml").read_text(), Loader=Loader)
+@click.option('--debug', '-d', is_flag=True, default=False, help='To allow debugging, sets n_threads to 0 to remove parallelization and turns on eager execution')
+@click.option('--eager', '-g', is_flag=True, default=False, help="Put TensorFlow into eager mode. Use if you need to debug and get tensor values or if running for very few epochs and upfront graph pre-computation is too slow")
+@click.option('--interactive', '-i', is_flag=True, default=False, help="Drop into IDE after crossvalidation so you can interact with the results object")
+@click.option('--config', '-c', 'clconfig', is_flag=False, default="", help="To override configs specified in input files, specify as 'variable=value' with key/value pairs separated by a comma, e.g. 'var1=val1,var2=val2'.")
+def fit_model(data, model, opt, n_threads, test, debug, eager, interactive, clconfig):
+	config = read_yaml(data)
+	model_config = read_yaml(model)
+	opt_config = read_yaml(opt)
 
 	# TODO: BUG: model_config (specified on command line) is not the same as model_name (specified in configs/config_model_params_<model_config>.yaml)
 	config.update(model_config)
+	config.update(opt_config)
 
 	if test:
-		config["n_epochs"] = 100
+		config["n_epochs"] = 3
 		config["model_name"] = "test"
 
-	analysis_dir = "data_new/analysis/three_sampling_intervals"
+	config = cli_override_config(config, clconfig)
 
-	RO = crossvalidate(analysis_dir, hyper_param_values=config["hyper_param_values"], config=config, debug=debug, n_epochs=config["n_epochs"], lr=config["lr"], n_threads=n_threads, graph=graph)
+	# I changed the flag to eager in the CLI because I thought it was easier to understand,
+	# but I'm leaving graph everywhere else. Here, graph mode is just 'not eager'.
+	graph = not eager
+
+	# Do crossvalidation with
+	RO = crossvalidate(
+		analysis_dir=Path(config["analysis_dir"]).resolve(),
+		hyper_param_values={k: config[k] for k in ["lamb", "sigma", "reg_type"]},
+		config=config, 
+		debug=debug, 
+		n_epochs=config["n_epochs"], 
+		lr=config["lr"], 
+		n_threads=n_threads, 
+		graph=graph)
+
+	if interactive:
+		breakpoint()
 
 if __name__ == "__main__":
-	main_func()
+	fit_model()
+

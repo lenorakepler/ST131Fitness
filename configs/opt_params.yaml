@@ -1,0 +1,5 @@
+lr: 0.00005 # [0.00005, 0.0005, 0.005] # "Learning rates to test in hyperparameter search"
+reg_type: ["l1"] # "Regularization methods for fitness features to test in hyperparameter search"
+lamb: [1, 2, 5] # "Regularization penalties values to test in hyperparameter search"
+sigma: [0.0005, 0.005] # "Brownian motion penalty values to test in hyperparameter search"
+n_epochs: 30000 # "Number of epochs to run model fitting before stopping"

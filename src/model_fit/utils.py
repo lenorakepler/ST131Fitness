@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 from model_fit.phylo_obj import PhyloObj
+import sys
 
 """
 Functions for formatting data files as necessary for input into the model
@@ -25,6 +26,9 @@ def concat_marginal_states(pastml_probabilities_dir, out_file):
 	dir = Path(pastml_probabilities_dir)
 	prob_files = list(dir.glob("marginal_probabilities.character_*.tab"))
 	
+	if not prob_files:
+		sys.exit(f"No pastml files matching 'marginal_probabilities.character_*.tab' found in {dir}. Exiting.")
+
 	formatted_feature_probability_dfs = []
 	for f in prob_files:
 		feature_state_probabilities = pd.read_csv(f, sep="\t", index_col=0)
@@ -60,13 +64,13 @@ def concat_marginal_states(pastml_probabilities_dir, out_file):
 
 	formatted_feature_probability_df.to_csv(out_file)
 
-def marginal_for_analysis(pastml_dir, pastml_dict_file, meta=False, drop_first=False):
+def marginal_for_analysis(name, pastml_dir, pastml_dict_file, meta=False, reference=False, drop_features=[], out_dir=""):
 	dir = Path(pastml_dir)
 
 	marginal_file = dir / "work" / "marginal_states.csv"
 	
 	if not marginal_file.exists():
-		concat_marginal_states(dir / "work")
+		concat_marginal_states(dir / "work", dir / "work" / "marginal_states.csv")
 
 	mar = pd.read_csv(marginal_file, index_col=0)
 
@@ -75,24 +79,23 @@ def marginal_for_analysis(pastml_dir, pastml_dict_file, meta=False, drop_first=F
 	features = pd.read_csv(features_file, index_col=0)
 	tip_features = features.loc[features.index.str.contains("SAMN") == True]
 
-	if meta:
-		# Convert tip states to dummy to match marginal
-		tip_features = pd.get_dummies(tip_features, drop_first=drop_first).astype(int)
+	# Convert tip states to dummy to match marginal
+	tip_features = pd.get_dummies(tip_features, drop_first=False).astype(int)
 
 	missing = [i for i in tip_features.index if i not in mar.index]
+	if missing:
+		print(f"Samples not in marginal columns: {missing}")
 
 	# Get only sampled tips
 	tip_features = tip_features.loc[[i for i in tip_features.index if i in mar.index], :]
-
-	# Save and remove dropped column from marginal
-	removed = set(mar.columns.to_list()) ^ set(tip_features.columns.to_list())
-	removed_bioproject = removed.pop()
-	(dir / "reference_bioproject.txt").write_text(removed_bioproject)
 
 	mar = mar[tip_features.columns]
 
 	# Update marginal tips with known feature value
 	mar.loc[tip_features.index, tip_features.columns] = tip_features
+
+	if meta:
+		mar = mar.rename(columns=lambda c: c.rsplit("_", maxsplit=1)[-1] + "_META")
 
 	if pastml_dict_file:
 		# Change names back to allow special characters
@@ -100,13 +103,27 @@ def marginal_for_analysis(pastml_dir, pastml_dict_file, meta=False, drop_first=F
 		disp_names = {v: k for k, v in disp_names.items()}
 		mar = mar.rename(columns=lambda c: disp_names[c])
 
-	if meta:
-		mar = mar.rename(columns=lambda c: c.rsplit("_", maxsplit=1)[-1] + "_META")
+	# Save and remove dropped column from marginal
+	if reference:
+		if reference not in mar.columns:
+			sys.exit(f"{reference} not in feature columns. Exiting.\n{mar}")
+		mar = mar.drop(columns=[reference])
+		(dir / f"reference_{name}.txt").write_text(reference)
 
-	if 'specimen' in tip_features.columns[0]:
-		mar = mar.drop(columns=['urine_META'])
+	if drop_features:
+		not_in_columns = [c for c in drop_features if c not in mar.columns]
+		if not_in_columns:
+			sys.exit(f"Features to drop not found in columns: {not_in_columns}.\nCurrent states:\n{mar}\nExiting.")
+		
+		mar = mar.drop(columns=drop_features)
+		(dir / f"dropped_features_{name}.txt").write_text(','.join(drop_features))
 
-	mar.to_csv(dir / "marginal_states.csv")
+	if out_dir:
+		out_dir = Path(out_dir)
+	else:
+		out_dir = dir
+
+	mar.to_csv(out_dir / f"{name}_marginal_states_for_analysis.csv")
 
 def make_intervals(interval_dir, original_tree_file, last_sample_date, *start_time_lists):
 	"""
@@ -115,6 +132,7 @@ def make_intervals(interval_dir, original_tree_file, last_sample_date, *start_ti
 	"""
 
 	interval_dir = Path(interval_dir)
+	interval_dir.mkdir(exist_ok=True, parents=True)
 
 	# -----------------------------------------------------
 	# Load phylo obj, set dates
@@ -166,7 +184,7 @@ def get_bioproject_times_list(bioproject_times_file, changepoints_out_file):
 	sampling_changepoints = sorted(set(bioproject_times["min_time"].to_list() + bioproject_times["max_time"].to_list()))
 	Path(changepoints_out_file).write_text(",".join([str(s) for s in sampling_changepoints]))
 
-def make_sampling_mask(bioproject_times_file, interval_times_file, mask_out_file):
+def make_sampling_mask(bioproject_times_file, interval_times_file, reference_bioproject, mask_out_file):
 	"""
 	"""
 
@@ -193,6 +211,9 @@ def make_sampling_mask(bioproject_times_file, interval_times_file, mask_out_file
 
 	s_mask = s_mask.drop(columns=[interval_times[-1]])
 
+	# Drop reference bioproject
+	s_mask = s_mask.drop(index=[reference_bioproject])
+
 	out_dir = Path(mask_out_file).parent
 	out_dir.mkdir(parents=True, exist_ok=True)
 	s_mask.to_csv(mask_out_file)
@@ -200,3 +221,121 @@ def make_sampling_mask(bioproject_times_file, interval_times_file, mask_out_file
 def concat_meta_features(out_file, *feature_files):
 	df = pd.concat([pd.read_csv(f, index_col=0) for f in feature_files], axis=1)
 	df.to_csv(out_file)
+
+# def inferred_dates(nex_tree, sample_dates_out_file, last_sample_out_file):
+# 	tree = Path(nex_tree).read_text()
+# 	tip_dates = re.findall(r"(SAMN\d*?)\[&date=(.*?)\]", tree)
+# 	tip_dates = {s: float(d) for (s, d) in tip_dates if s in samples}
+	
+# 	last_sample_date = max(tip_dates.values())
+# 	Path(last_sample_out_file).write_text(f"{last_sample_date}")
+
+# 	breakpoint()
+
+# def make_bioprojects_times_and_max_date(states_file, nex_tree, bp_times_out_file):
+	
+
+# 	PhyloObj(
+# 		tree_file=tree_file,
+# 		tree_schema="nexus",
+# 		last_sample_date=last_sample_date,
+# 	)
+# 	breakpoint()
+# 	states = pd.read_csv(states_file, index_col=0)
+
+# 	# breakpoint()
+# 	pass
+
+def load_trees(**trees):
+	from types import SimpleNamespace
+
+	td = SimpleNamespace()
+
+	for name, file in trees.items():
+		file_type = 'newick' if 'nwk' in file else 'nexus'
+		po = PhyloObj(tree_file=file, tree_schema=file_type)
+		setattr(td, name, po)
+
+	return td
+
+if __name__ == "__main__":
+	# bioproject_ancestral_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/meta_features_bp/combined_ancestral_states.tab"
+	# bioproject_times_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/model_input/bioproject_times.csv"
+	# interval_times_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/interval_trees/2003-2013-bioprojsampling/interval_times.txt"
+	# mask_out_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/model_input/sampling_mask.csv"
+	# reference_bioproject = "PRJNA248737_META"
+
+	# states_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/meta_features_bp/marginal_states.csv"
+	# bp_times_out_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/model_input/bioproject_times.csv"
+	
+	# tree_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/named.tree_lsd.date.noref.pruned.nwk"
+	# nex_tree = "/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/lsd.date.nexus"
+	# sample_dates_out_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/processed/sample_dates.csv"
+	# last_sample_out_file = "/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/processed/last_sample_date.txt"
+	# # inferred_dates(nex_tree, sample_dates_out_file, last_sample_out_file)
+	# # make_bioprojects_times_file(states_file, nex_tree, bp_times_out_file)
+
+	# # make_sampling_mask(bioproject_times_file, interval_times_file, reference_bioproject, mask_out_file)
+
+	# td = load_trees(
+	# 	final_named_tree_lsd_noref_pruned="/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/named.tree_lsd.date.noref.pruned.nwk",
+	# 	final_lsd_date_nex="/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/lsd.date.nexus",
+	# 	final_lsd_date_noref="/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/lsd.date.noref.nwk",
+	# 	data_input_three_int_tree="/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/model_input/three_interval_tree.nwk",
+	# 	data_3_int_tree_phylo="/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/3_interval_tree/phylo.nwk",
+	# 	data_int_tree_20032013_phylo="/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data/interval_trees/2003-2013-bioprojsampling/phylo.nwk",
+	# 	final_ml_outlier_pruned="/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/ml_outlier_pruned.nwk"
+	# 	)
+
+	# samples = pd.read_csv("/Users/lenorakepler/Dropbox/NCSU/Lab/ESBL-HAI/NCBI_Dataset/final/sample_info.csv", index_col=0)
+
+	# inclist = samples[samples.exclusion_reason.isna() == True].index.to_list()
+	# incset = set(inclist)
+
+	# weird = []
+	# for name, po in  td.__dict__.items():
+	# 	po.leaf_nodes = [ln.taxon._label for ln in po.tree.leaf_nodes()]
+	# 	n_samples=len(po.leaf_nodes)
+	# 	not_in_tree = list(incset - set(po.leaf_nodes))
+	# 	not_in_samples = list(set(po.leaf_nodes) - incset)
+	# 	weird += not_in_tree
+	# 	weird += not_in_samples
+	# 	print(f"{name}: {n_samples} tips\n\tnot in tree: {not_in_tree}\n\textra: {not_in_samples}\n")
+	
+	# weird = list(set(weird))
+	# notindf = [s for s in weird if s not in samples.index]
+	# print(f"{notindf=}")
+
+	# w = samples.loc[[s for s in weird if s in samples.index]]
+	# print(w)
+
+	# breakpoint()
+	base_dir = Path("/Users/lenorakepler/Dropbox/NCSU/Lab/iMac/ST131Fitness Full April 2025/data")
+	marginal_for_analysis(
+		"bioproject",
+		pastml_dir=base_dir / "meta_features_bp", 
+		pastml_dict_file=None, 
+		meta=True, 
+		reference="PRJNA248737_META", 
+		drop_features=["PRJNA587095_META", "PRJNA269984_META"], 
+		out_dir=base_dir / "model_input"
+		)
+
+	marginal_for_analysis(
+		"specimen",
+		pastml_dir=base_dir / "meta_features_specimen", 
+		pastml_dict_file=None, 
+		meta=True, 
+		reference="urine_META", 
+		drop_features=[], 
+		out_dir=base_dir / "model_input"
+		)
+
+	make_sampling_mask(
+		base_dir / "model_input/bioproject_times.csv",
+		base_dir / "model_input/interval_times.txt", 
+		"PRJNA248737_META",
+		base_dir / "model_input/sampling_mask.csv"
+	)
+
+

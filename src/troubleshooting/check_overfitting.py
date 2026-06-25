@@ -13,12 +13,13 @@ import seaborn as sns
 from yaml import CDumper as Dumper, CLoader as Loader, load, dump
 from model_fit.results_obj import ResultsObj
 from matplotlib.colors import PowerNorm
+from troubleshooting.plot_variable_densities import plot_densities
 import plotly.express as px
 
 def lj(file):
 	return json.loads(Path(file).read_text())
 
-def plot_single_epochs(train_losses, test_losses, out_file):
+def plot_single_epochs(train_losses, test_losses, out_file, title=""):
 	# ==========================================
 	# Plot loss over epochs
 	# ==========================================
@@ -37,9 +38,12 @@ def plot_single_epochs(train_losses, test_losses, out_file):
 	ax2.plot(test_idxs, test_losses_nonan, label="test", color="orange")
 	ax2.set_ylabel("Test Loss")
 
-	plt.axvline(best_train_idx, color='blue')
-	plt.axvline(best_test_idx, color='orange')
+	plt.axvline(best_train_idx, color='blue', ls='dashed')
+	plt.axvline(best_test_idx, color='orange', ls='dashed')
 	plt.legend()
+
+	if title:
+		plt.title(title)
 
 	plt.tight_layout()
 	plt.savefig(out_file, dpi=300)
@@ -264,9 +268,8 @@ def get_test_losses(ej, RO, data, fit_model_params, iterative_pE):
 		if not plot_out_file.exists():
 				train_losses = json.loads(train_loss_file.read_text())
 				test_losses = json.loads(test_losses_file.read_text())
-				plot_single_epochs(train_losses, test_losses, plot_out_file)
+				plot_single_epochs(train_losses, test_losses, plot_out_file, plot_out_file.name.replace(".png", ""))
 		return
-
 
 	if not train_loss_file.exists():
 		print(f"!! No training losses found for {ej.stem}")
@@ -276,7 +279,7 @@ def get_test_losses(ej, RO, data, fit_model_params, iterative_pE):
 
 	train_losses = json.loads((result_dir / "train_losses" / ej.name).read_text())
 	test_losses = [float("nan")] * len(train_losses)
-	epoch_subset = list(range(0, len(train_losses), 100))
+	epoch_subset = list(range(0, len(train_losses), 100)) + [len(train_losses) - 1]
 
 	train_estimates = json.loads(ej.read_text())
 	train_estimates = {i: {var: var_estimates['values'][i] for var, var_estimates in train_estimates.items()} for i in epoch_subset}
@@ -301,14 +304,20 @@ def get_test_losses(ej, RO, data, fit_model_params, iterative_pE):
 
 	test_losses_out = json.dumps(test_losses)
 	test_losses_file.write_text(test_losses_out)
-	plot_single_epochs(train_losses, test_losses, plot_out_file)
+	plot_single_epochs(train_losses, test_losses, plot_out_file, plot_out_file.name.replace(".png", ""))
 
 	return test_losses_out
 
-def train_test_agg(test_losses_dir, result_dir):
+def train_test_agg(RO, test_losses_dir, result_dir):
 	test_loss_jsons = list(test_losses_dir.glob("*.json"))
 
+	if not test_loss_jsons:
+		print(f"No loss files in {test_losses_dir}")
+		return
+
 	losses_dict = {}
+	# id_vars = ["lr", "sigma", "lamb", "fold", "subset"]
+	id_vars = ["lr", "sigma", "lamb", "n_epochs", "fold", "subset"]
 	for ej in test_loss_jsons:
 		match = re.search(r"lamb=(.*)_reg_type=(.*)_sigma=(.*)_lr=(.*)_n_epochs=(.*)_fold-(.*)", ej.stem)
 		lamb, reg_type, sigma, lr, n_epochs, fold = match.groups()
@@ -316,82 +325,128 @@ def train_test_agg(test_losses_dir, result_dir):
 		fold_result = lj(result_dir / ej.name)
 		resume_from = fold_result["resume_from"]
 		for subset in ['train', 'test']:
-			id_tuple = (lamb, reg_type, sigma, lr, fold, subset)
-
+			name = ej.stem
+			
 			fold_loss_json = result_dir / f"{subset}_losses" / ej.name
 			fold_losses = json.loads(fold_loss_json.read_text())
 
 			fold_dict = dict(
 				lamb=float(lamb),
 				sigma=float(sigma),
+				n_epochs=int(n_epochs),
 				lr=float(lr),
 				fold=int(fold),
+				name=name,
 				subset=subset,
 				)
+			id_tuple = tuple([fold_dict[k] for k in id_vars])
 			fold_dict = {**fold_dict, **{i + resume_from: l for i, l in enumerate(fold_losses)}}
 
 			if not losses_dict.get(id_tuple, False):
 				losses_dict[id_tuple] = fold_dict
 			else:
+				print(f"\nUPDATING RESUMED RUN -- prev epochs: {losses_dict[id_tuple]['n_epochs']}, new: {fold_dict['n_epochs']}")
 				losses_dict[id_tuple].update(fold_dict)
 
-	info_cols = ["lr", "sigma", "lamb", "fold", "subset"]
+	info_cols = ["lr", "sigma", "lamb", "n_epochs", "fold", "name", "subset"]
 	df = pd.DataFrame.from_dict(losses_dict, orient="index").set_index(info_cols).sort_index()
 	df.to_csv(result_dir / "all_epoch_losses.csv")
 
 	train_df = df.xs("train", level="subset")
 	test_df = df.xs("test", level="subset")
 
-	info_df_cols = ["best_loss", "best_epoch", "last_epoch", "loss_at_last_epoch", "train_best_loss", "train_best_epoch", "loss_at_best_train"]
-	info_df = pd.DataFrame(index=test_df.index, columns=info_df_cols)
+	# 2025-12-19 
+	# # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	# commenting out the below and adding here, because I want 
+	# to be able to know for each fold the min loss / location. I'm not quite
+	# sure why I did it the other way in the first place.
+	test_df = test_df.dropna(how="all", axis=1)
+	train_df = train_df.loc[test_df.index, test_df.columns]
 
-	info_df.loc[:, 'last_epoch'] = test_df.apply(pd.Series.last_valid_index, axis=1)
-	info_df.loc[:, 'loss_at_last_epoch'] = test_df.ffill(axis=1).iloc[:, -1]
+	info_df_cols = [
+		"test_best_loss", "test_best_epoch", "train_loss_at_best_test", 
+		"train_best_loss", "train_best_epoch", "test_loss_at_best_train", 
+		"last_epoch", "test_loss_at_last_epoch", "train_loss_at_last_epoch",
+		"test_has_nan", "train_has_nan"
+		]
+	info_df = pd.DataFrame(index=test_df.index, columns=info_df_cols) 
+	
+	# Oh, maybe because there is no take_along_axis for pandas dataframes so I have to do this...
+	test_np = test_df.to_numpy()
+	train_np = train_df.to_numpy()
 
+	last_epoch = train_df.apply(pd.Series.last_valid_index, axis=1)
+	last_epoch_col_idxs = test_df.columns.get_indexer(last_epoch).reshape(-1, 1)
+	info_df.loc[:, 'last_epoch'] = last_epoch
+	info_df.loc[:, 'test_loss_at_last_epoch'] = np.take_along_axis(test_np, last_epoch_col_idxs, axis=1).ravel()
+	info_df.loc[:, 'train_loss_at_last_epoch'] = np.take_along_axis(train_np, last_epoch_col_idxs, axis=1).ravel()
+
+	test_best_epoch = test_df.idxmin(axis=1)
+	test_best_epoch_col_idxs = test_df.columns.get_indexer(test_best_epoch).reshape(-1, 1)
+	info_df.loc[:, 'test_best_epoch'] = test_best_epoch
+	info_df.loc[:, 'test_best_loss'] = test_df.min(axis=1)
+	info_df.loc[:, 'train_loss_at_best_test'] = np.take_along_axis(train_np, test_best_epoch_col_idxs, axis=1).ravel()
+
+	train_best_epoch = train_df.idxmin(axis=1)
+	train_best_epoch_col_idxs = train_df.columns.get_indexer(train_best_epoch).reshape(-1, 1)
+	info_df.loc[:, 'train_best_epoch'] = train_best_epoch
+	info_df.loc[:, 'train_best_loss'] = train_df.min(axis=1)
+	info_df.loc[:, 'test_loss_at_best_train'] = np.take_along_axis(test_np, train_best_epoch_col_idxs, axis=1).ravel()
+
+	info_df["test_has_nan"] = False
+	info_df.loc[info_df['test_loss_at_best_train'].isna() == True, "test_has_nan"] = True
+	info_df["train_has_nan"] = False
+	info_df.loc[info_df['train_best_loss'].isna() == True, "train_has_nan"] = True
+
+	info_df = info_df.sort_values(by="test_best_loss")
+	info_df.to_csv(result_dir / "all_fold_stats.csv")
+
+	df_mean = info_df.groupby(['lamb', 'sigma', 'lr']).mean().sort_values(by="test_loss_at_best_train")
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	# Commented out 2025-12-19
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	# Mask train df with nan where we don't have test values
 	# and get best train loss, location and test loss at best
 	# train epoch
-	train_df = train_df.mask(test_df.isna())
-	for idx, idf in train_df.iterrows():
-		min_epoch = idf.idxmin()
-		info_df.loc[idx, ["train_best_loss", "train_best_epoch", "loss_at_best_train"]] = [
-			idf.min(),
-			min_epoch,
-			test_df.loc[idx, min_epoch]
-		]
-
-	# Get mean of the stats
-	df_mean = info_df.groupby(['lamb', 'sigma', 'lr']).mean().sort_values(by="loss_at_best_train")
-
-	# Actually, we need to get the mean of the 
-	# "best epoch" differently...
-	# ================================================
-	test_df = test_df.reset_index().drop(columns="fold")
 	
-	for key, kdf in test_df.groupby(["lamb", "sigma", "lr"]):
-		kdf = kdf.dropna(how="all", axis=1)
+	# for idx, idf in train_df.iterrows():
+	# 	min_epoch = idf.idxmin()
+	# 	info_df.loc[idx, ["train_best_loss", "train_best_epoch", "loss_at_best_train"]] = [
+	# 		idf.min(),
+	# 		min_epoch,
+	# 		test_df.loc[idx, min_epoch]
+	# 	]
 
-		print(kdf)
+	# # Get mean of the stats
+	# df_mean = info_df.groupby(['lamb', 'sigma', 'lr', 'n_epochs']).mean().sort_values(by="loss_at_best_train")
+	
+	# # https://stackoverflow.com/questions/54307300/what-causes-indexing-past-lexsort-depth-warning-in-pandas
+	# # completely overrides sorting the values above but I don't feel like debugging removing it
+	# df_mean = df_mean.sort_index()
 
-		# We stop when things converge, so need to 
-		# fill rest of epochs with last value, otherwise
-		# our means get way off
-		kdf = kdf.ffill(axis=1)
+	# # Actually, we need to get the mean of the 
+	# # "best epoch" differently...
+	# # ================================================
+	# test_df = test_df.reset_index().drop(columns="fold")
+	
+	# for key, kdf in test_df.groupby(["lamb", "sigma", "lr"]):
+	# 	kdf = kdf.dropna(how="all", axis=1)
 
-		means = kdf.mean(axis=0, skipna=True)
-		means = means.dropna().drop(["lamb", "sigma", "lr"])
+	# 	# We stop when things converge, so need to 
+	# 	# fill rest of epochs with last value, otherwise
+	# 	# our means get way off
+	# 	kdf = kdf.ffill(axis=1)
+
+	# 	means = kdf.mean(axis=0, skipna=True)
+	# 	means = means.dropna().drop(["lamb", "sigma", "lr"])
 		
-		mean_min_loss = means.min()
-		mean_min_loss_loc = means.idxmin()
+	# 	mean_min_loss = means.min()
+	# 	mean_min_loss_loc = means.idxmin()
 
-		df_mean.loc[key, "best_loss"] = mean_min_loss
-		df_mean.loc[key, "best_epoch"] = mean_min_loss_loc
-
-		# info = df_mean.loc[key]
-		# if info["best_loss"] < info["loss_at_last_epoch"] or info["best_loss"] < info["loss_at_best_train"]:
-		# 	breakpoint()
-
-		# print("")
+	# 	df_mean.loc[key, "best_loss"] = mean_min_loss
+	# 	df_mean.loc[key, "best_epoch"] = mean_min_loss_loc
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	# Notate where all folds not completed, 
 	# as these shouldn't be counted as "best"
@@ -409,12 +464,10 @@ def plot_stats(result_dir, query, diff_epochs=False):
 	df_mean = pd.read_csv(result_dir / "mean_stats.csv")
 	df_mean = df_mean.set_index(['lamb', 'sigma', 'lr', 'last_epoch'])
 
-	['sigma', 'lr', 'best_loss', 'best_epoch', 'last_epoch', 'loss_at_last_epoch', 'train_best_loss', 'train_best_epoch', 'loss_at_best_train', 'incomplete']
-
 	melted = pd.melt(
 		df_mean, 
 		id_vars=["incomplete"], 
-		value_vars=['best_loss', 'loss_at_last_epoch', 'loss_at_best_train'], 
+		value_vars=['test_best_loss', 'test_loss_at_last_epoch', 'test_loss_at_best_train'], 
 		value_name='loss', var_name="loss_type", 
 		ignore_index=False).reset_index()
 	
@@ -427,8 +480,6 @@ def plot_stats(result_dir, query, diff_epochs=False):
 
 	if query:
 		melted = melted.query(query)
-
-	print(melted)
 
 	if diff_epochs:
 		marker_kwargs=dict(
@@ -462,7 +513,7 @@ def plot_stats(result_dir, query, diff_epochs=False):
 			y="loss", 
 			hue="lamb", 
 			col="loss_type",
-			palette=colors_b, 
+			palette=colors_b[0:len(melted["lamb"].unique())], 
 			**marker_kwargs,
 			)
 		plt.yscale('log')
@@ -476,7 +527,7 @@ def plot_stats(result_dir, query, diff_epochs=False):
 			y="loss", 
 			hue="sigma", 
 			col="loss_type",
-			palette=colors_b, 
+			palette=colors_b[0:len(melted["sigma"].unique())], 
 			**marker_kwargs,
 			)
 		plt.yscale('log')
@@ -504,8 +555,6 @@ def plot_some_epochs(result_dir, query_str):
 	ddf = df.query(query_str)
 	ddf = ddf[ddf.epoch % 50 == 0]
 
-	print(len(ddf))
-
 	ddf = ddf[ddf.fold == 1]
 
 	fig = px.line(ddf, x="epoch", y="loss", color='lr', line_dash='subset')
@@ -527,8 +576,6 @@ def plot_some_epochs2(result_dir, query_str):
 
 	ddf = df.query(query_str)
 	ddf = ddf[ddf.epoch % 50 == 0]
-
-	print(len(ddf))
 
 	ddf = ddf[ddf.fold == 1]
 
@@ -561,96 +608,217 @@ def plot_some_epochs2(result_dir, query_str):
 	plt.savefig(result_dir / f"train-test-losses_{query_str}.png", dpi=300)
 	plt.close("all")
 
-def check_stopping(results_dir):
-	wide = pd.read_csv(results_dir / "all_epoch_losses.csv")
-	wide["combo_key"] = wide.apply(lambda row: get_key(row), axis=1)
+# def check_stopping(results_dir):
+# 	wide = pd.read_csv(results_dir / "all_epoch_losses.csv")
+# 	wide["combo_key"] = wide.apply(lambda row: get_key(row), axis=1)
 
-	tests = wide[wide["subset"]=="test"]
+# 	tests = wide[wide["subset"]=="test"]
 
-	print("dropping")
-	tests = tests.drop(columns=["subset", "fold", "lamb", "lr", "sigma"])
+# 	print("dropping")
+# 	tests = tests.drop(columns=["subset", "fold", "lamb", "lr", "sigma"])
 
-	print("for loop")
-	for key, df in tests.groupby(["lamb", "lr", "sigma"]):
-		means = df.mean(axis=0, skipna=True)
-		means = means.dropna()
-		print(means)
+# 	print("for loop")
+# 	for key, df in tests.groupby(["lamb", "lr", "sigma"]):
+# 		means = df.mean(axis=0, skipna=True)
+# 		means = means.dropna()
+# 		print(means)
 
-		breakpoint()
+# 		breakpoint()
+
+def find_test_losses(RO, result_key, del_RO=True, n_threads=4):
+	results_dir = RO.folder / result_key
+
+	fit_model_params = copy.deepcopy(RO.results_dict[result_key]["fit_model_params"])
+	
+	if 'sigma-opt' in result_key:
+		bm = fit_model_params["brownian_motion"]
+		cv_idxs = [bm[str(i)]['idxs'] for i in range(bm["n_folds"])]
+		RO.cv_idxs = cv_idxs
+
+	fold_test_data = [RO.loadDataByIdx(cvidxs[1]) for cvidxs in RO.cv_idxs]
+
+	estimate_jsons = list((results_dir / "epoch_estimates").glob("*.json"))
+	iterative_pE = list(RO.results_dict[result_key]["results_list"].items())[0][1]['iterative_pE']
+
+	# del RO.results_dict
+	
+	pool_args = []
+	for ej in estimate_jsons:
+		fold = int(ej.stem.split("fold-")[1])
+		pool_args.append([ej, RO, fold_test_data[fold], fit_model_params, iterative_pE])
+
+	if n_threads > 0:
+		with Pool(n_threads) as pool:
+			pool.starmap(get_test_losses, pool_args)
+	else:
+		for pool_arg in pool_args:
+			get_test_losses(*pool_arg)
+
+	if del_RO:
+		del RO
+
+def update(RO, result_key):
+	"""
+	wrangle stragglers, summarize search, 
+	and plot hyperparameters
+	"""
+	results_dir = RO.folder / result_key
+
+	RO.wrangle_stragglers(result_key)
+	RO.summarize_search(result_key)
+	RO.plot_hyperparams(results_dir)
+
+def find_plot_test_losses(RO, result_key, n_threads=4):
+	results_dir = RO.folder / result_key
+	results_dir.mkdir(exist_ok=True, parents=True)
+
+	update(RO, result_key)
+
+	find_test_losses(RO, result_key, del_RO=True, n_threads=n_threads)
+
+	train_test_agg(RO, results_dir / "test_losses", results_dir)
+
+	if (results_dir / "mean_stats.csv").exists():
+		plot_stats(results_dir, query="")
+
+def update_var_names(RO):
+	"""
+	I should have done this when naming them initially, but ah well.
+	"""
+	for model_key, mdict in RO.results_dict.items():
+		for param, param_dict in mdict['fit_model_params'].items():
+			if isinstance(param_dict, dict) and 'names' in param_dict:
+				if 'background' in param:
+					param_name = param.replace("_background", "")
+					param_dict['names'] = [f"{param_name}_{n}" for n in param_dict['names']]
+
+	return RO
+
+def get_variable_ests(RO):
+	id_vars = ["model_key", "lamb", "reg_type", "sigma", "lr", "n_epochs", "fold"]
+	
+	RO = update_var_names(RO)
+
+	model_dfs = []
+	est_vars = {}
+	for model_key, mdict in RO.results_dict.items():
+		if 'test' not in model_key:
+			var_name_dict = {fmp: fmpdict['names'] for (fmp, fmpdict) in mdict['fit_model_params'].items() if isinstance(fmpdict, dict) and fmpdict.get('estimate', False)}
+			est_vars.update(var_name_dict)
+
+			# make list so that order preserved
+			var_types = list(var_name_dict.keys())
+			var_names = id_vars + [item for sublist in [var_name_dict[k] for k in var_types] for item in sublist]
+
+			model_dict = []
+			for hp_key, hpdict in mdict['results_list'].items():
+				match = re.search(r"lamb=(.*)_reg_type=(.*)_sigma=(.*)_lr=(.*)_n_epochs=(.*)", hp_key)
+				lamb, reg_type, sigma, lr, n_epochs = match.groups()
+				
+				for fold, fold_dict in enumerate(hpdict['fold_estimates']):
+					id_vals = [model_key, float(lamb), reg_type, float(sigma), float(lr), int(n_epochs), int(fold)]
+					est_values = [list(np.array(fold_dict[k]).reshape(-1)) for k in var_types]
+					ests = id_vals + [item for sublist in est_values for item in sublist]
+					model_dict.append(ests)
+			
+			model_df = pd.DataFrame(model_dict, columns=var_names)
+			model_dfs.append(model_df)
+
+	df = pd.concat(model_dfs)
+	df.to_csv(RO.folder / "all_models_fold_estimates.csv")
+
+	(RO.folder / "var_names.json").write_text(json.dumps(est_vars))
+
+	return df, est_vars
+
+def save_ests_at_best_test(RO, result_key):
+	df = pd.read_csv(RO.folder / result_key / "mean_stats.csv")
+	RO = update_var_names(RO)
+	pass
+
+def model_hyperparam_heat_map(RO, result_key, query=""):
+	dir = RO.folder / result_key
+	df = pd.read_csv(dir / "all_fold_stats.csv")
+	df = df[['lamb', 'sigma', 'lr', 'n_epochs', 'test_best_loss']]
+	df = df.groupby(['lamb', 'sigma', 'lr', 'n_epochs']).mean().reset_index()
+	df = df[df["sigma"] != 2]
+
+	df = df.query(query)
+	
+	# want to compare lambda and sigma, ensuring that lr, n_epochs are the same
+	for idx, dfg in df.groupby(["lr", "n_epochs"]): 
+		# gdf = dfg[['sigma', 'lamb', 'test_best_loss']]
+
+		if len(dfg) > 2:
+			x = dfg['sigma']
+			y = dfg['lamb']
+			z = dfg['test_best_loss']
+
+			fig, ax = plt.subplots(figsize=(10, 8))
+			tcf = ax.tricontourf(x, y, z, levels=15, cmap='viridis')
+			ax.tricontour(x, y, z, levels=5, colors='black', alpha=0.3, linewidths=0.5)
+			ax.scatter(x, y, c="red")
+			ax.set_xlabel('sigma')
+			ax.set_ylabel('lambda')
+			plt.colorbar(tcf, label='-LL')
+			plt.savefig(dir / f"{idx}_lamb-vs-sigma-loss_tricountour{'_' + query if query else ''}.png", dpi=300)
+
+def agg_mean_stats(RO):
+	model_names = json.loads((RO.folder / "model_display_names.json").read_text())
+
+	mean_stats = []
+	for csv_file in RO.folder.glob("*/mean_stats.csv"):
+		model_long = csv_file.parent.name
+		model = model_names.get(model_long, None)
+
+		if model:
+			mdf = pd.read_csv(csv_file)
+			mdf['model'] = model
+			mean_stats.append(mdf)
+
+		else:
+			print(f"No display name found for {model_long}")
+
+	if mean_stats:
+		df = pd.concat(mean_stats).set_index("model")
+		df = df.sort_values(by="test_best_loss")
+		df.to_csv(RO.folder / "mean_stats.csv")
+
+	else:
+		print(f"No mean_stats files found in {RO.folder}")
+		
 
 @click.command()
 @click.argument("command")
-@click.argument("model")
+@click.option("--result_key", "-k", default="")
 @click.option("--query", "-q", default="")
-@click.option("--n_threads", "-n", default=6)
+@click.option("--n_threads", "-n", default=4)
 @click.option("--lamb", "-l", default=1)
 @click.option("--sigma", "-s", default=1e-08)
 @click.option("--lr", "-r", default=5e-05)
 @click.option("--fold", "-f", default=1)
-def main(command, model, query, lamb, sigma, lr, fold, n_threads):
-	if model == "full-intercept-tvb":
-		result_key = "full_model_birth_background_TV+birth_features+brownian_motion+sampling_background_TV+sampling_features"
-	elif model == "no-random":
-		result_key = "no_random_birth_background_TV+birth_features+sampling_background_TV+sampling_features"
-	elif model == "so-full-intercept-tvb":
-		result_key = "sigma-opt_full_model_birth_background_TV+birth_features+brownian_motion+sampling_background_TV+sampling_features"
-	elif model == "random-only":
-		result_key = "sigma-opt_random-only_brownian_motion"
-	elif model == "nso-random-only":
-		result_key = "nso-random-only_brownian_motion"
-
-	analysis_dir = "data_new/analysis/three_sampling_intervals"
+@click.option("--update", "-u", is_flag=True, default=False)
+def main(command, result_key, query, lamb, sigma, lr, fold, update, n_threads):
+	analysis_dir = "results"
 	RO = ResultsObj(analysis_dir)
 
 	results_dir = RO.folder / result_key
 
 	if command == "update":
-		RO.wrangle_stragglers(result_key)
-		RO.summarize_search(result_key)
-		RO.plot_hyperparams(results_dir)
+		update(RO, result_key)
 
-	if command == "find":
-		RO.wrangle_stragglers(result_key)
-		RO.summarize_search(result_key)
-		RO.plot_hyperparams(results_dir)
-
-		fit_model_params = copy.deepcopy(RO.results_dict[result_key]["fit_model_params"])
-		
-		if 'sigma-opt' in result_key:
-			bm = fit_model_params["brownian_motion"]
-			cv_idxs = [bm[str(i)]['idxs'] for i in range(bm["n_folds"])]
-			RO.cv_idxs = cv_idxs
-
-		fold_test_data = [RO.loadDataByIdx(cvidxs[1]) for cvidxs in RO.cv_idxs]
-
-		estimate_jsons = list((results_dir / "epoch_estimates").glob("*.json"))
-		iterative_pE = list(RO.results_dict[result_key]["results_list"].items())[0][1]['iterative_pE']
-
-		del RO.results_dict
-		
-		pool_args = []
-		for ej in estimate_jsons:
-			fold = int(ej.stem.split("fold-")[1])
-			pool_args.append([ej, RO, fold_test_data[fold], fit_model_params, iterative_pE])
-
-		if n_threads > 0:
-			with Pool(n_threads) as pool:
-				pool.starmap(get_test_losses, pool_args)
+	if command == "test_loss":
+		if result_key:
+			find_plot_test_losses(RO, result_key, n_threads=n_threads)
 		else:
-			for pool_arg in pool_args:
-				get_test_losses(*pool_arg)
+			for result_key in RO.results_dict.keys():
+				if list((RO.folder / result_key / "epoch_estimates").glob("*.json")):
+					print(f"Finding test losses for {result_key}")
+					find_plot_test_losses(RO, result_key, n_threads=n_threads)
+				else:
+					print(f"No epoch estimates found for {result_key}")
 
-		del RO
-
-		train_test_agg(results_dir / "test_losses", results_dir)
-		plot_stats(results_dir, query="")
-
-	if command == "agg":
-		test_losses_dir = results_dir / "test_losses"
-		del RO
-
-		train_test_agg(test_losses_dir, results_dir)
-		plot_stats(results_dir, query="")
+		agg_mean_stats(RO)
 
 	if command == "plotsumm":
 		plot_stats(results_dir, query)
@@ -670,8 +838,48 @@ def main(command, model, query, lamb, sigma, lr, fold, n_threads):
 	if command == "all_summ":
 		RO.summarize_searches()
 
-	if command == "stopping":
-		check_stopping(results_dir)
+	if command == "var_dists":
+		if update:
+			df, est_vars = get_variable_ests(RO)
+		else:
+			df = pd.read_csv(RO.folder / "all_models_fold_estimates.csv", index_col=0)
+			est_vars = json.loads((RO.folder / "var_names.json").read_text())
+		
+		if (model_disp_file := RO.folder / "model_display_names.json").exists():
+			model_display_names = json.loads((model_disp_file).read_text())
+		else:
+			model_display_names = ""
+
+		# plot_densities(df, est_vars, RO.folder, group_vars=["model", "lamb"], compare_var="sigma", model_display_names=model_display_names, pre_avg=False)
+		# plot_densities(df, est_vars, RO.folder, group_vars=["model", "sigma"], compare_var="lamb", model_display_names=model_display_names, pre_avg=False)
+
+		plot_densities(
+			df, 
+			est_vars, 
+			RO.folder, 
+			group_vars=["model", "lamb"], 
+			compare_var="sigma", 
+			model_display_names=model_display_names, 
+			pre_avg=True,
+			query=query,
+			)
+
+		plot_densities(
+			df, 
+			est_vars, 
+			RO.folder, 
+			group_vars=["model", "sigma"], 
+			compare_var="lamb", 
+			model_display_names=model_display_names, 
+			pre_avg=True,
+			query=query,
+			)
+
+	if command == "heat_map":
+		model_hyperparam_heat_map(RO, result_key, query)
+
+	# if command == "stopping":
+	# 	check_stopping(results_dir)
 
 if __name__ == "__main__":
 	main()
